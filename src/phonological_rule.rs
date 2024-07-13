@@ -1,7 +1,7 @@
-use crate::{errors::GetheodeError, segment::Segment, segment_string::SegmentString};
+use crate::{errors::GetheodeError, segment_string::SegmentString};
 use regex::Regex;
 use core::fmt;
-use std::{fmt::Display, iter};
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct PhonologicalRule {
@@ -44,7 +44,7 @@ impl PhonologicalRule {
         {
             let has_brackets = brackets_re.is_match(&input_str);
             let opts: Vec<&str>;
-            if (has_brackets) {
+            if has_brackets {
                 opts = input_str.split(",").collect();
             } else {
                 opts = vec![&input_str];
@@ -70,7 +70,7 @@ impl PhonologicalRule {
         {
             let has_brackets = brackets_re.is_match(&pre_context_str);
             let opts: Vec<&str>;
-            if (has_brackets) {
+            if has_brackets {
                 opts = pre_context_str.split(",").collect();
             } else {
                 opts = vec![&pre_context_str];
@@ -88,7 +88,7 @@ impl PhonologicalRule {
         {
             let has_brackets = brackets_re.is_match(&post_context_str);
             let opts: Vec<&str>;
-            if (has_brackets) {
+            if has_brackets {
                 opts = post_context_str.split(",").collect();
             } else {
                 opts = vec![&post_context_str];
@@ -120,12 +120,12 @@ impl PhonologicalRule {
                 let mut is_input_match: bool = true;
                 for (input_index, input_seg) in input.iter().enumerate() {
                     let seg = &string[string_index + input_index];
-                    if (!seg.matches(input_seg)){
+                    if !seg.matches(input_seg) {
                         is_input_match = false;
                         break;
                     }
                 }
-                if (!is_input_match) {
+                if !is_input_match {
                     continue
                 }
                 // check preconditions
@@ -133,24 +133,24 @@ impl PhonologicalRule {
                 for pre_contex in self.pre_context_opts.iter() {
                     let pre_context_len = pre_contex.len();
                     // if the precontext is too long to fit in the string, skip
-                    if (string_index < pre_context_len) {
+                    if string_index < pre_context_len {
                         continue;
                     }
                     let mut is_match: bool = true;
                     for (pre_context_index, pre_context_seg) in pre_contex.iter().enumerate() {
                         let i = string_index - pre_context_len + pre_context_index;
                         let seg = &string[i];
-                        if (!seg.matches(pre_context_seg)){
+                        if !seg.matches(pre_context_seg) {
                             is_match = false;
                             break;
                         }
                     }
-                    if (is_match) {
+                    if is_match {
                         pre_condition_matches = true;
                         break;
                     }
                 }
-                if (!pre_condition_matches) {
+                if !pre_condition_matches {
                     continue;
                 }
 
@@ -159,24 +159,24 @@ impl PhonologicalRule {
                 for post_contex in self.post_context_opts.iter() {
                     let post_context_len = post_contex.len();
                     // if post-context goes beyond the string's segment length
-                    if (string_index + input_len + post_context_len > string.len()) {
+                    if string_index + input_len + post_context_len > string.len() {
                         continue;
                     }
                     let mut is_match: bool = true;
                     for (post_context_index, post_context_seg) in post_contex.iter().enumerate() {
                         let i = string_index + input_len + post_context_index;
                         let seg = &string[i];
-                        if (!seg.matches(post_context_seg)){
+                        if !seg.matches(post_context_seg) {
                             is_match = false;
                             break;
                         }
                     }
-                    if (is_match) {
+                    if is_match {
                         post_condition_matches = true;
                         break;
                     }
                 }
-                if (!post_condition_matches) {
+                if !post_condition_matches {
                     continue;
                 }
                 // input, precondition, and postcondition all match, so we add it to the list
@@ -184,7 +184,7 @@ impl PhonologicalRule {
             }
         }
         // if no matches found, error
-        if (match_ranges.len() == 0) {
+        if match_ranges.len() == 0 {
             return Result::Err("No matches found".to_string());
         }
         // replace input with output
@@ -197,7 +197,7 @@ impl PhonologicalRule {
             new_segments.push(string[i].clone());
         }
         // if input and output are the same length, add the segments of corresponding indices
-        if (self.output.len() == to_index - from_index) {
+        if self.output.len() == to_index - from_index {
             for i in from_index..to_index {
                 let new_seg = string[i].clone() + self.output[i-from_index].clone();
                 new_segments.push(new_seg);
@@ -236,8 +236,7 @@ impl Display for PhonologicalRule {
 
         // format rule, do we have context or not?
         if self.pre_context_opts.len() == 0 && self.post_context_opts.len() == 0 {
-            write!(f, "{} -> {}", input_str, output_str);
-            return Ok(());
+            return write!(f, "{} -> {}", input_str, output_str);
         } else {
             let mut context_str = format!("_");
             for pre in &self.pre_context_opts {
@@ -246,8 +245,7 @@ impl Display for PhonologicalRule {
             for post in &self.post_context_opts {
                 context_str = format!("{}{}", context_str, post);
             }
-            write!(f, "{} -> {} / {}", input_str, output_str, context_str);
-            return Ok(());
+            return write!(f, "{} -> {} / {}", input_str, output_str, context_str);
         }
     }
 }

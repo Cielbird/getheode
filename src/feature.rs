@@ -1,3 +1,5 @@
+use crate::errors::GetheodeError;
+
 /// a feature of a phonological segment
 
 // these constants exis because rust enums are nothing like C enums. unfortunate discovery.
@@ -49,15 +51,14 @@ pub const FEATURE_NAMES: [&str; FEATURE_COUNT as usize ] = [
 "dor","high","low","front","back","tense"
 ];
 
-pub struct FeatureError;
 pub type Feature = u8;
 
 /// converts a feature name string to the corresponding u8 index
-pub fn feature_from_string(string: &str) -> Result<Feature, FeatureError> {
+pub fn feature_from_string(string: &str) -> Result<Feature, GetheodeError> {
     let index = FEATURE_NAMES.iter().position(|s| *s == string);
     match index {
         Some(i) => Ok(i as u8),
-        None => Err(FeatureError),
+        None => Err(GetheodeError::UnknownFeatureName(string.to_string())),
     }
 }
 

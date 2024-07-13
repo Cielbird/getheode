@@ -1,7 +1,11 @@
 [package]
-name = "GetheodeEngine"
+name = "getheode"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 regex = "1"
+
+[[bin]]
+name = "getheode_cli"
+path = "src/bin/cli.rs"

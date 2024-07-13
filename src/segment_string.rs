@@ -1,10 +1,7 @@
 use core::fmt;
-use std::fmt::format;
 use std::fmt::Display;
 use std::ops::Deref;
 use std::ops::DerefMut;
-
-use regex::Replacer;
 
 use crate::errors::GetheodeError;
 use crate::segment::Segment;
@@ -25,10 +22,9 @@ impl SegmentString {
         let mut seg_end: usize = 1;
         
         loop {
-            let mut seg_from_substr;
+            let seg_from_substr;
             loop {
-                println!("{}: {}->{}", s, seg_start, seg_end);
-                if (seg_end > s.len()) {
+                if seg_end > s.len() {
                     return Err(SegmentStringParsingError(s[seg_start..s.len()].to_string()));
                 }
                 if let Ok(seg) = Segment::from_string(&s[seg_start..seg_end]) {
@@ -40,7 +36,7 @@ impl SegmentString {
             // seg_start and seg_end delimit a valid Segment
             seg_str.push(seg_from_substr);
             // have we reached the end of the string?
-            if (seg_end == s.len()) {
+            if seg_end == s.len() {
                 break;
             }
             seg_start = seg_end;
