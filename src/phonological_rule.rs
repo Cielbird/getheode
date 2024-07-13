@@ -1,7 +1,7 @@
 use crate::{errors::GetheodeError, segment_string::SegmentString};
 use regex::Regex;
 use core::fmt;
-use std::fmt::Display;
+use std::fmt::{format, Display};
 
 #[derive(Debug)]
 pub struct PhonologicalRule {
@@ -19,7 +19,7 @@ impl PhonologicalRule {
         let post_context_str: String;
         // parse rule for input, output and contexts
         {
-            let p = r"\s*(.+)\s*->\s*([^\/]+)(?:\s*\/\s*([^_]+)\s*_\s*([^_]+))?";
+            let p = r"\s*(.+)\s*->\s*([^\/]+)\s*(?:\/\s*([^_]*)\s*_\s*([^_]*))?";
             let re = Regex::new(p).unwrap();
             let mut iter = re.captures_iter(rule_str);
             let first = iter.next();
@@ -31,30 +31,17 @@ impl PhonologicalRule {
                 return Err(GetheodeError::PhonologicalRuleParsingError(rule_str.to_string()));
             }
             let capts = first.unwrap();
-            input_str = capts[1].to_string();
-            output_str = capts[2].to_string();
-            pre_context_str = capts[3].to_string();
-            post_context_str = capts[4].to_string();
+            input_str = capts[1].trim().to_string();
+            output_str = capts[2].trim().to_string();
+            pre_context_str = capts[3].trim().to_string();
+            post_context_str = capts[4].trim().to_string();
         }
 
-        let brackets_re = Regex::new(r"\{\}").unwrap();
-
         // parse input
-        let mut input_opts = Vec::new();
-        {
-            let has_brackets = brackets_re.is_match(&input_str);
-            let opts: Vec<&str>;
-            if has_brackets {
-                opts = input_str.split(",").collect();
-            } else {
-                opts = vec![&input_str];
-            }
-            for opt in opts {
-                match SegmentString::from_string(opt.trim()) {
-                    Ok(seg) => input_opts.push(seg),
-                    Err(e) => return Err(e)
-                }
-            }
+        let input_opts;
+        match parse_seg_string_opts(&input_str) {
+            Ok(seg_str_opts) => input_opts = seg_str_opts,
+            Err(e) => return Err(e)
         }
 
         // parse output
@@ -64,48 +51,29 @@ impl PhonologicalRule {
             Err(e) => return Err(e)
         }
 
-
         // parse pre-context
-        let mut precontext_opts = Vec::new();
-        {
-            let has_brackets = brackets_re.is_match(&pre_context_str);
-            let opts: Vec<&str>;
-            if has_brackets {
-                opts = pre_context_str.split(",").collect();
-            } else {
-                opts = vec![&pre_context_str];
-            }
-            for opt in opts {
-                match SegmentString::from_string(opt.trim()) {
-                    Ok(seg) => precontext_opts.push(seg),
-                    Err(e) => return Err(e)
-                }
+        let mut pre_context_opts = Vec::new();
+        if pre_context_str != ""{
+            match parse_seg_string_opts(&pre_context_str) {
+                Ok(seg_str_opts) => pre_context_opts = seg_str_opts,
+                Err(e) => return Err(e)
             }
         }
 
         // parse post-context
-        let mut postcontext_opts = Vec::new();
-        {
-            let has_brackets = brackets_re.is_match(&post_context_str);
-            let opts: Vec<&str>;
-            if has_brackets {
-                opts = post_context_str.split(",").collect();
-            } else {
-                opts = vec![&post_context_str];
-            }
-            for opt in opts {
-                match SegmentString::from_string(opt.trim()) {
-                    Ok(seg) => postcontext_opts.push(seg),
-                    Err(e) => return Err(e)
-                }
+        let mut post_context_opts = Vec::new();
+        if post_context_str != ""{
+            match parse_seg_string_opts(&post_context_str) {
+                Ok(seg_str_opts) => post_context_opts = seg_str_opts,
+                Err(e) => return Err(e)
             }
         }
-        
+
         return Ok(PhonologicalRule {
             input_opts: input_opts,
             output: output,
-            pre_context_opts: precontext_opts,
-            post_context_opts: postcontext_opts
+            pre_context_opts: pre_context_opts,
+            post_context_opts: post_context_opts
         });
     }
 
@@ -128,8 +96,9 @@ impl PhonologicalRule {
                 if !is_input_match {
                     continue
                 }
+
                 // check preconditions
-                let mut pre_condition_matches = false;
+                let mut pre_condition_matches = self.pre_context_opts.len() == 0;
                 for pre_contex in self.pre_context_opts.iter() {
                     let pre_context_len = pre_contex.len();
                     // if the precontext is too long to fit in the string, skip
@@ -155,7 +124,7 @@ impl PhonologicalRule {
                 }
 
                 // check postconditions
-                let mut post_condition_matches = false;
+                let mut post_condition_matches = self.post_context_opts.len() == 0;
                 for post_contex in self.post_context_opts.iter() {
                     let post_context_len = post_contex.len();
                     // if post-context goes beyond the string's segment length
@@ -220,16 +189,7 @@ impl PhonologicalRule {
 impl Display for PhonologicalRule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // format input
-        let mut input_str = String::new();
-        if self.input_opts.len() == 1 {
-            input_str = format!("{}", self.input_opts[0]);
-        } else {
-            input_str.push_str("{");
-            for opt in &self.input_opts {
-                input_str.push_str(&format!("{}, ", opt));
-            }
-            input_str.push_str("}");
-        }
+        let input_str = format_seg_string_opts(&self.input_opts);
 
         // format output
         let output_str = format!("{}", self.output);
@@ -238,14 +198,57 @@ impl Display for PhonologicalRule {
         if self.pre_context_opts.len() == 0 && self.post_context_opts.len() == 0 {
             return write!(f, "{} -> {}", input_str, output_str);
         } else {
-            let mut context_str = format!("_");
-            for pre in &self.pre_context_opts {
-                context_str = format!("{}{}", pre, context_str);
-            }
-            for post in &self.post_context_opts {
-                context_str = format!("{}{}", context_str, post);
-            }
-            return write!(f, "{} -> {} / {}", input_str, output_str, context_str);
+            // format precontext
+            let pre_context_str = format_seg_string_opts(&self.pre_context_opts);
+
+            // format postcontext
+            let post_context_str = format_seg_string_opts(&self.post_context_opts);
+
+            return write!(f, "{} -> {} / {}_{}", input_str, output_str, pre_context_str, post_context_str);
         }
     }
+}
+
+/// parses a list of segment strings in brackets: {x, y, z...}.
+/// allows for a single segmentstring, in which case returns a size 1 vector
+/// extra commas anywhere are allowed: {a, b, c,}
+fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>, GetheodeError> {
+    let s = s.trim();
+    let mut seg_str_opts = Vec::new();
+    let has_brackets = s.starts_with('{') && s.ends_with('}');
+    let opts: Vec<&str>;
+    if has_brackets {
+        let inner = &s[1..(s.len() - 1)];
+        opts = inner.split(",").collect();
+    } else {
+        opts = vec![&s];
+    }
+    for opt in opts {
+        let opt = opt.trim();
+        if opt == ""{
+            continue;
+        }
+        match SegmentString::from_string(opt) {
+            Ok(seg) => seg_str_opts.push(seg),
+            Err(e) => return Err(e)
+        }
+    }
+    return Ok(seg_str_opts);
+}
+
+/// returns a formated string of a vector of segment strings in brackets: {x, y, z...}.
+fn format_seg_string_opts(opts: &Vec<SegmentString>) -> String {
+    let mut str = String::new();
+    if opts.len() == 0 {
+        return "".to_owned();
+    } else if opts.len() == 1 {
+        str = format!("{}", opts[0]);
+    } else {
+        str.push_str("{");
+        for opt in opts {
+            str.push_str(&format!("{},", opt));
+        }
+        str.push_str("}");
+    }
+    return str;
 }
