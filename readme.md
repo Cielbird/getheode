@@ -1,6 +1,6 @@
 # geþeode
 
-*[geþeode](https://en.wiktionary.org/wiki/geþeode)* `/jeˈθe͜oː.de/` is the old english word for 
+*[geþeode](https://en.wiktionary.org/wiki/geþeode)* `/jeˈθeoː.de/` is the old english word for 
 "language"
 
 a rust library that provides tools for building fictional languages. the end 

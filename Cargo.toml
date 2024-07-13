@@ -9,3 +9,7 @@ regex = "1"
 [[bin]]
 name = "getheode_cli"
 path = "src/bin/cli.rs"
+
+[[example]]
+name = "rules"
+path = "examples/rule_example.rs"
