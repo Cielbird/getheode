@@ -20,7 +20,7 @@ fn main() {
     println!("{}", segstr); 
 
     // another rule
-    let rule = PhonologicalRule::new("{a, e, i, o, u} -> [+nasal] / [+nasal]_").unwrap();
+    let rule = PhonologicalRule::new("V -> [+nasal] / [+nasal]_").unwrap();
     println!("{}", rule);
 
     // apply the rule

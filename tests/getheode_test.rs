@@ -4,28 +4,8 @@ extern crate getheode;
 
 #[cfg(test)]
 mod tests {
-    use getheode::segment::Segment;
     use getheode::segment_string::SegmentString;
     use getheode::phonological_rule::PhonologicalRule;
-    use getheode::feature::FeatureState::{UNDEF, POS, NEG, NA};
-
-    #[test]
-    fn test_segment_from_ipa_string() {
-        let a = [POS,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,NEG,NA];
-        assert_eq!(Segment::from_ipa("a").unwrap(), Segment::from_features(a));
-        // test multi-char symbols
-        let a = [NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,NA,NA,NA,NA,NA];
-        assert_eq!(Segment::from_ipa("d͡ɮ").unwrap(), Segment::from_features(a));
-    }
-
-    #[test]
-    fn test_segment_from_features_string() {
-        // see if the right features are being set
-        let a = [UNDEF,UNDEF,UNDEF,UNDEF,POS,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,NEG,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF];
-        assert_eq!(Segment::from_features_string("[+son-nasal]").unwrap(), Segment::from_features(a));
-        // edge case
-        Segment::from_features_string("[]").unwrap();
-    }
 
     #[test]
     fn test_segment_string_from_string() {

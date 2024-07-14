@@ -4,7 +4,10 @@ use regex::Regex;
 /// can represent either a complete phonological segment (if all features are defined)
 /// or a set of features that can be used to match or modify other segments
 
-use crate::{feature::{feature_from_string, Feature, FeatureState, FEATURE_COUNT, FEATURE_NAMES}, ipa_segments::IPA_BASES, segment_string::SegmentString};
+use crate::feature::{feature_from_string, Feature, FeatureState, FEATURE_COUNT, FEATURE_NAMES};
+use crate::ipa_segments::IPA_BASES;
+use crate::classes::CLASSES;
+use crate::segment_string::SegmentString;
 use crate::feature::FeatureState::*;
 use core::fmt;
 use std::{fmt::Display, ops::{Add, Sub}};
@@ -16,10 +19,23 @@ pub struct Segment {
 }
 
 impl Segment {
+    /// construct a segement from an array of features
+    pub const fn from_features(features: [FeatureState; FEATURE_COUNT as usize]) -> Self {
+        Segment { features: features }
+    }
+
+    /// construct a segement with all features undefied
+    pub const fn new_undef() -> Self {
+        return Segment { features: [FeatureState::UNDEF; FEATURE_COUNT as usize] };
+    }
+
     /// return a segment from either an ipa character 
     /// or a feature list in brackets ex. [+voi-delrel]
     pub fn from_string(string: &str) -> Result<Self, GetheodeError> {
         if let Ok(seg) = Self::from_ipa(string) {
+            return Ok(seg);
+        }
+        if let Ok(seg) = Self::from_class(string) {
             return Ok(seg);
         }
         if let Ok(seg) = Self::from_features_string(string) {
@@ -29,7 +45,7 @@ impl Segment {
     }
 
     /// construct a segement from an IPA symbol
-    pub fn from_ipa(ipa_symbol: &str) -> Result<Self, GetheodeError> {
+    fn from_ipa(ipa_symbol: &str) -> Result<Self, GetheodeError> {
         for (sym, seg) in IPA_BASES {
             if *sym == ipa_symbol {
                 return Ok(seg.clone());
@@ -37,15 +53,25 @@ impl Segment {
         }
         return Err(GetheodeError::IPASymbolParsingError(ipa_symbol.to_string()));
     }
+    
+    /// construct a segement from an IPA symbol
+    fn from_class(class_symbol: &str) -> Result<Self, GetheodeError> {
+        for (sym, seg) in CLASSES {
+            if *sym == class_symbol {
+                return Ok(seg.clone());
+            }
+        }
+        return Err(GetheodeError::IPASymbolParsingError(class_symbol.to_string()));
+    }
 
     /// construct a segement from a list of features in brackets ex. [+voi-delrel]
-    pub fn from_features_string(s: &str) -> Result<Self, GetheodeError> {
+    fn from_features_string(s: &str) -> Result<Self, GetheodeError> {
         let s = s.trim();
         if !(s.starts_with('[') && s.ends_with(']')) {
             return Err(GetheodeError::SegmentParsingError(s.to_string()));
         }
         let mut inner = &s[1..(s.len() - 1)];
-        let mut seg = Self{features: [FeatureState::UNDEF; FEATURE_COUNT as usize]};
+        let mut seg = Self::new_undef();
         let re = Regex::new(r"^\s*([+-])\s*([a-z]+)").unwrap();
         while inner != "" {
             let sign: char;
@@ -74,11 +100,6 @@ impl Segment {
             inner = &inner[name_match.end()..inner.len()].trim();
         }
         return Ok(seg);
-    }
-
-    /// construct a segement from an array of features
-    pub const fn from_features(features: [FeatureState; FEATURE_COUNT as usize]) -> Self {
-        Segment { features: features }
     }
 
     /// return a SegmentString with a single segment: a clone of this segment.
@@ -162,8 +183,15 @@ impl Sub<Feature> for Segment {
 /// returns the segment's defined non-NA features, concatenated
 impl Display for Segment {
     fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
-        // see if there is a matching ipa char
+        // see if there is a matching ipa symbol
         for (sym, seg) in IPA_BASES {
+            if seg == self {
+                return write!(f, "{}", sym);
+            }
+        }
+
+        // see if there is a matching class
+        for (sym, seg) in CLASSES {
             if seg == self {
                 return write!(f, "{}", sym);
             }
