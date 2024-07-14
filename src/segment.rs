@@ -6,6 +6,7 @@ use regex::Regex;
 
 use crate::feature::{feature_from_string, Feature, FeatureState, FEATURE_COUNT, FEATURE_NAMES};
 use crate::ipa_segments::IPA_BASES;
+use crate::diacritics::DIACRITICS;
 use crate::classes::CLASSES;
 use crate::segment_string::SegmentString;
 use crate::feature::FeatureState::*;
@@ -138,6 +139,18 @@ impl Segment {
         }
         return true;
     }
+
+    /// returns the number of features that would have to change 
+    /// to make the lhs segment equal to the rhs one
+    fn dist(&self, other: &Segment) -> u8 {
+        let mut dist = 0;
+        for i in 0..(FEATURE_COUNT as usize) {
+            if self.features[i] != other.features[i] {
+                dist += 1;
+            }
+        }
+        return dist;
+    }
 }
 
 impl Add<Segment> for Segment {
@@ -187,6 +200,20 @@ impl Display for Segment {
         for (sym, seg) in IPA_BASES {
             if seg == self {
                 return write!(f, "{}", sym);
+            }
+            // WARNING this tries all possible ipa symbols with all possible diacritics. 
+            // not only is it limited to only one diacritic, but it is extremely slow, in theory.
+            // for now, there are only a handfull of diacritics. the algorithm to do this well and
+            // fast is too much for me to think of right now; a fun puzzle for later.
+            // TODO tackle this when performance becomes pertinent, or when i need multiple 
+            // diacritics
+            for (d, d_seg) in DIACRITICS {
+                // TODO figure out if cloning these is really what i'm supposed to do
+                if (seg.clone() + d_seg.clone()) == *self {
+                    let mut s = sym.to_string();
+                    s.push(*d);
+                    return write!(f, "{}", s);
+                }
             }
         }
 
