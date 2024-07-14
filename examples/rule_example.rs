@@ -8,12 +8,20 @@ use getheode::segment_string::SegmentString;
 
 fn main() {
     // make a segment string
-    let mut segstr = SegmentString::from_string("atakio").unwrap();
+    let mut segstr = SegmentString::from_string("vreitamanon").unwrap();
     println!("{}", segstr); 
 
     // define a rule
-    let rule = PhonologicalRule::new("{i, es} -> j / _{a, o}").unwrap();
+    let rule = PhonologicalRule::new("t -> t͡ʃ / [+high]_").unwrap();
     println!("{}", rule); 
+
+    // apply the rule
+    segstr = rule.apply_rule(&segstr).unwrap();
+    println!("{}", segstr); 
+
+    // another rule
+    let rule = PhonologicalRule::new("{a, e, i, o, u} -> [+nasal] / [+nasal]_").unwrap();
+    println!("{}", rule);
 
     // apply the rule
     segstr = rule.apply_rule(&segstr).unwrap();

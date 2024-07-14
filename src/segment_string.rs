@@ -18,29 +18,40 @@ impl SegmentString {
     pub fn from_string(s: &str) -> Result<Self, GetheodeError> {// todo make a error enum for this library 
         // seg string we will return
         let mut seg_str = SegmentString::new();
-        let mut seg_start: usize = 0;
-        let mut seg_end: usize = 1;
-        
+        let mut start = 0;
+        let mut end = 0;
+        let mut best_end = 0;
+        // where we keep the best match
+        let mut seg_from_substr;
+
         loop {
-            let seg_from_substr;
-            loop {
-                if seg_end > s.len() {
-                    return Err(SegmentStringParsingError(s[seg_start..s.len()].to_string()));
+            // if is Some, we'll keep looking because we want the largest match possible
+            seg_from_substr = None;
+            while end <= s.len() {
+                // don't try to parse when we're in the middle of a utf8 char, not on a boundary
+                if !s.is_char_boundary(end) {
+                    end += 1;
+                    continue;
                 }
-                if let Ok(seg) = Segment::from_string(&s[seg_start..seg_end]) {
-                    seg_from_substr = seg; 
+                if let Ok(seg) = Segment::from_string(&s[start..end]) {
+                    seg_from_substr = Some(seg);
+                    best_end = end;
+                }
+                end += 1;
+            }
+            // if we found a substring that forms a segment, add it to the segment string
+            if let Some(seg) = seg_from_substr {
+                seg_str.push(seg);
+                // have we reached the end of the string?
+                if best_end == s.len() {
                     break;
                 }
-                seg_end += 1;
+                start = best_end;
+                end = start + 1;
+            } else {
+                // if not, return error
+                return Err(SegmentStringParsingError(s[start..s.len()].to_string()));
             }
-            // seg_start and seg_end delimit a valid Segment
-            seg_str.push(seg_from_substr);
-            // have we reached the end of the string?
-            if seg_end == s.len() {
-                break;
-            }
-            seg_start = seg_end;
-            seg_end = seg_start + 1;
         }
         return Ok(seg_str);
     }

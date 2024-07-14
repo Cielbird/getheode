@@ -1,7 +1,7 @@
 use crate::{errors::GetheodeError, segment_string::SegmentString};
 use regex::Regex;
 use core::fmt;
-use std::fmt::{format, Display};
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct PhonologicalRule {
@@ -77,11 +77,11 @@ impl PhonologicalRule {
         });
     }
 
-    pub fn apply_rule(self, string: &SegmentString) -> Result<SegmentString, String> {
-        // range of indices (inclusive, exclusive) in the string matching the input.
-        // ordered smallest to largest
-        let mut match_ranges: Vec<(usize,usize)> = vec![];
-        // match input
+    pub fn apply_rule(self, s: &SegmentString) -> Result<SegmentString, String> {
+        // string we will be modifying and returning
+        let mut string = s.clone();
+
+        // match pattern and apply change before matching next
         for input in self.input_opts.iter() {
             let input_len = input.len();
             for string_index in 0..(string.len() - input_len + 1) {
@@ -148,40 +148,27 @@ impl PhonologicalRule {
                 if !post_condition_matches {
                     continue;
                 }
-                // input, precondition, and postcondition all match, so we add it to the list
-                match_ranges.push((string_index, string_index + input_len));
+
+                // input, precondition, and postcondition all match, so we apply the change
+                let from_index = string_index;
+                let to_index = string_index+input_len;
+
+                // if input and output are the same length, add the segments of corresponding indices
+                if self.output.len() == to_index - from_index {
+                    for i in from_index..to_index {
+                        let new_seg = string[i].clone() + self.output[i-from_index].clone();
+                        string[i] = new_seg;
+                    }
+                } else {
+                    // simple splice
+                    string.drain(from_index..to_index);
+                    for i in 0..self.output.len() {
+                        string.insert(from_index + i, self.output[i].clone());
+                    }
+                }
             }
         }
-        // if no matches found, error
-        if match_ranges.len() == 0 {
-            return Result::Err("No matches found".to_string());
-        }
-        // replace input with output
-        // only take first match
-        let mut new_segments = SegmentString::new();
-        let from_index = match_ranges[0].0;
-        let to_index = match_ranges[0].1;
-        // push segments before match
-        for i in 0..from_index {
-            new_segments.push(string[i].clone());
-        }
-        // if input and output are the same length, add the segments of corresponding indices
-        if self.output.len() == to_index - from_index {
-            for i in from_index..to_index {
-                let new_seg = string[i].clone() + self.output[i-from_index].clone();
-                new_segments.push(new_seg);
-            }
-        } else {
-            // simple splice
-            for i in from_index..to_index {
-                new_segments.push(self.output[i-from_index].clone());
-            }
-        }
-        // push segments after match
-        for i in to_index..string.len() {
-            new_segments.push(string[i].clone());
-        }
-        return Result::Ok(new_segments);
+        return Result::Ok(string);
     }
 }
 
