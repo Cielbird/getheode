@@ -32,7 +32,9 @@ impl Segment {
 
     /// return a segment from either an ipa character 
     /// or a feature list in brackets ex. [+voi-delrel]
+    /// - input string is trimmed of whitespace
     pub fn from_string(string: &str) -> Result<Self, GetheodeError> {
+        let string = string.trim();
         if let Ok(seg) = Self::from_ipa(string) {
             return Ok(seg);
         }
@@ -104,14 +106,14 @@ impl Segment {
     }
 
     /// return a SegmentString with a single segment: a clone of this segment.
-    pub fn to_seg_string(self) -> SegmentString {
+    pub fn to_seg_string(&self) -> SegmentString {
         SegmentString::from_segments(vec![self.clone()])
     }
 
     /// returns true if the segment is complete, ie, completely defined for all features.
     /// if false, this segment is a just set of features, 
     /// usually used for matching or modifying other segments 
-    pub fn is_complete(self) -> bool {
+    pub fn is_complete(&self) -> bool {
         for i in 0..(FEATURE_COUNT as usize) {
             if self.features[i] == UNDEF {
                 return false;

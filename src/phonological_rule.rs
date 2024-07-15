@@ -38,15 +38,19 @@ impl PhonologicalRule {
         }
 
         // parse input
-        let input_opts;
+        let mut input_opts;
         match parse_seg_string_opts(&input_str) {
             Ok(seg_str_opts) => input_opts = seg_str_opts,
             Err(e) => return Err(e)
         }
+        // input should never have no options
+        if input_opts.len() == 0 {
+            input_opts.push(SegmentString::new("").unwrap());
+        }
 
         // parse output
         let output;
-        match SegmentString::from_string(&output_str.trim()) {
+        match SegmentString::new(&output_str) {
             Ok(seg_str) => output = seg_str,
             Err(e) => return Err(e)
         }
@@ -77,81 +81,45 @@ impl PhonologicalRule {
         });
     }
 
-    pub fn apply_rule(self, s: &SegmentString) -> Result<SegmentString, String> {
+    pub fn apply(self, s: &SegmentString) -> Result<SegmentString, String> {
         // string we will be modifying and returning
         let mut string = s.clone();
 
-        // match pattern and apply change before matching next
         for input in self.input_opts.iter() {
-            let input_len = input.len();
-            for string_index in 0..(string.len() - input_len + 1) {
-                let mut is_input_match: bool = true;
-                for (input_index, input_seg) in input.iter().enumerate() {
-                    let seg = &string[string_index + input_index];
-                    if !seg.matches(input_seg) {
-                        is_input_match = false;
-                        break;
-                    }
-                }
-                if !is_input_match {
-                    continue
-                }
-
-                // check preconditions
-                let mut pre_condition_matches = self.pre_context_opts.len() == 0;
-                for pre_contex in self.pre_context_opts.iter() {
-                    let pre_context_len = pre_contex.len();
-                    // if the precontext is too long to fit in the string, skip
-                    if string_index < pre_context_len {
-                        continue;
-                    }
-                    let mut is_match: bool = true;
-                    for (pre_context_index, pre_context_seg) in pre_contex.iter().enumerate() {
-                        let i = string_index - pre_context_len + pre_context_index;
-                        let seg = &string[i];
-                        if !seg.matches(pre_context_seg) {
-                            is_match = false;
-                            break;
-                        }
-                    }
-                    if is_match {
-                        pre_condition_matches = true;
-                        break;
-                    }
-                }
-                if !pre_condition_matches {
+            let mut i = 0;
+            while i < s.len() {
+                if !s.is_match(input, i) {
+                    i += 1;
                     continue;
                 }
+                // input matches
 
-                // check postconditions
-                let mut post_condition_matches = self.post_context_opts.len() == 0;
-                for post_contex in self.post_context_opts.iter() {
-                    let post_context_len = post_contex.len();
-                    // if post-context goes beyond the string's segment length
-                    if string_index + input_len + post_context_len > string.len() {
-                        continue;
-                    }
-                    let mut is_match: bool = true;
-                    for (post_context_index, post_context_seg) in post_contex.iter().enumerate() {
-                        let i = string_index + input_len + post_context_index;
-                        let seg = &string[i];
-                        if !seg.matches(post_context_seg) {
-                            is_match = false;
-                            break;
-                        }
-                    }
-                    if is_match {
-                        post_condition_matches = true;
-                        break;
+                println!("{}", input);
+                let mut is_context_match = self.pre_context_opts.len() == 0;
+                for pre in self.pre_context_opts.iter() {
+                    if s.is_match(pre, i-pre.len()) {
+                        is_context_match = true;
                     }
                 }
-                if !post_condition_matches {
-                    continue;
+                if !is_context_match {
+                    break;
                 }
+                // precontext matches
 
+                is_context_match = self.post_context_opts.len() == 0;
+                for post in self.post_context_opts.iter() {
+                    if s.is_match(post, i+input.len()) {
+                        is_context_match = true;
+                    }
+                }
+                if !is_context_match {
+                    break;
+                }
+                // postcontext matches
+                
                 // input, precondition, and postcondition all match, so we apply the change
-                let from_index = string_index;
-                let to_index = string_index+input_len;
+                let from_index = i;
+                let to_index = i+input.len();
 
                 // if input and output are the same length, add the segments of corresponding indices
                 if self.output.len() == to_index - from_index {
@@ -161,11 +129,9 @@ impl PhonologicalRule {
                     }
                 } else {
                     // simple splice
-                    string.drain(from_index..to_index);
-                    for i in 0..self.output.len() {
-                        string.insert(from_index + i, self.output[i].clone());
-                    }
+                    string.replace(from_index..to_index, &self.output);
                 }
+                i += self.output.len();
             }
         }
         return Result::Ok(string);
@@ -215,7 +181,7 @@ fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>, GetheodeError> {
         if opt == ""{
             continue;
         }
-        match SegmentString::from_string(opt) {
+        match SegmentString::new(opt) {
             Ok(seg) => seg_str_opts.push(seg),
             Err(e) => return Err(e)
         }

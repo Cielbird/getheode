@@ -7,17 +7,27 @@ use getheode::phonological_rule::PhonologicalRule;
 use getheode::segment_string::SegmentString;
 
 fn main() {
-    let mut segstr = SegmentString::from_string("estrictus").unwrap();
+    let mut segstr = SegmentString::new_worded("strictus").unwrap();
     println!("{}", segstr); 
 
-    let rule = PhonologicalRule::new("us -> o").unwrap();
+    let rule = PhonologicalRule::new("s -> es / #_").unwrap();
     println!("{}", rule);
-    segstr = rule.apply_rule(&segstr).unwrap();
+    segstr = rule.apply(&segstr).unwrap();
     println!("{}", segstr); 
 
-    let rule = PhonologicalRule::new("ict -> et͡ʃ").unwrap();
+    let rule = PhonologicalRule::new("us -> o / _").unwrap();
     println!("{}", rule);
-    segstr = rule.apply_rule(&segstr).unwrap();
+    segstr = rule.apply(&segstr).unwrap();
+    println!("{}", segstr); 
+
+    let rule = PhonologicalRule::new("ict -> et͡ʃ / _").unwrap();
+    println!("{}", rule);
+    segstr = rule.apply(&segstr).unwrap();
+    println!("{}", segstr);
+
+    let rule = PhonologicalRule::new("o -> / _#").unwrap();
+    println!("{}", rule);
+    segstr = rule.apply(&segstr).unwrap();
     println!("{}", segstr);
 }
 
