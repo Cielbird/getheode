@@ -67,8 +67,8 @@ impl SegmentString {
             Ok(mut seg_str) => {
                 // don't make duplicate boundaries
                 let bounds = &mut seg_str.word_boundaries;
-                if bounds.len() == 0 || bounds[0] != seg_str.segs.len() {
-                    bounds.push(seg_str.segs.len());
+                if bounds.len() == 0 || bounds[0] != 0 {
+                    bounds.insert(0, 0);
                 }
 
                 let last_word_bound = bounds[bounds.len() - 1];
@@ -188,25 +188,26 @@ impl SegmentString {
 
     /// does the pattern match this segment string at the given position
     pub fn is_match(&self, pattern: &SegmentString, pos: usize) -> bool {
+        if pos + pattern.len() > self.len() {
+            return false;
+        }
         for (i, pattern_seg) in pattern.segs.iter().enumerate() {
             let seg = &self[pos + i];
             if !seg.matches(pattern_seg) {
                 return false;
             }
         }
-        return true;
-    }
-
-    /// finds the start positions of matches where this segment string
-    /// matches the other segment.
-    pub fn find_matches(&self, pattern: &SegmentString, start: usize, end:usize) -> Vec<usize> {
-        let mut matches = vec![];
-        for i in start..end {
-            if self.is_match(pattern, i) {
-                matches.push(i);
+        for word_bound in &pattern.word_boundaries {
+            if !self.word_boundaries.contains(&(word_bound+pos)){
+                return false;
             }
         }
-        return matches;
+        for syl_bound in &pattern.syl_boundaries {
+            if !self.syl_boundaries.contains(&(syl_bound+pos)){
+                return false;
+            }
+        }
+        return true;
     }
 
     pub fn push(&mut self, seg: Segment) {
@@ -222,25 +223,45 @@ impl SegmentString {
         }
     }
 
-    pub fn replace<R>(&mut self, range: R, replacement: &SegmentString)
-    where // I have no idea why this works, I just copied Vec::drain.
-        R: RangeBounds<usize> + Clone,
+    pub fn replace(&mut self, start: usize, end: usize, replacement: &SegmentString)
     {
-        self.segs.drain(range.clone());
-        let start;
-        match range.start_bound() {
-            std::ops::Bound::Unbounded => start = 0 as usize,
-            std::ops::Bound::Included(i) => start = *i,
-            std::ops::Bound::Excluded(i) => start = i + 1
-        }
+        self.segs.drain(start..end);
+
         for i in 0..replacement.len() {
             self.segs.insert(start + i, replacement[i].clone());
         }
-        // update trailing word boundary
+        // update any word boundaries that come after
+        let mut i = 0;
         let bounds = &mut self.word_boundaries;
-        if bounds.len() > 0 && bounds[bounds.len()-1] == self.segs.len() {
-            let i = bounds.len()-1;
-            bounds[i] += 1;
+        while i < bounds.len() {
+            if bounds[i] <= start { 
+                i += 1;
+                continue;
+            } else if bounds[i] < end {
+                bounds.remove(i);
+                println!("removed at {}",i);
+            } else {
+                // otherwise, adjust as
+                let offset:isize =  start as isize - end as isize + replacement.len() as isize;
+                bounds[i] = bounds[i].saturating_add_signed(offset);
+                i += 1;
+            }
+        }
+        // update any syl boundaries that come after
+        i = 0;
+        let bounds = &mut self.syl_boundaries;
+        while i < bounds.len() {
+            if bounds[i] <= start { 
+                i += 1;
+                continue;
+            } else if bounds[i] < end {
+                bounds.remove(i);
+                println!("removed at {}",i);
+            } else {
+                // otherwise, adjust as
+                bounds[i] += start + replacement.len() - end;
+                i += 1;
+            }
         }
     }
 
@@ -293,11 +314,15 @@ impl Display for SegmentString {
         for i in 0..(self.segs.len()+1) {
             if word_bounds.len() > 0 && i==word_bounds[0] {
                 word_bounds.remove(0);
-                s.push_str(WORD_BOUND_STR)
+                if i != 0 && i != self.segs.len() {
+                    s.push_str(WORD_BOUND_STR)
+                }
             }
             if syl_bounds.len() > 0 && i==syl_bounds[0] {
                 syl_bounds.remove(0);
-                s.push_str(SYL_BOUND_STR)
+                if i != 0 && i != self.segs.len() {
+                    s.push_str(SYL_BOUND_STR)
+                }
             }
             if i < self.segs.len() {
                 s.push_str(&self.segs[i].to_string());

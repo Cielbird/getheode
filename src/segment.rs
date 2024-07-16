@@ -7,7 +7,7 @@ use regex::Regex;
 use crate::feature::{feature_from_string, Feature, FeatureState, FEATURE_COUNT, FEATURE_NAMES};
 use crate::ipa_segments::IPA_BASES;
 use crate::diacritics::DIACRITICS;
-use crate::classes::CLASSES;
+use crate::natural_classes::NATURAL_CLASSES;
 use crate::segment_string::SegmentString;
 use crate::feature::FeatureState::*;
 use core::fmt;
@@ -59,7 +59,7 @@ impl Segment {
     
     /// construct a segement from an IPA symbol
     fn from_class(class_symbol: &str) -> Result<Self, GetheodeError> {
-        for (sym, seg) in CLASSES {
+        for (sym, seg) in NATURAL_CLASSES {
             if *sym == class_symbol {
                 return Ok(seg.clone());
             }
@@ -220,7 +220,7 @@ impl Display for Segment {
         }
 
         // see if there is a matching class
-        for (sym, seg) in CLASSES {
+        for (sym, seg) in NATURAL_CLASSES {
             if seg == self {
                 return write!(f, "{}", sym);
             }

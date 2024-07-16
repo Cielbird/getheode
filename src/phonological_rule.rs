@@ -81,23 +81,25 @@ impl PhonologicalRule {
         });
     }
 
-    pub fn apply(self, s: &SegmentString) -> Result<SegmentString, String> {
+    pub fn apply(&self, s: &SegmentString) -> Result<SegmentString, String> {
         // string we will be modifying and returning
         let mut string = s.clone();
 
         for input in self.input_opts.iter() {
             let mut i = 0;
-            while i < s.len() {
-                if !s.is_match(input, i) {
+            while i < string.len() {
+                if !string.is_match(input, i) {
                     i += 1;
                     continue;
                 }
                 // input matches
 
-                println!("{}", input);
                 let mut is_context_match = self.pre_context_opts.len() == 0;
                 for pre in self.pre_context_opts.iter() {
-                    if s.is_match(pre, i-pre.len()) {
+                    if i < pre.len() {
+                        continue;
+                    }
+                    if string.is_match(pre, i-pre.len()) {
                         is_context_match = true;
                     }
                 }
@@ -108,7 +110,7 @@ impl PhonologicalRule {
 
                 is_context_match = self.post_context_opts.len() == 0;
                 for post in self.post_context_opts.iter() {
-                    if s.is_match(post, i+input.len()) {
+                    if string.is_match(post, i+input.len()) {
                         is_context_match = true;
                     }
                 }
@@ -129,7 +131,7 @@ impl PhonologicalRule {
                     }
                 } else {
                     // simple splice
-                    string.replace(from_index..to_index, &self.output);
+                    string.replace(from_index, to_index, &self.output);
                 }
                 i += self.output.len();
             }
@@ -182,9 +184,10 @@ fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>, GetheodeError> {
             continue;
         }
         match SegmentString::new(opt) {
-            Ok(seg) => seg_str_opts.push(seg),
+            Ok(seg) => seg_str_opts.push(seg.clone()),
             Err(e) => return Err(e)
         }
+        
     }
     return Ok(seg_str_opts);
 }

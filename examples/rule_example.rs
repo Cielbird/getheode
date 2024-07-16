@@ -10,7 +10,7 @@ fn main() {
     let mut segstr = SegmentString::new_worded("strictus").unwrap();
     println!("{}", segstr); 
 
-    let rule = PhonologicalRule::new("s -> es / #_").unwrap();
+    let rule = PhonologicalRule::new(" -> e / #_s").unwrap();
     println!("{}", rule);
     segstr = rule.apply(&segstr).unwrap();
     println!("{}", segstr); 
@@ -19,6 +19,11 @@ fn main() {
     println!("{}", rule);
     segstr = rule.apply(&segstr).unwrap();
     println!("{}", segstr); 
+
+    let rule = PhonologicalRule::new("i -> e / C_C").unwrap();
+    println!("{}", rule);
+    segstr = rule.apply(&segstr).unwrap();
+    println!("{}", segstr);
 
     let rule = PhonologicalRule::new("ict -> et͡ʃ / _").unwrap();
     println!("{}", rule);
