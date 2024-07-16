@@ -6,47 +6,47 @@ use std::ops::IndexMut;
 use std::ops::RangeBounds;
 
 use crate::errors::GetheodeError;
-use crate::segment::Segment;
 use crate::errors::GetheodeError::SegmentStringParsingError;
+use crate::segment::Segment;
 
 const WORD_BOUND_STR: &str = "#";
 const SYL_BOUND_STR: &str = ".";
 
-/// a versatile struct that represents a sequence of phonological segments, and can 
+/// a versatile struct that represents a sequence of phonological segments, and can
 /// indicate word and sylable boundaries.
-/// can be used to represent words, parts of words, sound patterns, 
+/// can be used to represent words, parts of words, sound patterns,
 /// phonological feature sequences, sentences, and phrases.
 /// some vocabulary:
-/// - complete: a segment string is complete when all of its segments are 
+/// - complete: a segment string is complete when all of its segments are
 ///     complete, ie, entirely defined. ex: words, parts of words, phrases
 /// - incomplete: a segment string is incomplete when one of its segments has
 ///     an undefined feature. useful for matching segments in rules.
 /// - worded: when the segment has word bounaries on its extremeties. ex:
-///     words, phrases, etc. 
-/// 
+///     words, phrases, etc.
+///
 /// for a segment string to be a word, it must be worded and complete.
 #[derive(Debug, Clone)]
 pub struct SegmentString {
     /// segments that exist in this string of segments
     segs: Vec<Segment>,
 
-    /// indices of word boundaries w/ respect to the segment vector. 
-    /// given an element `i` the actual boundary is found between segment at `i` and 
+    /// indices of word boundaries w/ respect to the segment vector.
+    /// given an element `i` the actual boundary is found between segment at `i` and
     /// segment at `i-1`
     /// ordered in ascending order.
     /// the first and last element must be 0 and segs.len() respectively,
     /// representing the start and end of the string.
     word_boundaries: Vec<usize>,
 
-    /// indices of sylable boundaries w/ respect to the segment vector. 
-    /// given an element `i` the actual boundary is found between segment at `i` and 
+    /// indices of sylable boundaries w/ respect to the segment vector.
+    /// given an element `i` the actual boundary is found between segment at `i` and
     /// segment at `i-1`  
     /// ordered in ascending order
-    /// word boundaries are sylable boundaries. to avoid redundancy, 
-    /// sylable boundaries cannot have the same index as a word boundary. 
+    /// word boundaries are sylable boundaries. to avoid redundancy,
+    /// sylable boundaries cannot have the same index as a word boundary.
     /// all sylable boundaries should be considered optional data. there is no objective way of
     /// delimiting sylables, it depends on the language.
-    syl_boundaries: Vec<usize>
+    syl_boundaries: Vec<usize>,
 }
 
 impl SegmentString {
@@ -54,14 +54,15 @@ impl SegmentString {
         return Self {
             segs: Vec::new(),
             word_boundaries: Vec::new(),
-            syl_boundaries: Vec::new()
+            syl_boundaries: Vec::new(),
         };
     }
 
-    /// constructs a segment string from a text string 
+    /// constructs a segment string from a text string
     /// that has word bounds at the beginning and end.
     /// could be one or multiple words.
-    pub fn new_worded(s: &str) -> Result<Self, GetheodeError> {// todo make a error enum for this library 
+    pub fn new_worded(s: &str) -> Result<Self, GetheodeError> {
+        // todo make a error enum for this library
         match Self::new(s) {
             Err(e) => Err(e),
             Ok(mut seg_str) => {
@@ -82,18 +83,18 @@ impl SegmentString {
     }
 
     /// constructs a segment string from a text string.
-    /// - the syntax for a segment is the same as Segment::from_string. 
-    /// - initial and trailing whitespace is ignored. 
-    /// - whitespace between segments is interpreted as a word boundary. 
-    /// - ([unimplemented]) `.` is interpreted as a sylable boundary 
+    /// - the syntax for a segment is the same as Segment::from_string.
+    /// - initial and trailing whitespace is ignored.
+    /// - whitespace between segments is interpreted as a word boundary.
+    /// - ([unimplemented]) `.` is interpreted as a sylable boundary
     /// `put_word_bounds`: if true, word bounderies will be placed at the extemeties of the segment string.
-    pub fn new(s: &str) -> Result<Self, GetheodeError> {// todo make a error enum for this library 
+    pub fn new(s: &str) -> Result<Self, GetheodeError> {
         // seg string we will return
         let mut seg_str = Self {
             segs: Vec::new(),
             // start off with initial word boundary
             word_boundaries: Vec::new(),
-            syl_boundaries: Vec::new()
+            syl_boundaries: Vec::new(),
         };
         let mut start = 0;
         let mut end = 1;
@@ -103,35 +104,43 @@ impl SegmentString {
 
         while start < s.len() {
             // if starting char is a space, interpret as a word bounary and cont
-            if s[start..(start+1)].eq(WORD_BOUND_STR) {
+            if s[start..(start + 1)].eq(WORD_BOUND_STR) {
                 // is the word boundary at the same spot as another sylable boundary?
                 let bounds = &seg_str.syl_boundaries;
                 if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
-                    return Err(GetheodeError::SegmentStringParsingError(s[0..(start+1)].to_string()));
+                    return Err(GetheodeError::SegmentStringParsingError(
+                        s[0..(start + 1)].to_string(),
+                    ));
                 }
                 // word boundary?
                 let bounds = &mut seg_str.word_boundaries;
                 if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
-                    return Err(GetheodeError::SegmentStringParsingError(s[0..(start+1)].to_string()));
+                    return Err(GetheodeError::SegmentStringParsingError(
+                        s[0..(start + 1)].to_string(),
+                    ));
                 }
-                
+
                 bounds.push(seg_str.segs.len());
                 start = start + 1;
                 end = start + 1;
                 continue;
             }
-            
+
             // if starting char is a period `.`, interpret as a sylable bounary and cont
-            if s[start..(start+1)].eq(SYL_BOUND_STR) {
+            if s[start..(start + 1)].eq(SYL_BOUND_STR) {
                 // is the sylable boundary at the same spot as another word boundary?
                 let bounds = &seg_str.word_boundaries;
                 if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
-                    return Err(GetheodeError::SegmentStringParsingError(s[0..(start+1)].to_string()));
+                    return Err(GetheodeError::SegmentStringParsingError(
+                        s[0..(start + 1)].to_string(),
+                    ));
                 }
                 // sylable boundary?
                 let bounds = &mut seg_str.syl_boundaries;
                 if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
-                    return Err(GetheodeError::SegmentStringParsingError(s[0..(start+1)].to_string()));
+                    return Err(GetheodeError::SegmentStringParsingError(
+                        s[0..(start + 1)].to_string(),
+                    ));
                 }
                 bounds.push(seg_str.segs.len());
                 start = start + 1;
@@ -144,17 +153,17 @@ impl SegmentString {
             while end <= s.len() {
                 // don't try to parse when we're in the middle of a utf8 char, not on a boundary
                 // or if the last char in our cur range is a space
-                if !s.is_char_boundary(end){
+                if !s.is_char_boundary(end) {
                     end += 1;
                     continue;
-                } 
+                }
                 if let Ok(seg) = Segment::from_string(&s[start..end]) {
                     seg_from_substr = Some(seg);
                     best_end = end;
                 }
                 end += 1;
             }
-            
+
             // if we found a substring that forms a segment, add it to the segment string
             if let Some(seg) = seg_from_substr {
                 seg_str.push(seg);
@@ -168,13 +177,13 @@ impl SegmentString {
 
         return Ok(seg_str);
     }
-    
+
     pub fn from_segments(segments: Vec<Segment>) -> Self {
         return Self {
-            segs: segments, 
+            segs: segments,
             word_boundaries: Vec::new(),
-            syl_boundaries: Vec::new()
-        }
+            syl_boundaries: Vec::new(),
+        };
     }
 
     pub fn is_complete(&self) -> bool {
@@ -198,12 +207,12 @@ impl SegmentString {
             }
         }
         for word_bound in &pattern.word_boundaries {
-            if !self.word_boundaries.contains(&(word_bound+pos)){
+            if !self.word_boundaries.contains(&(word_bound + pos)) {
                 return false;
             }
         }
         for syl_bound in &pattern.syl_boundaries {
-            if !self.syl_boundaries.contains(&(syl_bound+pos)){
+            if !self.syl_boundaries.contains(&(syl_bound + pos)) {
                 return false;
             }
         }
@@ -217,14 +226,13 @@ impl SegmentString {
         }
         // update trailing word boundary
         let bounds = &mut self.word_boundaries;
-        if bounds.len() > 0 && bounds[bounds.len()-1] == self.segs.len() {
-            let i = bounds.len()-1;
+        if bounds.len() > 0 && bounds[bounds.len() - 1] == self.segs.len() {
+            let i = bounds.len() - 1;
             bounds[i] += 1;
         }
     }
 
-    pub fn replace(&mut self, start: usize, end: usize, replacement: &SegmentString)
-    {
+    pub fn replace(&mut self, start: usize, end: usize, replacement: &SegmentString) {
         self.segs.drain(start..end);
 
         for i in 0..replacement.len() {
@@ -234,15 +242,15 @@ impl SegmentString {
         let mut i = 0;
         let bounds = &mut self.word_boundaries;
         while i < bounds.len() {
-            if bounds[i] <= start { 
+            if bounds[i] <= start {
                 i += 1;
                 continue;
             } else if bounds[i] < end {
                 bounds.remove(i);
-                println!("removed at {}",i);
+                println!("removed at {}", i);
             } else {
                 // otherwise, adjust as
-                let offset:isize =  start as isize - end as isize + replacement.len() as isize;
+                let offset: isize = start as isize - end as isize + replacement.len() as isize;
                 bounds[i] = bounds[i].saturating_add_signed(offset);
                 i += 1;
             }
@@ -251,12 +259,12 @@ impl SegmentString {
         i = 0;
         let bounds = &mut self.syl_boundaries;
         while i < bounds.len() {
-            if bounds[i] <= start { 
+            if bounds[i] <= start {
                 i += 1;
                 continue;
             } else if bounds[i] < end {
                 bounds.remove(i);
-                println!("removed at {}",i);
+                println!("removed at {}", i);
             } else {
                 // otherwise, adjust as
                 bounds[i] += start + replacement.len() - end;
@@ -265,7 +273,7 @@ impl SegmentString {
         }
     }
 
-    pub fn len(&self) -> usize{
+    pub fn len(&self) -> usize {
         return self.segs.len();
     }
 }
@@ -281,7 +289,7 @@ impl Deref for SegmentString {
 
 impl Index<usize> for SegmentString {
     type Output = Segment;
-    /// for easy indexing 
+    /// for easy indexing
     fn index(&self, i: usize) -> &Self::Output {
         return &self.segs[i];
     }
@@ -295,7 +303,7 @@ impl IndexMut<usize> for SegmentString {
 }
 
 impl FromIterator<Segment> for SegmentString {
-    fn from_iter<I: IntoIterator<Item = Segment>>(iter : I) -> Self {
+    fn from_iter<I: IntoIterator<Item = Segment>>(iter: I) -> Self {
         let mut string = SegmentString::empty();
         for item in iter {
             string.push(item);
@@ -311,14 +319,14 @@ impl Display for SegmentString {
         // we will remove the elements as we go
         let mut word_bounds = self.word_boundaries.clone();
         let mut syl_bounds = self.syl_boundaries.clone();
-        for i in 0..(self.segs.len()+1) {
-            if word_bounds.len() > 0 && i==word_bounds[0] {
+        for i in 0..(self.segs.len() + 1) {
+            if word_bounds.len() > 0 && i == word_bounds[0] {
                 word_bounds.remove(0);
                 if i != 0 && i != self.segs.len() {
                     s.push_str(WORD_BOUND_STR)
                 }
             }
-            if syl_bounds.len() > 0 && i==syl_bounds[0] {
+            if syl_bounds.len() > 0 && i == syl_bounds[0] {
                 syl_bounds.remove(0);
                 if i != 0 && i != self.segs.len() {
                     s.push_str(SYL_BOUND_STR)

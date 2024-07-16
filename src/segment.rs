@@ -1,22 +1,24 @@
 use regex::Regex;
 
+use crate::diacritics::DIACRITICS;
+use crate::errors::GetheodeError;
+use crate::feature::FeatureState::*;
 /// represents a set of phonological features
 /// can represent either a complete phonological segment (if all features are defined)
 /// or a set of features that can be used to match or modify other segments
-
 use crate::feature::{feature_from_string, Feature, FeatureState, FEATURE_COUNT, FEATURE_NAMES};
 use crate::ipa_segments::IPA_BASES;
-use crate::diacritics::DIACRITICS;
 use crate::natural_classes::NATURAL_CLASSES;
 use crate::segment_string::SegmentString;
-use crate::feature::FeatureState::*;
 use core::fmt;
-use std::{fmt::Display, ops::{Add, Sub}};
-use crate::errors::GetheodeError;
+use std::{
+    fmt::Display,
+    ops::{Add, Sub},
+};
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Segment {
-    features: [FeatureState; FEATURE_COUNT as usize]
+    features: [FeatureState; FEATURE_COUNT as usize],
 }
 
 impl Segment {
@@ -27,10 +29,12 @@ impl Segment {
 
     /// construct a segement with all features undefied
     pub const fn new_undef() -> Self {
-        return Segment { features: [FeatureState::UNDEF; FEATURE_COUNT as usize] };
+        return Segment {
+            features: [FeatureState::UNDEF; FEATURE_COUNT as usize],
+        };
     }
 
-    /// return a segment from either an ipa character 
+    /// return a segment from either an ipa character
     /// or a feature list in brackets ex. [+voi-delrel]
     /// - input string is trimmed of whitespace
     pub fn from_string(string: &str) -> Result<Self, GetheodeError> {
@@ -56,7 +60,7 @@ impl Segment {
         }
         return Err(GetheodeError::IPASymbolParsingError(ipa_symbol.to_string()));
     }
-    
+
     /// construct a segement from an IPA symbol
     fn from_class(class_symbol: &str) -> Result<Self, GetheodeError> {
         for (sym, seg) in NATURAL_CLASSES {
@@ -64,7 +68,9 @@ impl Segment {
                 return Ok(seg.clone());
             }
         }
-        return Err(GetheodeError::IPASymbolParsingError(class_symbol.to_string()));
+        return Err(GetheodeError::IPASymbolParsingError(
+            class_symbol.to_string(),
+        ));
     }
 
     /// construct a segement from a list of features in brackets ex. [+voi-delrel]
@@ -86,12 +92,16 @@ impl Segment {
                     name_match = capts.get(2).unwrap();
                     name = &inner[name_match.range()];
                 }
-                None => { return Err(GetheodeError::SegmentParsingError(inner.to_string())); }
+                None => {
+                    return Err(GetheodeError::SegmentParsingError(inner.to_string()));
+                }
             }
             let feature;
             match feature_from_string(name) {
                 Ok(f) => feature = f,
-                Err(e) => { return Err(e); },
+                Err(e) => {
+                    return Err(e);
+                }
             }
             // set feature
             if sign == '+' {
@@ -111,8 +121,8 @@ impl Segment {
     }
 
     /// returns true if the segment is complete, ie, completely defined for all features.
-    /// if false, this segment is a just set of features, 
-    /// usually used for matching or modifying other segments 
+    /// if false, this segment is a just set of features,
+    /// usually used for matching or modifying other segments
     pub fn is_complete(&self) -> bool {
         for i in 0..(FEATURE_COUNT as usize) {
             if self.features[i] == UNDEF {
@@ -123,11 +133,11 @@ impl Segment {
     }
 
     /// returns true if this segment matches `other`'s defined features.  
-    /// to return true: 
+    /// to return true:
     /// - if a feature is defined in `other`, it must be defined in this segment
     /// - if a feature is `POS` or `NEG` in `other`, it must be identical in this segment
     /// - if a features is `NA` in `other`, it can be `POS`, `NEG`, or `NA` in this segment
-    /// 
+    ///
     /// otherwise, returns false.
     pub fn matches(&self, other: &Segment) -> bool {
         for i in 0..(FEATURE_COUNT as usize) {
@@ -142,7 +152,7 @@ impl Segment {
         return true;
     }
 
-    /// returns the number of features that would have to change 
+    /// returns the number of features that would have to change
     /// to make the lhs segment equal to the rhs one
     fn dist(&self, other: &Segment) -> u8 {
         let mut dist = 0;
@@ -158,11 +168,11 @@ impl Segment {
 impl Add<Segment> for Segment {
     type Output = Self;
 
-    /// adds the features of the rhs segment to the lhs segment. 
+    /// adds the features of the rhs segment to the lhs segment.
     /// if the rhs segment is complete (completely defined), the result is the rhs.
     /// if the feature is defined in the rhs, it will be overwritten in result,
     /// otherwise, the lsh's feature value will be used.
-    fn add (self, s2: Self) -> Self {
+    fn add(self, s2: Self) -> Self {
         let mut result = self.clone();
         for i in 0..(FEATURE_COUNT as usize) {
             if s2.features[i] != UNDEF {
@@ -175,9 +185,9 @@ impl Add<Segment> for Segment {
 
 impl Add<Feature> for Segment {
     type Output = Self;
-    
-    /// adds the features to the segment 
-    fn add (self, feature: Feature) -> Self {
+
+    /// adds the features to the segment
+    fn add(self, feature: Feature) -> Self {
         let mut result = self.clone();
         result.features[feature as usize] = POS;
         return result;
@@ -186,9 +196,9 @@ impl Add<Feature> for Segment {
 
 impl Sub<Feature> for Segment {
     type Output = Self;
-    
-    // removes the feature from the segment 
-    fn sub (self, feature: Feature) -> Self {
+
+    // removes the feature from the segment
+    fn sub(self, feature: Feature) -> Self {
         let mut result = self.clone();
         result.features[feature as usize] = NEG;
         return result;
@@ -197,17 +207,17 @@ impl Sub<Feature> for Segment {
 
 /// returns the segment's defined non-NA features, concatenated
 impl Display for Segment {
-    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // see if there is a matching ipa symbol
         for (sym, seg) in IPA_BASES {
             if seg == self {
                 return write!(f, "{}", sym);
             }
-            // WARNING this tries all possible ipa symbols with all possible diacritics. 
+            // WARNING this tries all possible ipa symbols with all possible diacritics.
             // not only is it limited to only one diacritic, but it is extremely slow, in theory.
             // for now, there are only a handfull of diacritics. the algorithm to do this well and
             // fast is too much for me to think of right now; a fun puzzle for later.
-            // TODO tackle this when performance becomes pertinent, or when i need multiple 
+            // TODO tackle this when performance becomes pertinent, or when i need multiple
             // diacritics
             for (d, d_seg) in DIACRITICS {
                 // TODO figure out if cloning these is really what i'm supposed to do
@@ -235,7 +245,7 @@ impl Display for Segment {
                 result = result + "+" + feature;
             } else if self.features[i] == FeatureState::NEG {
                 result = result + "-" + feature;
-            } 
+            }
         }
         return write!(f, "{}", result + "]");
     }

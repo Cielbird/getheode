@@ -1,9 +1,10 @@
+use crate::feature::FeatureState::{NA, NEG, POS};
 use crate::segment::Segment;
-use crate::feature::FeatureState::{POS, NEG, NA};
 
 // syl,stress,long,cons,son,cont,delrel,approx,tap,trill,nasal,voi,spgl,congl,lab,round,labdent,cor,ant,dist,strident,lateral,dor,high,low,front,back,tense
 
 // segments that represent common ipa symbols
+#[rustfmt::skip]
 pub const IPA_BASES: &[(&str, Segment)] = &[
 	("ɒ", Segment::from_features(
 		[POS,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,POS,NA])
@@ -201,6 +202,9 @@ pub const IPA_BASES: &[(&str, Segment)] = &[
 		[NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
 	("ɡ", Segment::from_features(
+		[NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
+	),
+	("g", Segment::from_features(
 		[NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
 	("ɡ̠", Segment::from_features(

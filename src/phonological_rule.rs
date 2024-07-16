@@ -1,6 +1,6 @@
 use crate::{errors::GetheodeError, segment_string::SegmentString};
-use regex::Regex;
 use core::fmt;
+use regex::Regex;
 use std::fmt::Display;
 
 #[derive(Debug)]
@@ -8,40 +8,48 @@ pub struct PhonologicalRule {
     pub input_opts: Vec<SegmentString>,
     pub output: SegmentString,
     pub pre_context_opts: Vec<SegmentString>,
-    pub post_context_opts: Vec<SegmentString>
+    pub post_context_opts: Vec<SegmentString>,
 }
 
 impl PhonologicalRule {
     pub fn new(rule_str: &str) -> Result<Self, GetheodeError> {
-        let input_str: String;
-        let output_str: String;
-        let pre_context_str: String;
-        let post_context_str: String;
+        let input_str: &str;
+        let output_str: &str;
+        let pre_context_str: &str;
+        let post_context_str: &str;
         // parse rule for input, output and contexts
-        {
-            let p = r"\s*(.+)\s*->\s*([^\/]+)\s*(?:\/\s*([^_]*)\s*_\s*([^_]*))?";
-            let re = Regex::new(p).unwrap();
-            let mut iter = re.captures_iter(rule_str);
-            let first = iter.next();
-            if first.is_none() {
-                return Err(GetheodeError::PhonologicalRuleParsingError(rule_str.to_string()));
-            }
-            // there should not be more than one capture
-            if iter.next().is_some() {
-                return Err(GetheodeError::PhonologicalRuleParsingError(rule_str.to_string()));
-            }
-            let capts = first.unwrap();
-            input_str = capts[1].trim().to_string();
-            output_str = capts[2].trim().to_string();
-            pre_context_str = capts[3].trim().to_string();
-            post_context_str = capts[4].trim().to_string();
+        let p = r"\s*(.+)\s*->\s*([^\/]+)\s*(?:\/\s*([^_]*)\s*_\s*([^_]*))?";
+        let re = Regex::new(p).unwrap();
+        let mut iter = re.captures_iter(rule_str);
+        let first = iter.next();
+        if first.is_none() {
+            return Err(GetheodeError::PhonologicalRuleParsingError(
+                rule_str.to_string(),
+            ));
+        }
+        // there should not be more than one capture
+        if iter.next().is_some() {
+            return Err(GetheodeError::PhonologicalRuleParsingError(
+                rule_str.to_string(),
+            ));
+        }
+        let capts = first.unwrap();
+        input_str = capts[1].trim();
+        output_str = capts[2].trim();
+        // if there is context
+        if let Some(x) = capts.get(3) {
+            pre_context_str = capts[3].trim();
+            post_context_str = capts[4].trim();
+        } else {
+            pre_context_str = "";
+            post_context_str = "";
         }
 
         // parse input
         let mut input_opts;
         match parse_seg_string_opts(&input_str) {
             Ok(seg_str_opts) => input_opts = seg_str_opts,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         }
         // input should never have no options
         if input_opts.len() == 0 {
@@ -52,24 +60,24 @@ impl PhonologicalRule {
         let output;
         match SegmentString::new(&output_str) {
             Ok(seg_str) => output = seg_str,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         }
 
         // parse pre-context
         let mut pre_context_opts = Vec::new();
-        if pre_context_str != ""{
+        if pre_context_str != "" {
             match parse_seg_string_opts(&pre_context_str) {
                 Ok(seg_str_opts) => pre_context_opts = seg_str_opts,
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             }
         }
 
         // parse post-context
         let mut post_context_opts = Vec::new();
-        if post_context_str != ""{
+        if post_context_str != "" {
             match parse_seg_string_opts(&post_context_str) {
                 Ok(seg_str_opts) => post_context_opts = seg_str_opts,
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             }
         }
 
@@ -77,7 +85,7 @@ impl PhonologicalRule {
             input_opts: input_opts,
             output: output,
             pre_context_opts: pre_context_opts,
-            post_context_opts: post_context_opts
+            post_context_opts: post_context_opts,
         });
     }
 
@@ -99,7 +107,7 @@ impl PhonologicalRule {
                     if i < pre.len() {
                         continue;
                     }
-                    if string.is_match(pre, i-pre.len()) {
+                    if string.is_match(pre, i - pre.len()) {
                         is_context_match = true;
                     }
                 }
@@ -110,7 +118,7 @@ impl PhonologicalRule {
 
                 is_context_match = self.post_context_opts.len() == 0;
                 for post in self.post_context_opts.iter() {
-                    if string.is_match(post, i+input.len()) {
+                    if string.is_match(post, i + input.len()) {
                         is_context_match = true;
                     }
                 }
@@ -118,15 +126,15 @@ impl PhonologicalRule {
                     break;
                 }
                 // postcontext matches
-                
+
                 // input, precondition, and postcondition all match, so we apply the change
                 let from_index = i;
-                let to_index = i+input.len();
+                let to_index = i + input.len();
 
                 // if input and output are the same length, add the segments of corresponding indices
                 if self.output.len() == to_index - from_index {
                     for i in from_index..to_index {
-                        let new_seg = string[i].clone() + self.output[i-from_index].clone();
+                        let new_seg = string[i].clone() + self.output[i - from_index].clone();
                         string[i] = new_seg;
                     }
                 } else {
@@ -159,7 +167,11 @@ impl Display for PhonologicalRule {
             // format postcontext
             let post_context_str = format_seg_string_opts(&self.post_context_opts);
 
-            return write!(f, "{} -> {} / {}_{}", input_str, output_str, pre_context_str, post_context_str);
+            return write!(
+                f,
+                "{} -> {} / {}_{}",
+                input_str, output_str, pre_context_str, post_context_str
+            );
         }
     }
 }
@@ -180,14 +192,13 @@ fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>, GetheodeError> {
     }
     for opt in opts {
         let opt = opt.trim();
-        if opt == ""{
+        if opt == "" {
             continue;
         }
         match SegmentString::new(opt) {
             Ok(seg) => seg_str_opts.push(seg.clone()),
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         }
-        
     }
     return Ok(seg_str_opts);
 }

@@ -8,13 +8,13 @@ mod tests {
 
     #[test]
     fn test_segment_string_from_string() {
-        // test segment parsing 
+        // test segment parsing
         SegmentString::new("aski").unwrap();
         SegmentString::new("as[-voi]i").unwrap();
         SegmentString::new("[]").unwrap();
-        
+
         // test parsing of multi-char symbols
-        assert_eq!(&SegmentString::new("t͡ʃa").unwrap().to_string(),"t͡ʃa");
+        assert_eq!(&SegmentString::new("t͡ʃa").unwrap().to_string(), "t͡ʃa");
 
         // test word/syl bounds
         SegmentString::new("as ki").unwrap();
@@ -29,13 +29,20 @@ mod tests {
         // test simple format
         let s = "aski";
         assert_eq!(SegmentString::new(s).unwrap().to_string(), s.to_owned());
-        assert_eq!(SegmentString::new("as[-voi]i").unwrap().to_string(),  "as[-voi]i".to_owned());
+        assert_eq!(
+            SegmentString::new("as[-voi]i").unwrap().to_string(),
+            "as[-voi]i".to_owned()
+        );
         let s = "[]";
         assert_eq!(SegmentString::new(s).unwrap().to_string(), s.to_owned());
         // test format boundaries
-        let s = "as#ki#";
-        assert_eq!(SegmentString::new(s).unwrap().to_string(), s.to_owned());
-        let s = ".as.ki";
-        assert_eq!(SegmentString::new(s).unwrap().to_string(), s.to_owned());
+        assert_eq!(
+            SegmentString::new("as#ki#").unwrap().to_string(),
+            "as#ki".to_owned()
+        );
+        assert_eq!(
+            SegmentString::new(".as.ki").unwrap().to_string(),
+            "as.ki".to_owned()
+        );
     }
 }
