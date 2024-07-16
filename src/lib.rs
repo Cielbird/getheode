@@ -6,3 +6,4 @@ pub mod natural_classes;
 pub mod phonological_rule;
 pub mod segment;
 pub mod segment_string;
+pub mod representation;

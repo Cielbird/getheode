@@ -12,6 +12,8 @@ pub enum GetheodeError {
     SegmentStringParsingError(String),
     /// param is the erronious string
     PhonologicalRuleParsingError(String),
+    
+    RepresentationParsingError(String),
 }
 
 impl fmt::Display for GetheodeError {
@@ -39,6 +41,9 @@ impl fmt::Display for GetheodeError {
             }
             GetheodeError::PhonologicalRuleParsingError(s) => {
                 write!(f, "Unable to parse the following string for a rule: {}", s)
+            }
+            GetheodeError::RepresentationParsingError(s) => {
+                write!(f, "representation parsing error: {}", s)
             }
         }
     }

@@ -1,0 +1,11 @@
+strictus    // estrecho en esp.
+partim      // parte en esp.
+per         // per en esp.
+miraculum   // miraculo en esp.
+syllabatim  
+punctatim
+ergo
+secus
+punctatim
+bis
+literatim

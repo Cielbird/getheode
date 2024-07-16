@@ -9,8 +9,24 @@ use getheode;
 use getheode::phonological_rule::PhonologicalRule;
 use getheode::segment_string::SegmentString;
 
-fn apply_rules_cli(input_file: &str, rules_file: &str) {
+fn apply_rules_cli(input_file: &str, input_repr_file: Option<&str>, rules_file: &str, rules_repr_file: Option<&str>) {
 
+    let input_rep;
+    if let Some(f) = input_repr_file {
+        match fs::read_to_string(input_file) {
+            Ok(x) =>  {
+                for (i, segs_str) in x.split("\n").enumerate() {
+                    if segs_str.trim() == "" {
+                        continue;
+                    }
+
+                }
+            },
+            Err(_) => { println!("rules file {input_file} is not valid") }
+        }
+    } else {
+        input_rep = Vec::new();
+    }
 
     let mut inputs = Vec::new();
     match fs::read_to_string(input_file) {
@@ -19,9 +35,17 @@ fn apply_rules_cli(input_file: &str, rules_file: &str) {
                 if segs_str.trim() == "" {
                     continue;
                 }
-                match SegmentString::new_worded(segs_str.trim()) {
-                    Ok(string) => inputs.push(string),
-                    Err(e) => println!("invalid input at line {}: {}",i+1,e),
+                if let Some(f) = input_repr_file {
+                    let representation = Representation::new()
+                    match SegmentString::from_repr(segs_str.trim(), representation) {
+                        Ok(string) => inputs.push(string),
+                        Err(e) => println!("invalid input at line {}: {}",i+1,e),
+                    }
+                } else {
+                    match SegmentString::new_worded(segs_str.trim()) {
+                        Ok(string) => inputs.push(string),
+                        Err(e) => println!("invalid input at line {}: {}",i+1,e),
+                    }
                 }
             }
         },
