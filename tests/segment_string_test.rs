@@ -19,9 +19,6 @@ mod tests {
         // test word/syl bounds
         SegmentString::new("as ki").unwrap();
         SegmentString::new("as.ki").unwrap();
-
-        // test new_worded
-        SegmentString::new_worded("as.ki").unwrap();
     }
 
     #[test]
@@ -38,11 +35,11 @@ mod tests {
         // test format boundaries
         assert_eq!(
             SegmentString::new("as#ki#").unwrap().to_string(),
-            "as#ki".to_owned()
+            "as#ki#".to_owned()
         );
         assert_eq!(
             SegmentString::new(".as.ki").unwrap().to_string(),
-            "as.ki".to_owned()
+            ".as.ki".to_owned()
         );
     }
 }

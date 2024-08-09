@@ -62,7 +62,7 @@ pub fn feature_from_string(string: &str) -> Result<Feature, GetheodeError> {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub enum FeatureState {
     #[default]
     UNDEF,  // undefined for this segment. this indicates the segment is incomplete.

@@ -28,4 +28,18 @@ mod tests {
             expected_output
         )
     }
+
+    #[test]
+    fn test_rule_apply_word_bound() {
+        let rule_str = "s -> es /#_".to_string();
+        let input = "#strasa#".to_string();
+        let expected_output = "#estrasa#".to_string();
+        let rule = PhonologicalRule::new(&rule_str).unwrap();
+        assert_eq!(
+            rule.apply(&SegmentString::new(&input).unwrap())
+                .unwrap()
+                .to_string(),
+            expected_output
+        )
+    }
 }

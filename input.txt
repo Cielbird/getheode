@@ -1,7 +1,8 @@
 strictus    // estrecho en esp.
 partim      // parte en esp.
 per         // per en esp.
-miraculum   // miraculo en esp.
+miracu̅lum   // miraculo en esp.
+// example
 syllabatim  
 punctatim
 ergo

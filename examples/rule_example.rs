@@ -7,7 +7,7 @@ use getheode::phonological_rule::PhonologicalRule;
 use getheode::segment_string::SegmentString;
 
 fn main() {
-    let mut segstr = SegmentString::new_worded("strictus").unwrap();
+    let mut segstr = SegmentString::new("#strictus#").unwrap();
     println!("{}", segstr);
 
     let rule = PhonologicalRule::new("s -> es / #_").unwrap();

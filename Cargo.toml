@@ -2,10 +2,12 @@
 name = "getheode"
 version = "0.1.0"
 edition = "2021"
+default-run = "getheode"
 
 [dependencies]
 clap = "4.5.9"
 regex = "1"
+unicode-normalization = "0.1.20"
 
 [[bin]]
 name = "getheode"

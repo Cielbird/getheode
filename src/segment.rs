@@ -1,4 +1,5 @@
 use regex::Regex;
+use unicode_normalization::UnicodeNormalization;
 
 use crate::diacritics::DIACRITICS;
 use crate::errors::GetheodeError;
@@ -11,12 +12,13 @@ use crate::ipa_segments::IPA_BASES;
 use crate::natural_classes::NATURAL_CLASSES;
 use crate::segment_string::SegmentString;
 use core::fmt;
+use std::iter;
 use std::{
     fmt::Display,
     ops::{Add, Sub},
 };
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, Eq, Hash, PartialEq)]
 pub struct Segment {
     features: [FeatureState; FEATURE_COUNT as usize],
 }
@@ -52,18 +54,67 @@ impl Segment {
     }
 
     /// construct a segement from an IPA symbol
+    /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
     fn from_ipa(ipa_symbol: &str) -> Result<Self, GetheodeError> {
-        for (sym, seg) in IPA_BASES {
-            if *sym == ipa_symbol {
-                return Ok(seg.clone());
+        for (symbol, seg) in IPA_BASES {
+            // do the first utf8 code points match the first of our symbol?
+            let mut ipa_sym = ipa_symbol.nfd();
+            let mut sym = symbol.nfd();
+            let matches = sym
+                .all(|prefix_item| 
+                    ipa_sym.next()
+                            .map_or(false, |item| item == prefix_item));
+            if !matches {
+                // try next symbol
+                continue;
+            }
+            // collect remaining (unchecked) characters
+            let remaining = &ipa_sym.collect::<String>();
+            match Self::add_diacritics(remaining, seg) {
+                Ok(segment) => {
+                    return Ok(segment);
+                },
+                Err(e) => continue
             }
         }
-        return Err(GetheodeError::IPASymbolParsingError(ipa_symbol.to_string()));
+        let msg = format!("The symbol {} could not be parsed", ipa_symbol);
+        return Err(GetheodeError::IPASymbolParsingError(msg))
+    }
+
+    /// recursive function to add the diacritics in a string to a segment
+    fn add_diacritics(remaining_chars: &str, cur_segment: &Segment) -> Result<Self, GetheodeError>{
+        if remaining_chars.len() == 0 {
+            return Ok(cur_segment.clone());
+        }
+        for (symbol, diac) in DIACRITICS {
+            // do the first utf8 code points match the first of our symbol?
+            let mut ipa_sym = remaining_chars.nfd();
+            let mut sym = symbol.nfd();
+            let matches = sym
+                .all(|prefix_item| 
+                    ipa_sym.next()
+                            .map_or(false, |item| item == prefix_item));
+            if !matches {
+                // try next symbol
+                continue;
+            }
+            // collect remaining (unchecked) characters
+            let remaining = &ipa_sym.collect::<String>();
+            let new_seg = cur_segment.clone() + diac.clone();
+            match Self::add_diacritics(remaining, &new_seg) {
+                Ok(segment) => {
+                    return Ok(segment);
+                },
+                Err(e) => continue
+            }
+        }
+        let msg = format!("The symbol {} could not be parsed", remaining_chars);
+        return Err(GetheodeError::IPASymbolParsingError(msg))
     }
 
     /// construct a segement from an IPA symbol
     fn from_class(class_symbol: &str) -> Result<Self, GetheodeError> {
-        for (sym, seg) in NATURAL_CLASSES {
+        for (sym, seg) in NATURAL_CLASSES{
             if *sym == class_symbol {
                 return Ok(seg.clone());
             }
@@ -219,6 +270,7 @@ impl Display for Segment {
             // fast is too much for me to think of right now; a fun puzzle for later.
             // TODO tackle this when performance becomes pertinent, or when i need multiple
             // diacritics
+            // TODO this can be done recursively
             for (d, d_seg) in DIACRITICS {
                 // TODO figure out if cloning these is really what i'm supposed to do
                 if (seg.clone() + d_seg.clone()) == *self {

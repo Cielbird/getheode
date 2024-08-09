@@ -35,7 +35,7 @@ impl fmt::Display for GetheodeError {
             GetheodeError::SegmentStringParsingError(s) => {
                 write!(
                     f,
-                    "Unable to parse the following string for a SegmentString: {}",
+                    "Unable to parse the following string for a SegmentString:\n{}",
                     s
                 )
             }
