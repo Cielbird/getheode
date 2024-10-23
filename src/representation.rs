@@ -1,11 +1,11 @@
 // serves as a struct to represent complete segment strings
 
-use std::fs;
-
 use regex::Regex;
+use unicode_normalization::UnicodeNormalization;
 
-use crate::{errors::GetheodeError, segment::Segment, segment_string::{SegmentString, SegmentStringSlice}};
+use crate::{errors::GetheodeError, segment_string::{SegmentString, SegmentStringSlice}};
 
+/// a struct that maps segment strings to their string representations
 pub struct Representation {
     symbols: Vec<(SegmentString, String)>
 }
@@ -17,6 +17,8 @@ impl Representation {
         };
     }
 
+    /// constructs a Representation from the provided text, 
+    /// following the standard string format (see readme)
     pub fn from_str(source: &str) -> Result<Self, GetheodeError> {
         let mut symbols = Vec::new();
         for (i, line) in source.split("\n").enumerate() {
@@ -58,6 +60,7 @@ impl Representation {
         });
     }
 
+    /// returns the string representation of the provided SegmentString 
     pub fn to_rep(&self, string: &SegmentString) -> Result<String, GetheodeError> {
         // we will try to the symbols in a string based on the symbol library
         // provided in the representation struct.
@@ -117,8 +120,7 @@ impl Representation {
             return Ok(result);
         }
         // regularize the representation: avoid utf8 shenanegans
-        // TODO reenable
-        //let representation = &representation.nfd().collect::<String>();
+        let representation = &representation.nfd().collect::<String>();
 
         let rep_len =representation.len();
         for end in (1..=rep_len).rev() {
@@ -131,8 +133,7 @@ impl Representation {
             }
             for (seg, sym) in &self.symbols {
                 // regularize the symbol string: no utf8 shenanegans
-                // TODO reenable
-                //let sym = &sym.nfd().collect::<String>();
+                let sym = &sym.nfd().collect::<String>();
                 if s.to_owned() == *sym {
                     seg_string_vec.push(seg.clone());
                     match self.from_rep_rec(&representation[end..rep_len], seg_string_vec) {

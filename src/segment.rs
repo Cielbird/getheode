@@ -4,20 +4,20 @@ use unicode_normalization::UnicodeNormalization;
 use crate::diacritics::DIACRITICS;
 use crate::errors::GetheodeError;
 use crate::feature::FeatureState::*;
-/// represents a set of phonological features
-/// can represent either a complete phonological segment (if all features are defined)
-/// or a set of features that can be used to match or modify other segments
 use crate::feature::{feature_from_string, Feature, FeatureState, FEATURE_COUNT, FEATURE_NAMES};
 use crate::ipa_segments::IPA_BASES;
 use crate::natural_classes::NATURAL_CLASSES;
 use crate::segment_string::SegmentString;
 use core::fmt;
-use std::iter;
 use std::{
     fmt::Display,
     ops::{Add, Sub},
 };
 
+/// represents a set of phonological features
+/// 
+/// can represent either a complete phonological segment (if all features are defined)
+/// or a set of features that can be used to match or modify other segments
 #[derive(Debug, Clone, Default, Eq, Hash, PartialEq)]
 pub struct Segment {
     features: [FeatureState; FEATURE_COUNT as usize],
@@ -237,7 +237,7 @@ impl Add<Segment> for Segment {
 impl Add<Feature> for Segment {
     type Output = Self;
 
-    /// adds the features to the segment
+    /// adds the feature to the segment; sets the feature to `POS`
     fn add(self, feature: Feature) -> Self {
         let mut result = self.clone();
         result.features[feature as usize] = POS;
@@ -248,7 +248,7 @@ impl Add<Feature> for Segment {
 impl Sub<Feature> for Segment {
     type Output = Self;
 
-    // removes the feature from the segment
+    // removes the feature from the segment: sets the feature to `NEG`
     fn sub(self, feature: Feature) -> Self {
         let mut result = self.clone();
         result.features[feature as usize] = NEG;

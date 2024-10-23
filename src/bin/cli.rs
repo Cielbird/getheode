@@ -1,6 +1,5 @@
 // this is the cli tool to interact with the getheode library most directly
 
-use std::env;
 use std::fs;
 
 use clap::{Arg, ArgAction, Command};
@@ -9,6 +8,7 @@ use getheode;
 use getheode::phonological_rule::PhonologicalRule;
 use getheode::segment_string::SegmentString;
 use getheode::representation::Representation;
+use getheode::GETHEODE_VERSION;
 
 fn remove_comments(line: &str) -> &str {
     return line.split("//").next().unwrap_or("").trim_end();
@@ -109,7 +109,7 @@ fn apply_rules_cli(input_file: &str, input_repr_file: Option<&str>, rules_file: 
 fn cli() -> Command {
     Command::new("getheode")
         .about("getheode command line tool")
-        .version("0.1.0") // TODO link to actual version
+        .version(GETHEODE_VERSION)
         .subcommand_required(true)
         .arg_required_else_help(true)
         // new subcommand

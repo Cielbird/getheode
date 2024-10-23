@@ -12,6 +12,7 @@ const SYL_BOUND_STR: &str = ".";
 
 /// a versatile struct that represents a sequence of phonological segments, and can
 /// indicate word and sylable boundaries.
+/// 
 /// can be used to represent words, parts of words, sound patterns,
 /// phonological feature sequences, sentences, and phrases.
 /// some vocabulary:
@@ -60,7 +61,7 @@ impl SegmentString {
     /// - the syntax for a segment is the same as Segment::from_string.
     /// - initial and trailing whitespace is ignored.
     /// - whitespace between segments is interpreted as a word boundary.
-    /// - ([unimplemented]) `.` is interpreted as a sylable boundary
+    /// - ([unimplemented]) `.` is interpreted as a sylable boundary... TODO check if really unimplemented
     /// `put_word_bounds`: if true, word bounderies will be placed at the extemeties of the segment string.
     /// 
     /// TODO this can be recursive
