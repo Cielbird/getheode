@@ -27,3 +27,7 @@ future goals are
 Bruce Hayes and Eric Biggs for the ipa segment features csv data:
 https://linguistics.ucla.edu/people/hayes/IP/#features
 
+
+## building
+
+`cargo build`

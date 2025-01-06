@@ -8,6 +8,6 @@ pub mod segment;
 pub mod segment_string;
 pub mod representation;
 pub mod lect;
-pub mod bnf;
+pub mod gbnf;
 
 pub const GETHEODE_VERSION: &str = env!("CARGO_PKG_VERSION");

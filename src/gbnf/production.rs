@@ -5,6 +5,6 @@ use super::expression::Expression;
 /// the <lhs> must be a non-terminal (see Term struct)
 /// the <rhs> is an array of 
 pub struct Production {
-    lhs: String,
-    rhs: Vec<Expression>
+    pub lhs: String,
+    pub rhs: Vec<Expression>
 }
