@@ -1,0 +1,6 @@
+<syllable> ::= <onset> <nucleus> [<coda>]
+<onset> ::= "p" | "b" | "t" | "d" | "k" | "g"
+<nucleus> ::= 
+<vowel> ::= "a" | "e" | "i" | "o" | "u"
+<long-vowel> ::= "aː" | "eː" | "iː" | "oː" | "uː"
+<coda> ::= "t" | "k" | "n" | "m" | ""

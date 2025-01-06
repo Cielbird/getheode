@@ -289,7 +289,7 @@ impl SegmentString {
             .unwrap_or(0);
         let word_bounds_end = self.word_boundaries.iter()
             .enumerate()
-            .filter(|&(i, &bound_index)| bound_index <= end)
+            .filter(|&(_i, &bound_index)| bound_index <= end)
             .last()
             .map(|(i, _)| i)
             .unwrap_or(0);
@@ -300,7 +300,7 @@ impl SegmentString {
             .unwrap_or(0);
         let syl_bounds_end = self.syl_boundaries.iter()
             .enumerate()
-            .filter(|&(i, &bound_index)| bound_index <= end)
+            .filter(|&(_i, &bound_index)| bound_index <= end)
             .last()
             .map(|(i, _)| i)
             .unwrap_or(0);

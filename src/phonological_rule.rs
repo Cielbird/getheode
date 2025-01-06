@@ -37,7 +37,7 @@ impl PhonologicalRule {
         input_str = capts[1].trim();
         output_str = capts[2].trim();
         // if there is context
-        if let Some(x) = capts.get(3) {
+        if let Some(_x) = capts.get(3) {
             pre_context_str = capts[3].trim();
             post_context_str = capts[4].trim();
         } else {

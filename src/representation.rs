@@ -89,7 +89,7 @@ impl Representation {
                         Ok(segs) => {
                             return Ok(segs)
                         }
-                        Err(e) => {
+                        Err(_e) => {
                             rep_vec.pop();
                         }
                     }
@@ -140,7 +140,7 @@ impl Representation {
                         Ok(segs) => {
                             return Ok(segs)
                         }
-                        Err(e) => { 
+                        Err(_e) => { 
                             seg_string_vec.pop();
                         }
                     }

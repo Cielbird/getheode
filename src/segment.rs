@@ -74,7 +74,7 @@ impl Segment {
                 Ok(segment) => {
                     return Ok(segment);
                 },
-                Err(e) => continue
+                Err(_e) => continue
             }
         }
         let msg = format!("The symbol {} could not be parsed", ipa_symbol);
@@ -105,7 +105,7 @@ impl Segment {
                 Ok(segment) => {
                     return Ok(segment);
                 },
-                Err(e) => continue
+                Err(_e) => continue
             }
         }
         let msg = format!("The symbol {} could not be parsed", remaining_chars);
