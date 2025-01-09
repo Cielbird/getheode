@@ -1,4 +1,4 @@
-use crate::errors::GetheodeError;
+use crate::error::{Error, Result};
 
 /// a feature of a phonological segment
 
@@ -54,11 +54,11 @@ pub const FEATURE_NAMES: [&str; FEATURE_COUNT as usize ] = [
 pub type Feature = u8;
 
 /// converts a feature name string to the corresponding u8 index
-pub fn feature_from_string(string: &str) -> Result<Feature, GetheodeError> {
+pub fn feature_from_string(string: &str) -> Result<Feature> {
     let index = FEATURE_NAMES.iter().position(|s| *s == string);
     match index {
         Some(i) => Ok(i as u8),
-        None => Err(GetheodeError::UnknownFeatureName(string.to_string())),
+        None => Err(Error::UnknownFeatureName(string.to_string())),
     }
 }
 

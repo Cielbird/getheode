@@ -1,6 +1,7 @@
 use regex::Regex;
 
 use crate::segment_string::SegmentString;
+use crate::error::{Result, Error};
 
 /// a Term can represent a Terminal or NonTerminal node
 /// a Terminal node is a segment string used in the syntax.
@@ -19,7 +20,7 @@ impl Term {
     /// Example:
     ///     <vowel> [fa]<C>
     /// Returns a result of a vector of terms.
-    pub fn parse_terms(alt: &str) -> Result<Vec<Term>, String> {
+    pub fn parse_terms(alt: &str) -> Result<Vec<Term>> {
         let mut terms = Vec::new();
         let pattern = r"^(<[^<>]*>|\[[^\[\]]*\])";
         let regex = Regex::new(pattern).expect("Invalid regex");
@@ -31,12 +32,8 @@ impl Term {
             if matched_text.starts_with('[') {
                 // Terminal
                 let content = &matched_text.trim_matches(|c| c == '[' || c == ']').to_string();
-                match SegmentString::new(&content) {
-                    Ok(segment_str) => {
-                        terms.push(Term::Terminal(segment_str));
-                    },
-                    Err(_e) => return Err(format!("Invalid terminal term segment string: {}", alt))
-                }
+                terms.push(Term::Terminal(SegmentString::new(&content)?));
+
             } else if matched_text.starts_with('<') {
                 // Non-Terminal
                 let content = &matched_text.trim_matches(|c| c == '<' || c == '>').to_string();
@@ -51,6 +48,6 @@ impl Term {
         if remaining_input.is_empty() {
             return Ok(terms);
         }
-        return Err(format!("Invalid terms: {}", alt));
+        return Err(Error::GBNFParsingError(format!("Invalid terms: {}", alt)));
     }
 }

@@ -1,7 +1,6 @@
-use std::fmt::format;
-
 use super::{expression::Expression, production::Production};
-use crate::{gbnf::term::Term::{NonTerminal, Terminal}, segment_string::SegmentString};
+use crate::{error::{Error, Result}, error::Error::GBNFParsingError, 
+    gbnf::term::Term::{NonTerminal, Terminal}, segment_string::SegmentString};
 use rand::Rng;
 
 pub struct Grammar {
@@ -9,35 +8,19 @@ pub struct Grammar {
 }
 
 impl Grammar {
-    /// Parses a gbnf string and constructs a new Grammar.
-    pub fn parse_bnf(input: &str) -> Result<Grammar, String> {
-        let mut productions = Vec::new();
+    /// Parses a vector of gbnf strings and constructs a new Grammar.
+    pub fn from_productions(inputs: Vec<String>) -> Result<Grammar> {
+        let mut productions: Vec<Production> = Vec::new();
 
-        for line in input.lines() {
-            let line = line.trim();
+        for prod in inputs {
+            let prod = prod.trim();
 
             // Skip empty lines or comments
-            if line.is_empty() || line.starts_with("//") {
+            if prod.is_empty() || prod.starts_with("//") {
                 continue;
             }
 
-            // Split line into lhs and rhs
-            let parts: Vec<&str> = line.split("::=").map(str::trim).collect();
-            if parts.len() != 2 {
-                return Err(format!("Invalid production: {}", line));
-            }
-
-            let mut lhs = parts[0].trim().to_string();
-            if !lhs.starts_with('<') || !lhs.ends_with('>') {
-                return Err(format!("Invalid non-terminal: {}", lhs));
-            }
-            // trim angle brackets from lhs
-            lhs = lhs.trim_matches(|c| c == '<' || c == '>').to_string();
-
-            let rhs = parts[1].trim();
-            let expressions = Expression::parse_expressions(rhs)?;
-
-            productions.push(Production { lhs, rhs: expressions });
+            productions.push(Production::from_string(prod)?);
         }
 
         Ok(Grammar { productions })
@@ -46,13 +29,13 @@ impl Grammar {
     /// generates a random segment string with the grammar
     /// grammar must contain a <word> non-terminal, which is used as the root of the word.
     /// all OR choices (seperated by |) are given equal probability. 
-    pub fn generate_random_word(&self) -> Result<SegmentString, String> {
+    pub fn generate_random_word(&self) -> Result<SegmentString> {
         return self.generate_random("word");
     }
 
     /// generates a random segment string with the grammar using a given non-terminal as root.
     /// all OR choices (seperated by |) are given equal probability. 
-    pub fn generate_random(&self, root: &str) -> Result<SegmentString, String> {
+    pub fn generate_random(&self, root: &str) -> Result<SegmentString> {
         for prod in &self.productions {
             if prod.lhs == root {
                 let mut rng = rand::thread_rng();
@@ -76,6 +59,6 @@ impl Grammar {
                 return Ok(final_seg_str);
             }
         }
-        return Err(format!("Could not find non-terminal \"{}\"", root));
+        return Err(Error::Other(format!("Could not find non-terminal \"{}\"", root)));
     }
 }

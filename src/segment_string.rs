@@ -3,8 +3,9 @@ use std::fmt::Display;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
-use crate::errors::GetheodeError;
-use crate::errors::GetheodeError::SegmentStringParsingError;
+use crate::error::Error;
+use crate::error::Result;
+use crate::error::Error::SegmentStringParsingError;
 use crate::segment::Segment;
 
 const WORD_BOUND_STR: &str = "#";
@@ -66,7 +67,7 @@ impl SegmentString {
     /// 
     /// TODO this can be recursive
     /// TODO needs to read diacritics
-    pub fn new(s: &str) -> Result<Self, GetheodeError> {
+    pub fn new(s: &str) -> Result<Self> {
         // seg string we will return
         let mut seg_str = Self {
             segs: Vec::new(),
@@ -90,7 +91,7 @@ impl SegmentString {
                         // is the word boundary at the same spot as another sylable boundary?
                         let bounds = &seg_str.syl_boundaries;
                         if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
-                            return Err(GetheodeError::SegmentStringParsingError(format!(
+                            return Err(Error::SegmentStringParsingError(format!(
                                 "cannot add a sylable boundary and a word boundary in the same spot: {}",
                                 s[0..(start + 1)].to_string()
                             )));
@@ -98,7 +99,7 @@ impl SegmentString {
                         // word boundary?
                         let bounds = &mut seg_str.word_boundaries;
                         if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
-                            return Err(GetheodeError::SegmentStringParsingError(format!(
+                            return Err(Error::SegmentStringParsingError(format!(
                                 "cannot have multiple word boundaries in the same spot: {}",
                                 s[0..(start + 1)].to_string()
                             )));
@@ -112,7 +113,7 @@ impl SegmentString {
                         // is the sylable boundary at the same spot as another word boundary?
                         let bounds = &seg_str.word_boundaries;
                         if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
-                            return Err(GetheodeError::SegmentStringParsingError(format!(
+                            return Err(Error::SegmentStringParsingError(format!(
                                 "cannot add a sylable boundary and a word boundary in the same spot: {}",
                                 s[0..(start + 1)].to_string()
                             )));
@@ -120,7 +121,7 @@ impl SegmentString {
                         // sylable boundary?
                         let bounds = &mut seg_str.syl_boundaries;
                         if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
-                            return Err(GetheodeError::SegmentStringParsingError(format!(
+                            return Err(Error::SegmentStringParsingError(format!(
                                 "cannot have multiple sylable boundaries in the same spot: {}",
                                 s[0..(start + 1)].to_string()
                             )));

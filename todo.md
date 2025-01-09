@@ -5,6 +5,7 @@
 - add segment diacritic parsing
 - add empty outputs to phonological rules
 - add word boundaries to inputs, pre and post contexts
+- document rule documents
 
 ## eventually
 - add phoneme definitions for simple word definition
@@ -12,6 +13,11 @@
 - packing lect changes in lect change nodes
 - saving and reading data from files
 - command-line tool
+- add support for X-SAMPA and refactor accordingly
+  - use of IPA and X-SAMPA should be inter-exchangable: 
+  - ipa should be denoted with [] and xsampa with "" or other
+- use this to assign sylable boundaries: http://glottopedia.org/index.php/Maximal_Onset_Principle
+- 
 
 ## maybe
 - get random sound changes from online databases

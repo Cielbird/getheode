@@ -6,6 +6,7 @@ extern crate getheode;
 mod tests {
     use getheode::segment_string::SegmentString;
 
+    // TODO: see the todo in phonological_rule_test.rs: these tests are lazy
     #[test]
     fn test_segment_string_from_string() {
         // test segment parsing

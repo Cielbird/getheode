@@ -2,7 +2,7 @@ use regex::Regex;
 use unicode_normalization::UnicodeNormalization;
 
 use crate::diacritics::DIACRITICS;
-use crate::errors::GetheodeError;
+use crate::error::{Error, Result};
 use crate::feature::FeatureState::*;
 use crate::feature::{feature_from_string, Feature, FeatureState, FEATURE_COUNT, FEATURE_NAMES};
 use crate::ipa_segments::IPA_BASES;
@@ -39,7 +39,7 @@ impl Segment {
     /// return a segment from either an ipa character
     /// or a feature list in brackets ex. [+voi-delrel]
     /// - input string is trimmed of whitespace
-    pub fn from_string(string: &str) -> Result<Self, GetheodeError> {
+    pub fn from_string(string: &str) -> Result<Self> {
         let string = string.trim();
         if let Ok(seg) = Self::from_ipa(string) {
             return Ok(seg);
@@ -50,12 +50,12 @@ impl Segment {
         if let Ok(seg) = Self::from_features_string(string) {
             return Ok(seg);
         }
-        Err(GetheodeError::SegmentParsingError(string.to_string()))
+        Err(Error::SegmentParsingError(string.to_string()))
     }
 
     /// construct a segement from an IPA symbol
     /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
-    fn from_ipa(ipa_symbol: &str) -> Result<Self, GetheodeError> {
+    fn from_ipa(ipa_symbol: &str) -> Result<Self> {
         for (symbol, seg) in IPA_BASES {
             // do the first utf8 code points match the first of our symbol?
             let mut ipa_sym = ipa_symbol.nfd();
@@ -78,11 +78,11 @@ impl Segment {
             }
         }
         let msg = format!("The symbol {} could not be parsed", ipa_symbol);
-        return Err(GetheodeError::IPASymbolParsingError(msg))
+        return Err(Error::IPASymbolParsingError(msg))
     }
 
     /// recursive function to add the diacritics in a string to a segment
-    fn add_diacritics(remaining_chars: &str, cur_segment: &Segment) -> Result<Self, GetheodeError>{
+    fn add_diacritics(remaining_chars: &str, cur_segment: &Segment) -> Result<Self>{
         if remaining_chars.len() == 0 {
             return Ok(cur_segment.clone());
         }
@@ -109,26 +109,26 @@ impl Segment {
             }
         }
         let msg = format!("The symbol {} could not be parsed", remaining_chars);
-        return Err(GetheodeError::IPASymbolParsingError(msg))
+        return Err(Error::IPASymbolParsingError(msg))
     }
 
     /// construct a segement from an IPA symbol
-    fn from_class(class_symbol: &str) -> Result<Self, GetheodeError> {
+    fn from_class(class_symbol: &str) -> Result<Self> {
         for (sym, seg) in NATURAL_CLASSES{
             if *sym == class_symbol {
                 return Ok(seg.clone());
             }
         }
-        return Err(GetheodeError::IPASymbolParsingError(
+        return Err(Error::IPASymbolParsingError(
             class_symbol.to_string(),
         ));
     }
 
     /// construct a segement from a list of features in brackets ex. [+voi-delrel]
-    fn from_features_string(s: &str) -> Result<Self, GetheodeError> {
+    fn from_features_string(s: &str) -> Result<Self> {
         let s = s.trim();
         if !(s.starts_with('[') && s.ends_with(']')) {
-            return Err(GetheodeError::SegmentParsingError(s.to_string()));
+            return Err(Error::SegmentParsingError(s.to_string()));
         }
         let mut inner = &s[1..(s.len() - 1)];
         let mut seg = Self::new_undef();
@@ -144,7 +144,7 @@ impl Segment {
                     name = &inner[name_match.range()];
                 }
                 None => {
-                    return Err(GetheodeError::SegmentParsingError(inner.to_string()));
+                    return Err(Error::SegmentParsingError(inner.to_string()));
                 }
             }
             let feature;

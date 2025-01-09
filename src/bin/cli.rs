@@ -7,13 +7,12 @@ use clap::{Arg, ArgAction, Command};
 use getheode;
 use getheode::phonological_rule::PhonologicalRule;
 use getheode::segment_string::SegmentString;
-use getheode::representation::Representation;
 use getheode::GETHEODE_VERSION;
 
 fn remove_comments(line: &str) -> &str {
     return line.split("//").next().unwrap_or("").trim_end();
 }
-
+/*
 fn apply_rules_cli(input_file: &str, input_repr_file: Option<&str>, rules_file: &str, output_repr_file: Option<&str>) {
 
     let mut in_rep = None;
@@ -104,7 +103,7 @@ fn apply_rules_cli(input_file: &str, input_repr_file: Option<&str>, rules_file: 
         }
     }
 }
-
+*/
 
 fn cli() -> Command {
     Command::new("getheode")
@@ -114,6 +113,7 @@ fn cli() -> Command {
         .arg_required_else_help(true)
         // new subcommand
         // 
+        /*
         .subcommand(
             Command::new("apply")
                 //.short_flag('a')
@@ -150,6 +150,7 @@ fn cli() -> Command {
                         .num_args(1..),
                 ),
         )
+        */
 }
 
 fn main() {
@@ -176,7 +177,7 @@ fn main() {
             // output rep may or may not exist: we don't care
             let out_rep = apply_matches.get_one::<String>("out_rep").map(|s| s.as_str());
 
-            apply_rules_cli(input, in_rep, rules, out_rep);
+            //apply_rules_cli(input, in_rep, rules, out_rep);
         }
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachable
     }

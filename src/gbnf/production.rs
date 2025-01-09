@@ -1,3 +1,4 @@
+use crate::error::{Error, Result};
 use super::expression::Expression;
 
 /// struct that prepresents an assignment written as 
@@ -7,4 +8,28 @@ use super::expression::Expression;
 pub struct Production {
     pub lhs: String,
     pub rhs: Vec<Expression>
+}
+
+impl Production {
+    pub fn from_string(production_str: &str) -> Result<Self> {
+        let production_str = production_str.trim();
+
+        // Split line into lhs and rhs
+        let parts: Vec<&str> = production_str.split("::=").map(str::trim).collect();
+        if parts.len() != 2 {
+            return Err(Error::GBNFParsingError(format!("Invalid production: {}", production_str)));
+        }
+
+        let mut lhs = parts[0].trim().to_string();
+        if !lhs.starts_with('<') || !lhs.ends_with('>') {
+            return Err(Error::GBNFParsingError(format!("Invalid non-terminal: {}", lhs)));
+        }
+        // trim angle brackets from lhs
+        lhs = lhs.trim_matches(|c| c == '<' || c == '>').to_string();
+
+        let rhs = parts[1].trim();
+        let expressions = Expression::parse_expressions(rhs)?;
+
+        return Ok(Production { lhs, rhs: expressions });
+    }
 }

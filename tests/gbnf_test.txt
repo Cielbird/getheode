@@ -1,7 +1,0 @@
-<word> ::= <word_part><word_part>
-<word_part> ::= <sylable><word_part> | <sylable>
-<vowel> ::= [a] | [e] | [i] | [o] | [u]
-<consonant> ::= [p] | [b] | [t] | [d] | [k] | [g]
-<coda> ::= <consonant> | []
-<sylable> ::= <consonant> <vowel> <coda>
-

@@ -1,4 +1,4 @@
-use crate::{errors::GetheodeError, segment_string::SegmentString};
+use crate::{error::{Error, Result}, segment_string::SegmentString};
 use core::fmt;
 use regex::Regex;
 use std::fmt::Display;
@@ -12,7 +12,7 @@ pub struct PhonologicalRule {
 }
 
 impl PhonologicalRule {
-    pub fn new(rule_str: &str) -> Result<Self, GetheodeError> {
+    pub fn from_string(rule_str: &str) -> Result<Self> {
         let input_str: &str;
         let output_str: &str;
         let pre_context_str: &str;
@@ -23,13 +23,13 @@ impl PhonologicalRule {
         let mut iter = re.captures_iter(rule_str);
         let first = iter.next();
         if first.is_none() {
-            return Err(GetheodeError::PhonologicalRuleParsingError(
+            return Err(Error::PhonologicalRuleParsingError(
                 rule_str.to_string(),
             ));
         }
         // there should not be more than one capture
         if iter.next().is_some() {
-            return Err(GetheodeError::PhonologicalRuleParsingError(
+            return Err(Error::PhonologicalRuleParsingError(
                 rule_str.to_string(),
             ));
         }
@@ -89,7 +89,7 @@ impl PhonologicalRule {
         });
     }
 
-    pub fn apply(&self, s: &SegmentString) -> Result<SegmentString, String> {
+    pub fn apply(&self, s: &SegmentString) -> Result<SegmentString> {
         // string we will be modifying and returning
         let mut string = s.clone();
 
@@ -179,7 +179,7 @@ impl Display for PhonologicalRule {
 /// parses a list of segment strings in brackets: {x, y, z...}.
 /// allows for a single segmentstring, in which case returns a size 1 vector
 /// extra commas anywhere are allowed: {a, b, c,}
-fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>, GetheodeError> {
+fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>> {
     let s = s.trim();
     let mut seg_str_opts = Vec::new();
     let has_brackets = s.starts_with('{') && s.ends_with('}');

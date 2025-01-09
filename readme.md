@@ -31,3 +31,7 @@ https://linguistics.ucla.edu/people/hayes/IP/#features
 ## building
 
 `cargo build`
+
+## rule documents
+
+TODO
