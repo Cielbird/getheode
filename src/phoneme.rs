@@ -35,7 +35,7 @@ impl Phoneme {
             }
         }
 
-        let symbol;
+        let mut symbol;
         match yaml.symbol {
             None => {
                 symbol = segment.to_string();
@@ -44,6 +44,8 @@ impl Phoneme {
                 symbol = s;
             }
         }
+        // remove whitespace
+        symbol = symbol.chars().filter(|c| !c.is_whitespace()).collect();
 
         let phoneme = Self {
             segment: segment,
@@ -68,18 +70,17 @@ impl Phoneme {
             let mut found = false;
             for phoneme in phoneme_inv {
                 let sym = &phoneme.symbol;
-                let len = sym.len();
-                if remaining_input[0..len] == *sym {
+                if remaining_input.starts_with(sym) {
                     // first match
                     result.push(phoneme.clone());
                     found = true;
-                    remaining_input = &remaining_input[len..];
+                    remaining_input = &remaining_input[sym.len()..];
                     break;
                 }
             }
             if !found {
                 return Err(PhonemeSymbolParsingError(
-                    format!("Could not parse the phonemes of the string {}", input)
+                    format!("Could not parse the phonemes of the string \"{}\"", input)
                 ));
             }
         }

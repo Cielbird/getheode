@@ -12,6 +12,7 @@ mod tests {
         // test segment parsing
         SegmentString::new("aski").unwrap();
         SegmentString::new("as[-voi]i").unwrap();
+        SegmentString::new("asɣ˕i").unwrap();
         SegmentString::new("[]").unwrap();
 
         // test parsing of multi-char symbols
