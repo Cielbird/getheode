@@ -17,9 +17,9 @@
   - use of IPA and X-SAMPA should be inter-exchangable: 
   - ipa should be denoted with [] and xsampa with "" or other
 - use this to assign sylable boundaries: http://glottopedia.org/index.php/Maximal_Onset_Principle
-- 
 
 ## maybe
+- use phonotactic production labels in phonological rules
 - get random sound changes from online databases
 - generate sound changes with ml
 - web app tool

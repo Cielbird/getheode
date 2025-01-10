@@ -9,9 +9,6 @@ use getheode::phonological_rule::PhonologicalRule;
 use getheode::segment_string::SegmentString;
 use getheode::GETHEODE_VERSION;
 
-fn remove_comments(line: &str) -> &str {
-    return line.split("//").next().unwrap_or("").trim_end();
-}
 /*
 fn apply_rules_cli(input_file: &str, input_repr_file: Option<&str>, rules_file: &str, output_repr_file: Option<&str>) {
 
@@ -111,46 +108,62 @@ fn cli() -> Command {
         .version(GETHEODE_VERSION)
         .subcommand_required(true)
         .arg_required_else_help(true)
-        // new subcommand
-        // 
-        /*
         .subcommand(
-            Command::new("apply")
-                //.short_flag('a')
-                //.long_flag("apply")
-                .about("apply phonological rules to words or other segment strings")
+            Command::new("valid")
+                .about("checks the validity of the words in a lect")
+                .arg(
+                    Arg::new("lect")
+                        .help("expects a .geth file, conforming to getheode's yaml structure")
+                        .required(true)
+                        .index(1),
+                )
                 .arg(
                     Arg::new("input")
-                        .short('i')
-                        .long("input")
-                        .help("a file of segment strings")
-                        .action(ArgAction::Append)
-                        .num_args(1..),
-                )
-                .arg(
-                    Arg::new("in_rep")
-                        .long("input-representation")
-                        .help("a file with representation rules for parsing the input")
-                        .action(ArgAction::Append)
-                        .num_args(1..),
-                )
-                .arg(
-                    Arg::new("rules")
-                        .long("rules")
-                        .short('r')
-                        .help("a file with phonological rules")
-                        .action(ArgAction::Append)
-                        .num_args(1..),
-                )
-                .arg(
-                    Arg::new("out_rep")
-                        .long("output-representation")
-                        .help("a file with representation rules for the output")
-                        .action(ArgAction::Append)
-                        .num_args(1..),
+                        .help("expects a sequence of morphemes, inside slashes (`/likethis/`). can be either raw input or a file")
+                        .required(true)
+                        .index(2),
                 ),
         )
-        */
+        .subcommand(
+            Command::new("surface")
+                .about("gets the surface representation of the words in a lect")
+                .arg(
+                    Arg::new("lect")
+                        .help("expects a .geth file, conforming to getheode's yaml structure")
+                        .required(true)
+                        .index(1),
+                )
+                .arg(
+                    Arg::new("input")
+                        .help("expects a sequence of morphemes, inside slashes (`/likethis/`). can be either raw input or a file")
+                        .required(true)
+                        .index(2),
+                ),
+        )
+        .subcommand(
+            Command::new("gen")
+                .about("generates random words according to a lect")
+                .arg(
+                    Arg::new("lect")
+                        .help("expects a .geth file, conforming to getheode's yaml structure")
+                        .required(true)
+                        .index(1),
+                )
+                .arg(
+                    Arg::new("count")
+                        .help("the number of words to generate. must be between 0 and 99, inclusively")
+                        .required(true)
+                        .index(2)
+                        .value_parser(clap::value_parser!(u8).range(0..=99)),
+                )
+                .arg(
+                    Arg::new("surface")
+                        .help("if given, the output will be the surface representation of the words")
+                        .short('s')
+                        .long("surface")
+                        .action(clap::ArgAction::SetTrue),
+                ),
+        )
 }
 
 fn main() {
