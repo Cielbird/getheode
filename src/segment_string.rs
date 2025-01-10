@@ -61,7 +61,7 @@ impl SegmentString {
     /// constructs a segment string from a text string.
     /// - the syntax for a segment is the same as Segment::from_string.
     /// - initial and trailing whitespace is ignored.
-    /// - whitespace between segments is interpreted as a word boundary.
+    /// - hash (#) is interpreted as a word boundary.
     /// - ([unimplemented]) `.` is interpreted as a sylable boundary... TODO check if really unimplemented
     /// `put_word_bounds`: if true, word bounderies will be placed at the extemeties of the segment string.
     /// 
@@ -316,6 +316,16 @@ impl SegmentString {
 
     pub fn len(&self) -> usize {
         return self.segs.len();
+    }
+
+    /// returns a clone of the word boundaries vector
+    pub fn get_word_boundaries(&self) -> Vec<usize> {
+        return self.word_boundaries.clone();
+    }
+
+    /// returns a clone of the symable boundaries vector
+    pub fn get_syl_boundaries(&self) -> Vec<usize> {
+        return self.syl_boundaries.clone();
     }
 }
 

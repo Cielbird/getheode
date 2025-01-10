@@ -58,4 +58,8 @@ impl Lect {
 
         return Ok(lect);
     }
+
+    pub fn validate_word(&self, phonemes: &str) -> bool{
+        return false;
+    }
 }
