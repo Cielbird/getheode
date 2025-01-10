@@ -1,9 +1,10 @@
 use crate::{error::Result, error::Error::YamlFormatError, segment::Segment, yaml::phoneme_yaml::PhonemeYaml};
 
 /// a struct for representing a phoneme
+#[derive(Clone, Debug)] //Deserialize, Serialize, 
 pub struct Phoneme {
-    segment: Segment,
-    symbol: String
+    pub segment: Segment,
+    pub symbol: String
 }
 
 impl Phoneme {

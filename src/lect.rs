@@ -1,7 +1,8 @@
+use std::rc::Rc;
 use std::vec;
 
-use crate::error::Result;
-use crate::gbnf::grammar::Grammar;
+use crate::error::{Error, Error::PhonemeSymbolParsingError, Result};
+use crate::gbnf::grammar::{self, Grammar};
 use crate::phonological_rule::PhonologicalRule;
 use crate::phoneme::Phoneme;
 use crate::yaml::lect_yaml::LectYaml;
@@ -19,11 +20,11 @@ use crate::yaml::lect_yaml::LectYaml;
 //
 //lects can differ between people, places, social circles, etc.
 pub struct Lect {
-    /// set of underlying representations for each phoneme
-    phonemes: Vec<Phoneme>,
+    /// set of phonemes used and their data
+    phonemes: Vec<Rc<Phoneme>>,
 
-    /// for now, nothing. 
-    phonotactic_rules: Grammar,
+    /// The formal grammar dictating how phonemes can be arranged
+    phonotactics: Grammar,
 
     /// rules that map the underlying representation to the realized sound segments
     realization_rules: Vec<PhonologicalRule>
@@ -37,11 +38,8 @@ impl Lect {
         // process phonemes
         let mut phoneme_vec = vec![];
         for phoneme_yaml in yaml.phonemes {
-            phoneme_vec.push(Phoneme::from_yaml(phoneme_yaml)?);
+            phoneme_vec.push(Rc::new(Phoneme::from_yaml(phoneme_yaml)?));
         }
-
-        // process and parse phonotactics gbnf
-        let phonotactics = Grammar::from_productions(yaml.phonotactics)?;
 
         // process and parse phonological realization rules
         let mut rules = vec![];
@@ -49,10 +47,49 @@ impl Lect {
             rules.push(PhonologicalRule::from_string(&rule)?);
         }
 
+        // create the lect
         let mut lect = Lect { 
             phonemes: phoneme_vec,
-            phonotactic_rules: phonotactics,
+            phonotactics: Grammar{productions: vec![]},
             realization_rules: rules };
+
+        // process and parse phonotactics gbnf
+        lect.phonotactics = Grammar::from_productions(yaml.phonotactics, &lect)?;
+
         return Ok(lect);
+    }
+
+    /// parses a string and identifies the sequence of phonemes used
+    /// the phoneme symbols are used to identify them.
+    /// first match found is used, so if there are issues with findinf phonemes, 
+    /// consider reordering the phoneme inventory.
+    pub fn parse_phonemes(&self, input: &str) -> Result<Vec<Rc<Phoneme>>> {
+        // remove all whitespace
+        let input: String = input.chars().filter(|c| !c.is_whitespace()).collect();
+        
+        let mut remaining_input: &str = &input;
+        let mut result: Vec<Rc<Phoneme>> = vec![];
+
+        while !input.is_empty() {
+            // the phoneme symbol that matches is chosen
+            let mut found = false;
+            for phoneme in &self.phonemes {
+                let sym = &phoneme.symbol;
+                let len = sym.len();
+                if input[0..len] == *sym {
+                    // first match
+                    result.push(phoneme.clone());
+                    found = true;
+                    remaining_input = &remaining_input[len..];
+                    break;
+                }
+            }
+            if !found {
+                return Err(PhonemeSymbolParsingError(
+                    format!("Could not parse the phonemes of the string {}", input)
+                ));
+            }
+        }
+        return Ok(result);
     }
 }

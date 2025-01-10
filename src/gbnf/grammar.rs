@@ -1,6 +1,7 @@
+use std::rc::Rc;
+
 use super::{expression::Expression, production::Production};
-use crate::{error::{Error, Result}, error::Error::GBNFParsingError, 
-    gbnf::term::Term::{NonTerminal, Terminal}, segment_string::SegmentString};
+use crate::{error::{Error::{self, GBNFParsingError}, Result}, gbnf::term::Term::{NonTerminal, None, Terminal}, lect::Lect, phoneme::Phoneme, segment_string::SegmentString};
 use rand::Rng;
 
 pub struct Grammar {
@@ -9,7 +10,7 @@ pub struct Grammar {
 
 impl Grammar {
     /// Parses a vector of gbnf strings and constructs a new Grammar.
-    pub fn from_productions(inputs: Vec<String>) -> Result<Grammar> {
+    pub fn from_productions(inputs: Vec<String>, lect: &Lect) -> Result<Grammar> {
         let mut productions: Vec<Production> = Vec::new();
 
         for prod in inputs {
@@ -20,7 +21,7 @@ impl Grammar {
                 continue;
             }
 
-            productions.push(Production::from_string(prod)?);
+            productions.push(Production::from_string(prod, lect)?);
         }
 
         Ok(Grammar { productions })
@@ -29,31 +30,29 @@ impl Grammar {
     /// generates a random segment string with the grammar
     /// grammar must contain a <word> non-terminal, which is used as the root of the word.
     /// all OR choices (seperated by |) are given equal probability. 
-    pub fn generate_random_word(&self) -> Result<SegmentString> {
+    pub fn generate_random_word(&self) -> Result<Vec<Rc<Phoneme>>> {
         return self.generate_random("word");
     }
 
     /// generates a random segment string with the grammar using a given non-terminal as root.
     /// all OR choices (seperated by |) are given equal probability. 
-    pub fn generate_random(&self, root: &str) -> Result<SegmentString> {
+    pub fn generate_random(&self, root: &str) -> Result<Vec<Rc<Phoneme>>> {
         for prod in &self.productions {
             if prod.lhs == root {
                 let mut rng = rand::thread_rng();
                 let random_index = rng.gen_range(0..prod.rhs.len()); // Generate random index
                 
-                let mut final_seg_str = SegmentString::new("").unwrap();
+                let mut final_seg_str: Vec<Rc<Phoneme>> = vec![];
                 for e in &prod.rhs[random_index].terms {
                     match e {
                         Terminal(seg_str) => {
-                            final_seg_str.append(seg_str.clone());
+                            final_seg_str.push(seg_str.clone());
                         }
                         NonTerminal(str) => {
-                            let recursive_result = self.generate_random(&str);
-                            match recursive_result {
-                                Ok(seg_str) => final_seg_str.append(seg_str),
-                                Err(e) => return Err(e)
-                            }
+                            let recursive_result = self.generate_random(&str)?;
+                            final_seg_str.extend(recursive_result);
                         }
+                        None => continue
                     }
                 }
                 return Ok(final_seg_str);

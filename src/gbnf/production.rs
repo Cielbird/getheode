@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::{error::{Error, Result}, lect::Lect};
 use super::expression::Expression;
 
 /// struct that prepresents an assignment written as 
@@ -11,7 +11,7 @@ pub struct Production {
 }
 
 impl Production {
-    pub fn from_string(production_str: &str) -> Result<Self> {
+    pub fn from_string<'a>(production_str: &str, lect: &Lect) -> Result<Self> {
         let production_str = production_str.trim();
 
         // Split line into lhs and rhs
@@ -28,7 +28,7 @@ impl Production {
         lhs = lhs.trim_matches(|c| c == '<' || c == '>').to_string();
 
         let rhs = parts[1].trim();
-        let expressions = Expression::parse_expressions(rhs)?;
+        let expressions = Expression::parse_expressions(rhs, lect)?;
 
         return Ok(Production { lhs, rhs: expressions });
     }

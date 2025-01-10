@@ -9,7 +9,7 @@ pub enum Error {
     SegmentParsingError(String),
     SegmentStringParsingError(String),
     PhonologicalRuleParsingError(String),
-    RepresentationParsingError(String),
+    PhonemeSymbolParsingError(String),
     GBNFParsingError(String),
     YamlSyntaxError(serde_yml::Error),
     YamlFormatError(String),

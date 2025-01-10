@@ -1,6 +1,9 @@
+use std::rc::Rc;
+
 use regex::Regex;
 
-use crate::segment_string::SegmentString;
+use crate::lect::Lect;
+use crate::phoneme::Phoneme;
 use crate::error::{Result, Error};
 
 /// a Term can represent a Terminal or NonTerminal node
@@ -9,45 +12,54 @@ use crate::error::{Result, Error};
 #[derive(Clone, Debug)] //Deserialize, Serialize, 
 pub enum Term {
     /// A term which cannot be expanded further via productions
-    Terminal(SegmentString),
+    Terminal(Rc<Phoneme>),
     /// A term which may be be expanded further via productions
     NonTerminal(String),
+    None
 }
 
 impl Term {
     /// Parses a sequence of terms in a gbnf format
-    /// Can be seperated by whitespace. each term is terminal <asdf> or nonterminal [asdf].
+    /// Whitespace is entirely ignored. each term is terminal (surrounded with angle brackets) or
+    ///  nonterminal (the symbol of a phoneme).
     /// Example:
-    ///     <vowel> [fa]<C>
-    /// Returns a result of a vector of terms.
-    pub fn parse_terms(alt: &str) -> Result<Vec<Term>> {
+    ///     "<vowel> fa<C>""
+    /// Returns a result of a vector of terms
+    pub fn parse_terms(input: &str, lect: &Lect) -> Result<Vec<Term>> {
+        // remove all whitespace
+        let input: String = input.chars().filter(|c| !c.is_whitespace()).collect();
+
         let mut terms = Vec::new();
-        let pattern = r"^(<[^<>]*>|\[[^\[\]]*\])";
+        // matches either a group of phonemes or a non-terminal production, 
+        // at the front of the remaining string
+        let pattern = r"^(<[^<>]*>|[^<>]*)";
         let regex = Regex::new(pattern).expect("Invalid regex");
 
-        let mut remaining_input = alt;
+        let mut remaining_input: &str = &input;
 
         while let Some(mat) = regex.find(remaining_input) {
             let matched_text = mat.as_str().trim();
-            if matched_text.starts_with('[') {
-                // Terminal
-                let content = &matched_text.trim_matches(|c| c == '[' || c == ']').to_string();
-                terms.push(Term::Terminal(SegmentString::new(&content)?));
-
-            } else if matched_text.starts_with('<') {
+            if matched_text.starts_with('<') {
                 // Non-Terminal
                 let content = &matched_text.trim_matches(|c| c == '<' || c == '>').to_string();
 
                 terms.push(Term::NonTerminal(content.to_string()));
-            }
+            } else {
+                // Terminal (one or more)
+                let content = &matched_text.to_string();
+                // parse the phonemes' symbols and add their references
+                for x in lect.parse_phonemes(content)? {
+                    terms.push(Term::Terminal(x));
+                }            
+            } 
 
             // Advance input beyond the current match
-            remaining_input = &remaining_input[mat.end()..].trim_start();
+            remaining_input = &remaining_input[mat.end()..];
         }
 
         if remaining_input.is_empty() {
             return Ok(terms);
         }
-        return Err(Error::GBNFParsingError(format!("Invalid terms: {}", alt)));
+        return Err(Error::GBNFParsingError(format!("Invalid terms: {}", input)));
     }
 }
