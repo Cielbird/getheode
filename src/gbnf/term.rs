@@ -25,14 +25,14 @@ impl Term {
     /// Example:
     ///     "<vowel> fa<C>""
     /// Returns a result of a vector of terms
-    pub fn parse_terms(input: &str, lect: &Lect) -> Result<Vec<Term>> {
+    pub fn parse_terms(input: &str, phoneme_inv: &Vec<Rc<Phoneme>>) -> Result<Vec<Term>> {
         // remove all whitespace
         let input: String = input.chars().filter(|c| !c.is_whitespace()).collect();
 
         let mut terms = Vec::new();
         // matches either a group of phonemes or a non-terminal production, 
         // at the front of the remaining string
-        let pattern = r"^(<[^<>]*>|[^<>]*)";
+        let pattern = r"^(<[^<>]+>|[^<>]+)";
         let regex = Regex::new(pattern).expect("Invalid regex");
 
         let mut remaining_input: &str = &input;
@@ -41,14 +41,14 @@ impl Term {
             let matched_text = mat.as_str().trim();
             if matched_text.starts_with('<') {
                 // Non-Terminal
-                let content = &matched_text.trim_matches(|c| c == '<' || c == '>').to_string();
+                let content = matched_text.trim_matches(|c| c == '<' || c == '>').to_string();
 
-                terms.push(Term::NonTerminal(content.to_string()));
+                terms.push(Term::NonTerminal(content));
             } else {
                 // Terminal (one or more)
                 let content = &matched_text.to_string();
                 // parse the phonemes' symbols and add their references
-                for x in lect.parse_phonemes(content)? {
+                for x in Phoneme::parse_phonemes(content, phoneme_inv)? {
                     terms.push(Term::Terminal(x));
                 }            
             } 

@@ -1,4 +1,6 @@
-use crate::{error::{Error, Result}, lect::Lect};
+use std::rc::Rc;
+
+use crate::{error::{Error, Result}, phoneme::Phoneme};
 use super::expression::Expression;
 
 /// struct that prepresents an assignment written as 
@@ -11,7 +13,7 @@ pub struct Production {
 }
 
 impl Production {
-    pub fn from_string<'a>(production_str: &str, lect: &Lect) -> Result<Self> {
+    pub fn from_string(production_str: &str, phoneme_inv: &Vec<Rc<Phoneme>>) -> Result<Self> {
         let production_str = production_str.trim();
 
         // Split line into lhs and rhs
@@ -28,7 +30,7 @@ impl Production {
         lhs = lhs.trim_matches(|c| c == '<' || c == '>').to_string();
 
         let rhs = parts[1].trim();
-        let expressions = Expression::parse_expressions(rhs, lect)?;
+        let expressions = Expression::parse_expressions(rhs, phoneme_inv)?;
 
         return Ok(Production { lhs, rhs: expressions });
     }

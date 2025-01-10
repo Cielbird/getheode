@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
-use super::{expression::Expression, production::Production};
-use crate::{error::{Error::{self, GBNFParsingError}, Result}, gbnf::term::Term::{NonTerminal, None, Terminal}, lect::Lect, phoneme::Phoneme, segment_string::SegmentString};
+use super::production::Production;
+use crate::{error::{Error, Result}, gbnf::term::Term::{NonTerminal, None, Terminal}, phoneme::Phoneme};
 use rand::Rng;
 
 pub struct Grammar {
@@ -10,7 +10,7 @@ pub struct Grammar {
 
 impl Grammar {
     /// Parses a vector of gbnf strings and constructs a new Grammar.
-    pub fn from_productions(inputs: Vec<String>, lect: &Lect) -> Result<Grammar> {
+    pub fn from_productions(inputs: Vec<String>, phoneme_inv: &Vec<Rc<Phoneme>>) -> Result<Grammar> {
         let mut productions: Vec<Production> = Vec::new();
 
         for prod in inputs {
@@ -21,7 +21,7 @@ impl Grammar {
                 continue;
             }
 
-            productions.push(Production::from_string(prod, lect)?);
+            productions.push(Production::from_string(prod, phoneme_inv)?);
         }
 
         Ok(Grammar { productions })

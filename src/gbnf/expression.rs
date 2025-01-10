@@ -1,4 +1,6 @@
-use crate::{error::{Error, Result}, lect::Lect, segment_string::SegmentString};
+use std::rc::Rc;
+
+use crate::{error::{Error, Result}, phoneme::Phoneme};
 
 use super::term::Term;
 
@@ -14,7 +16,7 @@ impl Expression {
     /// if the expression is 
     ///     <x> | []
     /// the second item will be a empty terminal term (empty segment string).
-    pub fn parse_expressions(rhs: &str, lect: &Lect) -> Result<Vec<Expression>> {
+    pub fn parse_expressions(rhs: &str, phoneme_inv: &Vec<Rc<Phoneme>>) -> Result<Vec<Expression>> {
         let mut expressions = Vec::new();
 
         // Split alternatives (|)
@@ -23,7 +25,7 @@ impl Expression {
             if alt == "[]" {
                 terms = vec![Term::None];
             } else {
-                terms = Term::parse_terms(alt, lect)?;
+                terms = Term::parse_terms(alt, phoneme_inv)?;
             }
             expressions.push(Expression { terms });
         }

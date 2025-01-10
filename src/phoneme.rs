@@ -1,4 +1,6 @@
-use crate::{error::Result, error::Error::YamlFormatError, segment::Segment, yaml::phoneme_yaml::PhonemeYaml};
+use std::{collections::HashSet, rc::Rc};
+
+use crate::{error::Result, error::Error::{YamlFormatError, PhonemeSymbolParsingError}, segment::Segment, yaml::phoneme_yaml::PhonemeYaml};
 
 /// a struct for representing a phoneme
 #[derive(Clone, Debug)] //Deserialize, Serialize, 
@@ -8,6 +10,14 @@ pub struct Phoneme {
 }
 
 impl Phoneme {
+    /// Creates a phoneme from a segment and a string
+    pub fn new(segment: Segment, symbol: String) -> Self {
+        Self {
+            segment: segment,
+            symbol: symbol
+        }
+    }
+
     /// Creates a phoneme from a yaml object. 
     /// if the ipa field is defined, it will define the segment of the phoneme. otherwise, there is
     /// and error.
@@ -40,5 +50,39 @@ impl Phoneme {
             symbol: symbol
         };
         return Ok(phoneme);
+    }
+
+    /// parses a string and identifies the sequence of phonemes used
+    /// the phoneme symbols are used to identify them.
+    /// first match found is used, so if there are issues with findinf phonemes, 
+    /// consider reordering the phoneme inventory.
+    pub fn parse_phonemes(input: &str, phoneme_inv: &Vec<Rc<Phoneme>>) -> Result<Vec<Rc<Phoneme>>> {
+        // remove all whitespace
+        let input: String = input.chars().filter(|c| !c.is_whitespace()).collect();
+        
+        let mut remaining_input: &str = &input;
+        let mut result: Vec<Rc<Phoneme>> = vec![];
+
+        while !remaining_input.is_empty() {
+            // the phoneme symbol that matches is chosen
+            let mut found = false;
+            for phoneme in phoneme_inv {
+                let sym = &phoneme.symbol;
+                let len = sym.len();
+                if remaining_input[0..len] == *sym {
+                    // first match
+                    result.push(phoneme.clone());
+                    found = true;
+                    remaining_input = &remaining_input[len..];
+                    break;
+                }
+            }
+            if !found {
+                return Err(PhonemeSymbolParsingError(
+                    format!("Could not parse the phonemes of the string {}", input)
+                ));
+            }
+        }
+        return Ok(result);
     }
 }

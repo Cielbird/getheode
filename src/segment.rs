@@ -55,7 +55,7 @@ impl Segment {
 
     /// construct a segement from an IPA symbol
     /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
-    fn from_ipa(ipa_symbol: &str) -> Result<Self> {
+    pub fn from_ipa(ipa_symbol: &str) -> Result<Self> {
         for (symbol, seg) in IPA_BASES {
             // do the first utf8 code points match the first of our symbol?
             let mut ipa_sym = ipa_symbol.nfd();
