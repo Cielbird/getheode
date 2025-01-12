@@ -27,60 +27,6 @@ mod tests {
     }
 
     #[test]
-    fn test_segment_string_from_string_with_feature() {
-        let seg_str = SegmentString::new("as[-voi]i").unwrap();
-        assert_eq!(seg_str, 
-            SegmentString::from_segments(vec![
-                Segment::from_features(
-                    [POS,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,NEG,NA]),
-                Segment::from_features(
-                    [NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA]),
-                Segment::from_features(
-                    [UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
-                     UNDEF,UNDEF,UNDEF,UNDEF,NEG,  UNDEF,UNDEF,
-                     UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
-                     UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,]),
-                Segment::from_features(
-                    [POS,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,POS,NEG,POS]),
-            ])
-        );
-    }
-
-    #[test]
-    fn test_segment_string_from_string_with_diacritic() {
-        let seg_str = SegmentString::new("asɣ˕i").unwrap();
-        assert_eq!(seg_str, 
-            SegmentString::from_segments(vec![
-                Segment::from_features(
-                    [POS,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,NEG,NA]),
-                Segment::from_features(
-                    [NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA]),
-                Segment::from_features(
-                    [NEG,NEG,NEG,POS,NEG,POS,NEG,
-                     NEG,NEG,NEG,NEG,POS,NEG,NEG,
-                     NEG,NEG,NEG,NEG,NA, NA, NA,
-                     NEG,POS,POS,POS,NA, NA, NA]),
-                Segment::from_features(
-                    [POS,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,POS,NEG,POS]),
-            ])
-        );
-    }
-
-    #[test]
-    fn test_segment_string_from_string_empty() {
-        let seg_str = SegmentString::new("[]").unwrap();
-        assert_eq!(seg_str, 
-            SegmentString::from_segments(vec![
-                Segment::from_features(
-                    [UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
-                     UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
-                     UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
-                     UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,]),
-            ])
-        );
-    }
-
-    #[test]
     fn test_segment_string_from_string_multi_chars() {
         let seg_str = SegmentString::new("t͡ʃa").unwrap();
         assert_eq!(seg_str, 

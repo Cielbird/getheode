@@ -55,29 +55,36 @@ impl Segment {
 
     /// construct a segement from an IPA symbol
     /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
-    pub fn from_ipa(ipa_symbol: &str) -> Result<Self> {
+    pub fn from_ipa(input: &str) -> Result<Self> {
         for (symbol, seg) in IPA_BASES {
+            // normalize the 
+            let mut input_norm = input.nfd();
+            let symbol_norm = symbol.nfd();
+
             // do the first utf8 code points match the first of our symbol?
-            let mut ipa_sym = ipa_symbol.nfd();
-            let mut sym = symbol.nfd();
-            let matches = sym
-                .all(|prefix_item| 
-                    ipa_sym.next()
-                            .map_or(false, |item| item == prefix_item));
+            let mut matches = true;
+            for symbol_char in symbol_norm {
+                if input_norm.next() != Some(symbol_char) {
+                    matches = false;
+                    break;
+                }
+            }
             if !matches {
                 // try next symbol
                 continue;
             }
+
             // collect remaining (unchecked) characters
-            let remaining = &ipa_sym.collect::<String>();
-            match Self::add_diacritics(remaining, seg) {
+            let remaining = input_norm.collect::<String>();
+            // if there are no diacritics to add it will do nothing
+            match Self::add_diacritics(&remaining, seg) {
                 Ok(segment) => {
                     return Ok(segment);
                 },
                 Err(_e) => continue
             }
         }
-        let msg = format!("The symbol {} could not be parsed", ipa_symbol);
+        let msg = format!("The symbol {} could not be parsed", input);
         return Err(Error::IPASymbolParsingError(msg))
     }
 
@@ -88,18 +95,28 @@ impl Segment {
         }
         for (symbol, diac) in DIACRITICS {
             // do the first utf8 code points match the first of our symbol?
-            let mut ipa_sym = remaining_chars.nfd();
-            let mut sym = symbol.nfd();
-            let matches = sym
-                .all(|prefix_item| 
-                    ipa_sym.next()
-                            .map_or(false, |item| item == prefix_item));
+            // normalize the 
+            let mut input_norm = remaining_chars.nfd();
+            let symbol_norm = symbol.nfd();
+
+            // do the first utf8 code points match the first of our symbol?
+            let mut matches = true;
+            for symbol_char in symbol_norm {
+                let a = input_norm.next();
+                let b = Some(symbol_char);
+                println!("{:?}, {:?}", a, b);
+                if a != b {
+                    matches = false;
+                    break;
+                }
+            }
             if !matches {
                 // try next symbol
                 continue;
             }
+
             // collect remaining (unchecked) characters
-            let remaining = &ipa_sym.collect::<String>();
+            let remaining = &input_norm.collect::<String>();
             let new_seg = cur_segment.clone() + diac.clone();
             match Self::add_diacritics(remaining, &new_seg) {
                 Ok(segment) => {

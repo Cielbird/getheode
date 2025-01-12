@@ -20,8 +20,15 @@ pub const DIACRITICS: &[(char, Segment)] = &[
 		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
 		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF])
 	),
-	// down tack bellow: lowered
+	// combining down tack below: lowered
 	('\u{031E}', Segment::from_features(
+		[UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
+		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
+		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
+		 UNDEF,UNDEF,UNDEF,POS,  UNDEF,UNDEF,UNDEF])
+	),
+	// modifier down tack: lowered
+	('\u{02D5}', Segment::from_features(
 		[UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
 		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
 		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
