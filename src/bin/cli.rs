@@ -29,24 +29,48 @@ fn valid (lect: &str, input: &str) {
     // validate parameters etc.
     let lect: Lect = read_lect_file(lect).expect("failed reading lect file");
     let input: String = file_or_raw(input).expect("failed reading input");
+    let mut remaining_input: &str = &input;
 
-    // regex to match text within slashes (/likethis/)
-    let re = Regex::new(r"/([^/]+)/").expect("Invalid regex");
+    // regex to match text within slashes (/likethis/) at the beginning
+    let re = Regex::new(r"(/[^/]+/)").expect("Invalid regex");
     
     // Iterate over the matches and output validity
-    re.captures_iter(&input)
-        .filter_map(|cap| cap.get(1)) // Get the first capture group (text inside slashes)
-        .map(|m| m.as_str()) // Extract the matched string slice
-        .all(|s| {
-            let valid = lect.validate_word(s);
-            println!("/{}/: {}", s, if valid { "valid" } else { "invalid" });
-            valid
-        });
+    while let Some(cap) = re.captures(remaining_input) {
+        match cap.get(1) {
+            None => continue,
+            Some(capture) => {
+                let with_slashes = capture.as_str();
+                let without_slashes = with_slashes.trim_matches('/');
+                let valid = lect.validate_word(without_slashes);
+                println!("{}: {}", with_slashes, if valid { "valid" } else { "invalid" });
+                remaining_input = &remaining_input[capture.end()..];
+            }
+        }
+    }
 }
 
 fn surface (lect: &str, input: &str) {
-    println!("getting surface rep!");
-    unimplemented!();
+    // validate parameters etc.
+    let lect: Lect = read_lect_file(lect).expect("failed reading lect file");
+    let input: String = file_or_raw(input).expect("failed reading input");
+    let mut remaining_input: &str = &input;
+
+    // regex to match text within slashes (/likethis/) at the beginning
+    let re = Regex::new(r"(/[^/]+/)").expect("Invalid regex");
+    
+    // Iterate over the matches and output validity
+    while let Some(cap) = re.captures(remaining_input) {
+        match cap.get(1) {
+            None => continue,
+            Some(capture) => {
+                let with_slashes = capture.as_str();
+                let without_slashes = with_slashes.trim_matches('/');
+                let surf_rep = lect.get_surf_rep(without_slashes);
+                println!("{}: {}", with_slashes, surf_rep);
+                remaining_input = &remaining_input[capture.end()..];
+            }
+        }
+    }
 }
 
 fn gen (lect: &str, count: u32, surface: bool) {

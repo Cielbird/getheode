@@ -4,7 +4,8 @@ use std::vec;
 use crate::error::{Error, Error::PhonemeSymbolParsingError, Result};
 use crate::gbnf::grammar::{self, Grammar};
 use crate::phonological_rule::PhonologicalRule;
-use crate::phoneme::Phoneme;
+use crate::phoneme::{self, Phoneme};
+use crate::segment_string::SegmentString;
 use crate::yaml::lect_yaml::LectYaml;
 
 // a lect is a (human) way of speaking. 
@@ -60,6 +61,15 @@ impl Lect {
     }
 
     pub fn validate_word(&self, phonemes: &str) -> bool{
-        return false;
+        let phonemes_result = Phoneme::parse_phonemes(phonemes, &self.phonemes);
+        if phonemes_result.is_err() {
+            return false;
+        }
+        let phonemes = phonemes_result.unwrap();
+        return self.phonotactics.parse_input(phonemes).is_ok();
+    }
+
+    pub fn get_surf_rep(&self, phonemes: &str) -> SegmentString{
+        return SegmentString::empty();
     }
 }

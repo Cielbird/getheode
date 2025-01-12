@@ -60,4 +60,8 @@ impl Grammar {
         }
         return Err(Error::Other(format!("Could not find non-terminal \"{}\"", root)));
     }
+
+    pub fn parse_input(&self, input: Vec<Rc<Phoneme>>) -> Result<String> {
+        return Ok("asdf".to_string());
+    }
 }

@@ -247,7 +247,6 @@ impl SegmentString {
                 continue;
             } else if bounds[i] < end {
                 bounds.remove(i);
-                println!("removed at {}", i);
             } else {
                 // otherwise, adjust as
                 let offset: isize = start as isize - end as isize + replacement.len() as isize;
@@ -264,7 +263,6 @@ impl SegmentString {
                 continue;
             } else if bounds[i] < end {
                 bounds.remove(i);
-                println!("removed at {}", i);
             } else {
                 // otherwise, adjust as
                 bounds[i] += start + replacement.len() - end;

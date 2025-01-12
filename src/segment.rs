@@ -102,10 +102,7 @@ impl Segment {
             // do the first utf8 code points match the first of our symbol?
             let mut matches = true;
             for symbol_char in symbol_norm {
-                let a = input_norm.next();
-                let b = Some(symbol_char);
-                println!("{:?}, {:?}", a, b);
-                if a != b {
+                if input_norm.next() != Some(symbol_char) {
                     matches = false;
                     break;
                 }
