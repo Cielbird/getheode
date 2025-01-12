@@ -1,6 +1,7 @@
 # todo
 
 ## soon
+- switch to using `cfg` library
 - imprive segment diacritic printing
 - add segment diacritic parsing
 - add empty outputs to phonological rules
@@ -17,6 +18,7 @@
   - use of IPA and X-SAMPA should be inter-exchangable: 
   - ipa should be denoted with [] and xsampa with "" or other
 - use this to assign sylable boundaries: http://glottopedia.org/index.php/Maximal_Onset_Principle
+- add glossary to readme
 
 ## maybe
 - use phonotactic production labels in phonological rules
