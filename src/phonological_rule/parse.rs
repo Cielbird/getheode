@@ -1,18 +1,28 @@
-use crate::{error::{Error, Result}, segment_string::SegmentString};
 use core::fmt;
-use regex::Regex;
 use std::fmt::Display;
 
-#[derive(Debug)]
-pub struct PhonologicalRule {
-    pub input_opts: Vec<SegmentString>,
-    pub output: SegmentString,
-    pub pre_context_opts: Vec<SegmentString>,
-    pub post_context_opts: Vec<SegmentString>,
+use regex::Regex;
+
+use crate::error::*;
+use crate::phonological_rule::PhonologicalRule;
+use crate::segment::{FormatSegmentString, SegmentString};
+
+pub trait FromRuleStr
+where
+    Self: Sized,
+{
+    /// Build a phonological rule from a string. For formatting see the README.
+    fn parse(rule_str: &str) -> Result<Self>;
 }
 
-impl PhonologicalRule {
-    pub fn from_string(rule_str: &str) -> Result<Self> {
+pub trait ToRuleStr
+{
+    /// Build formatted phonological rule string. For formatting see the README.
+    fn format(&self) -> String;
+}
+
+impl FromRuleStr for PhonologicalRule {
+    fn parse(rule_str: &str) -> Result<PhonologicalRule> {
         let input_str: &str;
         let output_str: &str;
         let pre_context_str: &str;
@@ -23,15 +33,11 @@ impl PhonologicalRule {
         let mut iter = re.captures_iter(rule_str);
         let first = iter.next();
         if first.is_none() {
-            return Err(Error::PhonologicalRuleParsingError(
-                rule_str.to_string(),
-            ));
+            return Err(Error::PhonologicalRuleParsingError(rule_str.to_string()));
         }
         // there should not be more than one capture
         if iter.next().is_some() {
-            return Err(Error::PhonologicalRuleParsingError(
-                rule_str.to_string(),
-            ));
+            return Err(Error::PhonologicalRuleParsingError(rule_str.to_string()));
         }
         let capts = first.unwrap();
         input_str = capts[1].trim();
@@ -53,12 +59,12 @@ impl PhonologicalRule {
         }
         // input should never have no options
         if input_opts.len() == 0 {
-            input_opts.push(SegmentString::new("").unwrap());
+            input_opts.push(SegmentString::parse("").unwrap());
         }
 
         // parse output
         let output;
-        match SegmentString::new(&output_str) {
+        match SegmentString::parse(&output_str) {
             Ok(seg_str) => output = seg_str,
             Err(e) => return Err(e),
         }
@@ -88,69 +94,10 @@ impl PhonologicalRule {
             post_context_opts: post_context_opts,
         });
     }
-
-    pub fn apply(&self, s: &SegmentString) -> Result<SegmentString> {
-        // string we will be modifying and returning
-        let mut string = s.clone();
-
-        for input in self.input_opts.iter() {
-            let mut i = 0;
-            while i < string.len() {
-                if !string.is_match(input, i) {
-                    i += 1;
-                    continue;
-                }
-                // input matches
-
-                let mut is_context_match = self.pre_context_opts.len() == 0;
-                for pre in self.pre_context_opts.iter() {
-                    if i < pre.len() {
-                        continue;
-                    }
-                    if string.is_match(pre, i - pre.len()) {
-                        is_context_match = true;
-                    }
-                }
-                if !is_context_match {
-                    break;
-                }
-                // precontext matches
-
-                is_context_match = self.post_context_opts.len() == 0;
-                for post in self.post_context_opts.iter() {
-                    if string.is_match(post, i + input.len()) {
-                        is_context_match = true;
-                    }
-                }
-                if !is_context_match {
-                    break;
-                }
-                // postcontext matches
-
-                // input, precondition, and postcondition all match, so we apply the change
-                let from_index = i;
-                let to_index = i + input.len();
-
-                // if input and output are the same length, add the segments of corresponding indices
-                if self.output.len() == to_index - from_index {
-                    for i in from_index..to_index {
-                        let new_seg = string[i].clone() + self.output[i - from_index].clone();
-                        string[i] = new_seg;
-                    }
-                } else {
-                    // simple splice
-                    string.replace(from_index, to_index, &self.output);
-                }
-                i += self.output.len();
-            }
-        }
-        return Result::Ok(string);
-    }
 }
 
-/// returns the segment's defined non-NA features, concatenated
-impl Display for PhonologicalRule {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl ToRuleStr for PhonologicalRule {
+    fn format(&self) -> String {
         // format input
         let input_str = format_seg_string_opts(&self.input_opts);
 
@@ -159,7 +106,7 @@ impl Display for PhonologicalRule {
 
         // format rule, do we have context or not?
         if self.pre_context_opts.len() == 0 && self.post_context_opts.len() == 0 {
-            return write!(f, "{} -> {}", input_str, output_str);
+            return format!("{} -> {}", input_str, output_str);
         } else {
             // format precontext
             let pre_context_str = format_seg_string_opts(&self.pre_context_opts);
@@ -167,12 +114,17 @@ impl Display for PhonologicalRule {
             // format postcontext
             let post_context_str = format_seg_string_opts(&self.post_context_opts);
 
-            return write!(
-                f,
+            return format!(
                 "{} -> {} / {}_{}",
                 input_str, output_str, pre_context_str, post_context_str
             );
         }
+    }
+}
+
+impl Display for PhonologicalRule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.format())
     }
 }
 
@@ -195,7 +147,7 @@ fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>> {
         if opt == "" {
             continue;
         }
-        match SegmentString::new(opt) {
+        match SegmentString::parse(opt) {
             Ok(seg) => seg_str_opts.push(seg.clone()),
             Err(e) => return Err(e),
         }

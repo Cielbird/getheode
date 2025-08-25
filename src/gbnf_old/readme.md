@@ -1,8 +1,7 @@
-# gbnf: getheode's Backus–Naur form
+# gbnf: geþeode's Backus–Naur form
 
-`gbnf` is a syntax for defining phonotactic structure with getheode
-
-losely adapted this lib to segment strings: https://docs.rs/bnf/latest/bnf/#output
+`gbnf` is the syntax for defining phonotactic structure with geþeode. the syntax defines a 
+context-free grammar. the `cfg` crate is used under the hood.
 
 ## syntax
 

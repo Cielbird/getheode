@@ -1,16 +1,23 @@
 [package]
 name = "getheode"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 default-run = "getheode"
 
 [dependencies]
-rand = "0.8" # Or the latest version
-serde = { version = "1.0", features = ["derive"] }
+rand = "0.9.1" # Or the latest version
+serde = { version = "1.0.219", features = ["derive"] }
 serde_yml = "0.0.12"
-clap = "4.5.9"
-regex = "1"
-unicode-normalization = "0.1.20"
+clap = "4.5.37"
+regex = "1.11.1"
+unicode-normalization = "0.1.24"
+cfg = "0.9.0"
+
+[dependencies.uuid]
+version = "1.15.1"
+features = [
+    "v4",
+]
 
 [[bin]]
 name = "getheode"

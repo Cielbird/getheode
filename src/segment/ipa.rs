@@ -1,5 +1,4 @@
-use crate::feature::FeatureState::{NA, NEG, POS};
-use crate::segment::Segment;
+use crate::segment::{FeatureState::{NA, NEG, POS}, Segment};
 
 // syl,stress,long,cons,son,cont,delrel,approx,tap,trill,nasal,voi,spgl,congl,lab,round,labdent,cor,ant,dist,strident,lateral,dor,high,low,front,back,tense
 

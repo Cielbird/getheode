@@ -15,7 +15,7 @@ pub enum Error {
     YamlFormatError(String),
     Io(std::io::Error),
 
-    Other(String)
+    Other(String),
 }
 
 impl fmt::Display for Error {
@@ -32,13 +32,13 @@ impl std::error::Error for Error {
 }
 
 impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self { 
+    fn from(e: std::io::Error) -> Self {
         return Self::Io(e);
     }
 }
 
 impl From<serde_yml::Error> for Error {
-    fn from(e: serde_yml::Error) -> Self { 
+    fn from(e: serde_yml::Error) -> Self {
         return Self::YamlSyntaxError(e);
     }
 }

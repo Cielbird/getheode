@@ -1,6 +1,5 @@
 use unicode_normalization::UnicodeNormalization;
 
-
 fn main() {
     let string_a = "\u{00E9}";
     let string_b = "e\u{0301}";
