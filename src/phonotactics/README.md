@@ -5,6 +5,8 @@ Phonotactics are the rules for how [phonemes](../phoneme/README.md) can be arran
 
 ## Formatting
 
+Getheode has rules for parsing and formatting phonological rules.
+
 Phonotactic productions are written with Getheode's GBNF format.
 
 Example:

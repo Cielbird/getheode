@@ -1,4 +1,7 @@
-use crate::{phoneme::{Phoneme, PhonemeId}, segment::{Segment}};
+use crate::{
+    phoneme::{Phoneme, PhonemeId},
+    segment::Segment,
+};
 use std::collections::HashMap;
 
 pub struct PhonemeBank {
@@ -14,10 +17,10 @@ impl PhonemeBank {
     }
 
     /// Adds a new phoneme
-    /// 
+    ///
     /// # Returns
-    /// 
-    /// The id of the new phoneme, or `None` if a phoneme with the same symbol is already in the 
+    ///
+    /// The id of the new phoneme, or `None` if a phoneme with the same symbol is already in the
     /// bank
     pub fn add(&mut self, segment: Segment, symbol: String) -> Option<PhonemeId> {
         // if an equal phoneme is alread in the bank, return false

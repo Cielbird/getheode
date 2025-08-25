@@ -15,8 +15,7 @@ where
     fn parse(rule_str: &str) -> Result<Self>;
 }
 
-pub trait ToRuleStr
-{
+pub trait ToRuleStr {
     /// Build formatted phonological rule string. For formatting see the README.
     fn format(&self) -> String;
 }

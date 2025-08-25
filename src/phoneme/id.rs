@@ -1,4 +1,3 @@
-
 pub type PhonemeIdRepr = u32;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -9,4 +8,3 @@ impl From<u64> for PhonemeId {
         Self(value)
     }
 }
-

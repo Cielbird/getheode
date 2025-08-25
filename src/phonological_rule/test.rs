@@ -2,7 +2,10 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::{phonological_rule::{FromRuleStr, PhonologicalRule}, segment::{FormatIpa, FormatSegmentString, Segment, SegmentString}};
+    use crate::{
+        phonological_rule::{FromRuleStr, PhonologicalRule},
+        segment::{FormatIpa, FormatSegmentString, Segment, SegmentString},
+    };
 
     #[test]
     fn test_from_rule_string() {
@@ -20,10 +23,8 @@ mod tests {
         assert_eq!(rule.post_context_opts, vec![]);
     }
 
-
     #[test]
-    fn test_rule_single_context()
-    {
+    fn test_rule_single_context() {
         let rule = PhonologicalRule::parse("i -> j /_C").unwrap();
 
         let i_seg = SegmentString::parse("i").unwrap();
@@ -37,10 +38,8 @@ mod tests {
         assert_eq!(rule.post_context_opts, vec![cons_seg]);
     }
 
-
     #[test]
-    fn test_rule_multi_options()
-    {
+    fn test_rule_multi_options() {
         let rule = PhonologicalRule::parse("{i, es} -> j /{a, o}_").unwrap();
 
         let i_seg = SegmentString::parse("i").unwrap();
@@ -84,4 +83,3 @@ mod tests {
         )
     }
 }
-

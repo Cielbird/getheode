@@ -4,7 +4,8 @@ use unicode_normalization::UnicodeNormalization;
 use crate::{
     error::*,
     segment::{
-        feature_from_string, FeatureState, Segment, DIACRITICS, FEATURE_NAMES, IPA_BASES, NATURAL_CLASSES
+        DIACRITICS, FEATURE_NAMES, FeatureState, IPA_BASES, NATURAL_CLASSES, Segment,
+        feature_from_string,
     },
 };
 
@@ -67,7 +68,7 @@ pub trait FormatSegment: FormatIpa + FormatFeatureSet + FormatPhonologicalClass 
     }
 }
 
-impl FormatSegment for Segment { 
+impl FormatSegment for Segment {
     fn format_segment(&self) -> String {
         // see if there is a matching ipa symbol
         for (sym, seg) in IPA_BASES {

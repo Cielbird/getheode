@@ -2,7 +2,6 @@ use crate::error::{Error, Result};
 
 /// a feature of a phonological segment
 
-// these constants exis because rust enums are nothing like C enums. unfortunate discovery.
 // MAJOR CLASS
 pub const SYL: u8 = 0;
 pub const STRESS: u8 = 1;
@@ -66,6 +65,3 @@ pub enum FeatureState {
     NEG, // (-) not present in the segment
     NA,  // not applicable, could be either positive or negative for this segment, we don't care
 }
-
-// 28 features, each has 4 possible values: fixed width struct
-// 56 bits per segment, 7 bytes

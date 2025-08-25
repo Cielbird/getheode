@@ -2,8 +2,8 @@
 #[cfg(test)]
 mod segment_tests {
     use crate::segment::FeatureState::{NA, NEG, POS, UNDEF};
-    use crate::segment::{FormatFeatureSet, Segment};
     use crate::segment::FormatIpa;
+    use crate::segment::{FormatFeatureSet, Segment};
 
     // TODO: see the todo in phonological_rule_test.rs: these tests are lazy
     #[test]

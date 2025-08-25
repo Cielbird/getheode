@@ -1,6 +1,4 @@
-use crate::{
-    segment::Segment,
-};
+use crate::segment::Segment;
 
 /// a struct for representing a phoneme
 #[derive(Clone, Debug, PartialEq)] //Deserialize, Serialize,

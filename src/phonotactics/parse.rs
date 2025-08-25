@@ -28,11 +28,13 @@ impl FromGbnf for Phonotactics {
     }
 }
 
-
 /// Parse a production in GBNF format.
 ///
 /// Return
-pub(crate) fn parse_gbnf_production(phonemes: &PhonemeBank, prod: &str) -> Result<(String, Vec<Vec<Term>>)> {
+pub(crate) fn parse_gbnf_production(
+    phonemes: &PhonemeBank,
+    prod: &str,
+) -> Result<(String, Vec<Vec<Term>>)> {
     // Split line into lhs and rhs
     let parts: Vec<&str> = prod.split("::=").map(str::trim).collect();
     if parts.len() != 2 {

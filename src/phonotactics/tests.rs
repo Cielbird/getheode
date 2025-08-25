@@ -2,7 +2,7 @@ use cfg::{Cfg, RuleContainer};
 
 use crate::{
     phoneme::PhonemeBank,
-    phonotactics::{parse::parse_gbnf_production, FromGbnf, Phonotactics, Term},
+    phonotactics::{FromGbnf, Phonotactics, Term, parse::parse_gbnf_production},
     segment::{FormatIpa, Segment},
 };
 
@@ -111,7 +111,7 @@ fn test_from_gbnf() {
     };
 }
 
-/// Assert the grammars are equal. The generation of the symbols and rules must have been done 
+/// Assert the grammars are equal. The generation of the symbols and rules must have been done
 /// in the same order.
 pub fn assert_cfg_eq(lhs: &Cfg, rhs: &Cfg) {
     let rules_lhs = lhs

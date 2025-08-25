@@ -1,5 +1,5 @@
 pub use crate::error::*;
-use crate::segment::{FormatSegment, Segment, SegmentString, SYL_BOUND_STR, WORD_BOUND_STR};
+use crate::segment::{FormatSegment, SYL_BOUND_STR, Segment, SegmentString, WORD_BOUND_STR};
 
 /// Defines the formatting of a segment string
 pub trait FormatSegmentString {
@@ -11,7 +11,6 @@ pub trait FormatSegmentString {
     /// Format as an ipa character string
     fn format(&self) -> String;
 }
-
 
 impl FormatSegmentString for SegmentString {
     /// constructs a segment string from a text string.
