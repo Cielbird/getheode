@@ -73,7 +73,7 @@ impl FormatSegment for Segment {
         // see if there is a matching ipa symbol
         for (sym, seg) in IPA_BASES {
             if seg == self {
-                return format!("{}", sym);
+                return sym.to_string();
             }
             // WARNING this tries all possible ipa symbols with all possible diacritics.
             // not only is it limited to only one diacritic, but it is extremely slow, in theory.
@@ -87,7 +87,7 @@ impl FormatSegment for Segment {
                 if (seg.clone() + d_seg.clone()) == *self {
                     let mut s = sym.to_string();
                     s.push(*d);
-                    return format!("{}", s);
+                    return s.to_string();
                 }
             }
         }
@@ -95,7 +95,7 @@ impl FormatSegment for Segment {
         // see if there is a matching class
         for (sym, seg) in NATURAL_CLASSES {
             if seg == self {
-                return format!("{}", sym);
+                return sym.to_string();
             }
         }
 
@@ -110,7 +110,8 @@ impl FormatSegment for Segment {
                 result = result + "-" + feature;
             }
         }
-        return format!("{}", result + "]");
+        
+        (result + "]").to_string()
     }
 }
 
@@ -147,7 +148,7 @@ impl FormatIpa for Segment {
             }
         }
         let msg = format!("The symbol {} could not be parsed", input);
-        return Err(Error::IPASymbolParsingError(msg));
+        Err(Error::IPASymbolParsingError(msg))
     }
 
     fn format_ipa(&self) -> String {
@@ -157,7 +158,7 @@ impl FormatIpa for Segment {
 
 /// recursive function to add the ipa diacritics in a string to a segment
 fn parse_remaining_diacritics(remaining_chars: &str, cur_segment: &Segment) -> Result<Segment> {
-    if remaining_chars.len() == 0 {
+    if remaining_chars.is_empty() {
         return Ok(cur_segment.clone());
     }
     for (symbol, diac) in DIACRITICS {
@@ -190,7 +191,7 @@ fn parse_remaining_diacritics(remaining_chars: &str, cur_segment: &Segment) -> R
         }
     }
     let msg = format!("The symbol {} could not be parsed", remaining_chars);
-    return Err(Error::IPASymbolParsingError(msg));
+    Err(Error::IPASymbolParsingError(msg))
 }
 
 impl FormatPhonologicalClass for Segment {
@@ -201,7 +202,7 @@ impl FormatPhonologicalClass for Segment {
                 return Ok(seg.clone());
             }
         }
-        return Err(Error::IPASymbolParsingError(class_symbol.to_string()));
+        Err(Error::IPASymbolParsingError(class_symbol.to_string()))
     }
 
     fn format_class(&self) -> String {
@@ -219,7 +220,7 @@ impl FormatFeatureSet for Segment {
         let mut inner = &s[1..(s.len() - 1)];
         let mut seg = Self::new_undef();
         let re = Regex::new(r"^\s*([+-])\s*([a-z]+)").unwrap();
-        while inner != "" {
+        while !inner.is_empty() {
             let sign: char;
             let name_match;
             let name: &str;
@@ -233,13 +234,12 @@ impl FormatFeatureSet for Segment {
                     return Err(Error::SegmentParsingError(inner.to_string()));
                 }
             }
-            let feature;
-            match feature_from_string(name) {
-                Ok(f) => feature = f,
+            let feature = match feature_from_string(name) {
+                Ok(f) => f,
                 Err(e) => {
                     return Err(e);
                 }
-            }
+            };
             // set feature
             if sign == '+' {
                 seg.features[feature as usize] = FeatureState::POS;
@@ -247,9 +247,9 @@ impl FormatFeatureSet for Segment {
                 seg.features[feature as usize] = FeatureState::NEG;
             }
 
-            inner = &inner[name_match.end()..inner.len()].trim();
+            inner = inner[name_match.end()..inner.len()].trim();
         }
-        return Ok(seg);
+        Ok(seg)
     }
 
     fn format_feature_set(&self) -> String {

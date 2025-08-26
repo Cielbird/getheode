@@ -7,20 +7,45 @@ use crate::error::*;
 use crate::phonological_rule::PhonologicalRule;
 use crate::segment::{FormatSegmentString, SegmentString};
 
-pub trait FromRuleStr
-where
-    Self: Sized,
-{
+///
+pub trait FormatRuleStr {
     /// Build a phonological rule from a string. For formatting see the README.
-    fn parse(rule_str: &str) -> Result<Self>;
-}
-
-pub trait ToRuleStr {
+    fn parse(rule_str: &str) -> Result<Self>
+    where
+        Self: Sized;
     /// Build formatted phonological rule string. For formatting see the README.
     fn format(&self) -> String;
 }
 
-impl FromRuleStr for PhonologicalRule {
+/// Defines how a phonological realization rules file is is parsed and formatted
+pub trait FormatRulesFile: FormatRuleStr {
+    fn parse_file(rules: &str) -> Result<Vec<Self>>
+    where
+        Self: Sized,
+    {
+        let mut out = vec![];
+        for rule in rules.split('\n') {
+            let rule = rule.trim();
+            // Skip comments with # and empty lines
+            if rule.starts_with('#') || rule.is_empty() {
+                continue;
+            }
+            out.push(FormatRuleStr::parse(rule)?);
+        }
+        Ok(out)
+    }
+    fn format_file(rules: Vec<PhonologicalRule>) -> String {
+        let mut out = String::new();
+        for rule in rules {
+            out += &FormatRuleStr::format(&rule);
+        }
+        out
+    }
+}
+
+impl<T> FormatRulesFile for T where T: FormatRuleStr {}
+
+impl FormatRuleStr for PhonologicalRule {
     fn parse(rule_str: &str) -> Result<PhonologicalRule> {
         let input_str: &str;
         let output_str: &str;
@@ -93,9 +118,7 @@ impl FromRuleStr for PhonologicalRule {
             post_context_opts: post_context_opts,
         });
     }
-}
 
-impl ToRuleStr for PhonologicalRule {
     fn format(&self) -> String {
         // format input
         let input_str = format_seg_string_opts(&self.input_opts);

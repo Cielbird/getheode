@@ -27,9 +27,9 @@ impl Segment {
 
     /// construct a segement with all features undefied
     pub const fn new_undef() -> Self {
-        return Segment {
+        Segment {
             features: [FeatureState::UNDEF; FEATURE_COUNT as usize],
-        };
+        }
     }
 
     /// returns true if the segment is complete, ie, completely defined for all features.
@@ -41,7 +41,7 @@ impl Segment {
                 return false;
             }
         }
-        return true;
+        true
     }
 
     /// returns true if this segment matches `other`'s defined features.  
@@ -53,15 +53,14 @@ impl Segment {
     /// otherwise, returns false.
     pub fn matches(&self, other: &Segment) -> bool {
         for i in 0..(FEATURE_COUNT as usize) {
-            if other.features[i] == UNDEF {
-                continue;
-            } else if other.features[i] == self.features[i] {
+            if other.features[i] == UNDEF || other.features[i] == self.features[i] {
                 continue;
             } else {
                 return false;
             }
         }
-        return true;
+
+        true
     }
 
     /// returns the number of features that would have to change
@@ -73,7 +72,8 @@ impl Segment {
                 dist += 1;
             }
         }
-        return dist;
+
+        dist
     }
 }
 
@@ -88,10 +88,10 @@ impl Add<Segment> for Segment {
         let mut result = self.clone();
         for i in 0..(FEATURE_COUNT as usize) {
             if s2.features[i] != UNDEF {
-                result.features[i] = s2.features[i].clone();
+                result.features[i] = s2.features[i];
             }
         }
-        return result;
+        result
     }
 }
 
@@ -102,7 +102,8 @@ impl Add<Feature> for Segment {
     fn add(self, feature: Feature) -> Self {
         let mut result = self.clone();
         result.features[feature as usize] = POS;
-        return result;
+
+        result
     }
 }
 
@@ -113,7 +114,8 @@ impl Sub<Feature> for Segment {
     fn sub(self, feature: Feature) -> Self {
         let mut result = self.clone();
         result.features[feature as usize] = NEG;
-        return result;
+
+        result
     }
 }
 
@@ -124,8 +126,8 @@ impl Display for Segment {
     }
 }
 
-impl Into<SegmentString> for Segment {
-    fn into(self) -> SegmentString {
-        SegmentString::from_segments(vec![self.clone()])
+impl From<Segment> for SegmentString {
+    fn from(val: Segment) -> Self {
+        SegmentString::from_segments(vec![val.clone()])
     }
 }

@@ -18,7 +18,7 @@ impl FormatSegmentString for SegmentString {
     /// - initial and trailing whitespace is ignored.
     /// - hash (#) is interpreted as a word boundary.
     /// - ([unimplemented]) `.` is interpreted as a sylable boundary... TODO check if really unimplemented
-    /// `put_word_bounds`: if true, word bounderies will be placed at the extemeties of the segment string.
+    ///   `put_word_bounds`: if true, word bounderies will be placed at the extemeties of the segment string.
     ///
     /// TODO this can be recursive
     /// TODO needs to read diacritics
@@ -46,44 +46,44 @@ impl FormatSegmentString for SegmentString {
                     if char_str == WORD_BOUND_STR {
                         // is the word boundary at the same spot as another sylable boundary?
                         let bounds = &seg_str.syl_boundaries;
-                        if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
+                        if !bounds.is_empty() && bounds[bounds.len() - 1] == seg_str.segs.len() {
                             return Err(Error::SegmentStringParsingError(format!(
                                 "cannot add a sylable boundary and a word boundary in the same spot: {}",
-                                s[0..(start + 1)].to_string()
+                                &s[0..(start + 1)]
                             )));
                         }
                         // word boundary?
                         let bounds = &mut seg_str.word_boundaries;
-                        if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
+                        if !bounds.is_empty() && bounds[bounds.len() - 1] == seg_str.segs.len() {
                             return Err(Error::SegmentStringParsingError(format!(
                                 "cannot have multiple word boundaries in the same spot: {}",
-                                s[0..(start + 1)].to_string()
+                                &s[0..(start + 1)]
                             )));
                         }
 
                         bounds.push(seg_str.segs.len());
-                        start = start + 1;
+                        start += 1;
                         end = start + 1;
                         continue;
                     } else if char_str == SYL_BOUND_STR {
                         // is the sylable boundary at the same spot as another word boundary?
                         let bounds = &seg_str.word_boundaries;
-                        if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
+                        if !bounds.is_empty() && bounds[bounds.len() - 1] == seg_str.segs.len() {
                             return Err(Error::SegmentStringParsingError(format!(
                                 "cannot add a sylable boundary and a word boundary in the same spot: {}",
-                                s[0..(start + 1)].to_string()
+                                &s[0..(start + 1)]
                             )));
                         }
                         // sylable boundary?
                         let bounds = &mut seg_str.syl_boundaries;
-                        if bounds.len() > 0 && bounds[bounds.len() - 1] == seg_str.segs.len() {
+                        if !bounds.is_empty() && bounds[bounds.len() - 1] == seg_str.segs.len() {
                             return Err(Error::SegmentStringParsingError(format!(
                                 "cannot have multiple sylable boundaries in the same spot: {}",
-                                s[0..(start + 1)].to_string()
+                                &s[0..(start + 1)]
                             )));
                         }
                         bounds.push(seg_str.segs.len());
-                        start = start + 1;
+                        start += 1;
                         end = start + 1;
                         continue;
                     }
@@ -129,12 +129,12 @@ impl FormatSegmentString for SegmentString {
                 // if not, return error
                 return Err(Error::SegmentStringParsingError(format!(
                     "Could not parse a segment out of the remaining string:\n{}",
-                    s[start..s.len()].to_string()
+                    &s[start..s.len()]
                 )));
             }
         }
 
-        return Ok(seg_str);
+        Ok(seg_str)
     }
 
     fn format(&self) -> String {
@@ -144,13 +144,13 @@ impl FormatSegmentString for SegmentString {
         let mut word_bounds = self.word_boundaries.clone();
         let mut syl_bounds = self.syl_boundaries.clone();
         for i in 0..(self.segs.len() + 1) {
-            if word_bounds.len() > 0 && i == word_bounds[0] {
+            if !word_bounds.is_empty() && i == word_bounds[0] {
                 word_bounds.remove(0);
                 if show_edge_bounds || i != 0 && i != self.segs.len() {
                     s.push_str(WORD_BOUND_STR)
                 }
             }
-            if syl_bounds.len() > 0 && i == syl_bounds[0] {
+            if !syl_bounds.is_empty() && i == syl_bounds[0] {
                 syl_bounds.remove(0);
                 if show_edge_bounds || i != 0 && i != self.segs.len() {
                     s.push_str(SYL_BOUND_STR)
@@ -160,6 +160,6 @@ impl FormatSegmentString for SegmentString {
                 s.push_str(&self.segs[i].to_string());
             }
         }
-        format!("{}", s)
+        s.to_string()
     }
 }

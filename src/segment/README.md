@@ -7,7 +7,7 @@ IPA characters. In the word "help", there are 4 segments: [h], [ɛ], [l] and [p]
 
 ## Features
 
-In Getheode, segments are stored as a set of feature states. There are 28 features that can differentiate different segments. Each feature can be positive (+), negative (-), non-applicable, or undefined. 
+In Getheode, segments are stored as a set of distrinctive feature states. There are 28 distinctive features that can differentiate different segments. Each feature can be positive (+), negative (-), non-applicable, or undefined. 
 
 Any sound in any human language can be differentiated via these 28 features. It is worth noting that the topic of features, and which should exist, is a debated subject among linguists.
 

@@ -10,10 +10,21 @@ pub trait FormatPhonemeBank {
     fn format(&self) -> String;
 }
 
+/// Defines how to parse a sequence of phonemes
+pub trait FormatPhonemes {
+    fn parse_phonemes(&self, phonemes_str: &str) -> Result<Vec<PhonemeId>>;
+    fn format_phonemes(&self, phonemes: Vec<PhonemeId>) -> String;
+}
+
 impl FormatPhonemeBank for PhonemeBank {
     fn parse(input: &str) -> Result<Self> {
         let mut result = Self::new();
         for input in input.split('\n') {
+            let input = input.trim();
+            // Skip comments with # and empty lines
+            if input.starts_with('#') || input.is_empty() {
+                continue;
+            }
             let parts = input.split(':').collect::<Vec<&str>>();
             if parts.len() == 1 {
                 // <segment>
@@ -41,6 +52,49 @@ impl FormatPhonemeBank for PhonemeBank {
     }
 }
 
+impl FormatPhonemes for PhonemeBank {
+    /// parses a string and identifies the sequence of phonemes used
+    /// the phoneme symbols are used to identify them.
+    /// first match found is used, so if there are issues with findinf phonemes,
+    /// consider reordering the phoneme inventory.
+    fn parse_phonemes(&self, phonemes_str: &str) -> Result<Vec<PhonemeId>> {
+        // remove all whitespace
+        let input: String = phonemes_str
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect();
+
+        let mut remaining_input: &str = &input;
+        let mut result: Vec<PhonemeId> = vec![];
+
+        while !remaining_input.is_empty() {
+            // the phoneme symbol that matches is chosen
+            let mut found = false;
+            for (id, phoneme) in &self.phonemes {
+                let sym = &phoneme.symbol;
+                if remaining_input.starts_with(sym) {
+                    // first match
+                    result.push(*id);
+                    found = true;
+                    remaining_input = &remaining_input[sym.len()..];
+                    break;
+                }
+            }
+            if !found {
+                return Err(Error::PhonemeSymbolParsingError(format!(
+                    "Could not parse the phonemes of the string \"{}\"",
+                    input
+                )));
+            }
+        }
+        return Ok(result);
+    }
+
+    fn format_phonemes(&self, _phonemes: Vec<PhonemeId>) -> String {
+        todo!()
+    }
+}
+
 /// Parses the next phoneme from bank of phonemes in a string, returns the id of the next phoneme
 /// and the string
 pub fn parse_next_phoneme<'a>(
@@ -57,38 +111,4 @@ pub fn parse_next_phoneme<'a>(
     }
 
     None
-}
-
-/// parses a string and identifies the sequence of phonemes used
-/// the phoneme symbols are used to identify them.
-/// first match found is used, so if there are issues with findinf phonemes,
-/// consider reordering the phoneme inventory.
-pub fn parse_phonemes(phonemes: &PhonemeBank, input: &str) -> Result<Vec<PhonemeId>> {
-    // remove all whitespace
-    let input: String = input.chars().filter(|c| !c.is_whitespace()).collect();
-
-    let mut remaining_input: &str = &input;
-    let mut result: Vec<PhonemeId> = vec![];
-
-    while !remaining_input.is_empty() {
-        // the phoneme symbol that matches is chosen
-        let mut found = false;
-        for (id, phoneme) in &phonemes.phonemes {
-            let sym = &phoneme.symbol;
-            if remaining_input.starts_with(sym) {
-                // first match
-                result.push(*id);
-                found = true;
-                remaining_input = &remaining_input[sym.len()..];
-                break;
-            }
-        }
-        if !found {
-            return Err(Error::PhonemeSymbolParsingError(format!(
-                "Could not parse the phonemes of the string \"{}\"",
-                input
-            )));
-        }
-    }
-    return Ok(result);
 }

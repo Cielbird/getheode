@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        phonological_rule::{FromRuleStr, PhonologicalRule},
+        phonological_rule::{FormatRuleStr, PhonologicalRule},
         segment::{FormatIpa, FormatSegmentString, Segment, SegmentString},
     };
 

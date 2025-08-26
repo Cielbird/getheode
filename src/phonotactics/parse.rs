@@ -6,13 +6,15 @@ use crate::{
     phonotactics::{Phonotactics, Term},
 };
 
-pub trait FromGbnf {
-    fn from_gbnf(phonemes: &PhonemeBank, contents: String) -> Result<Phonotactics>;
+/// Defines how to format phonotactics as the contents of a gbnf file
+pub trait FormatGbnf {
+    fn parse_gbnf(phonemes: &PhonemeBank, contents: &str) -> Result<Phonotactics>;
+    fn format_gbnf(phonemes: &PhonemeBank, phonotactics: Phonotactics) -> String;
 }
 
-impl FromGbnf for Phonotactics {
+impl FormatGbnf for Phonotactics {
     /// Read contents in gbnf format into
-    fn from_gbnf(phonemes: &PhonemeBank, contents: String) -> Result<Self> {
+    fn parse_gbnf(phonemes: &PhonemeBank, contents: &str) -> Result<Self> {
         let mut phonotactics = Self::new();
         let lines = contents.split("\n");
         for line in lines {
@@ -25,6 +27,10 @@ impl FromGbnf for Phonotactics {
         }
 
         Ok(phonotactics)
+    }
+
+    fn format_gbnf(_phonemes: &PhonemeBank, _phonotactics: Phonotactics) -> String {
+        todo!()
     }
 }
 

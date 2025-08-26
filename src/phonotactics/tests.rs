@@ -2,7 +2,7 @@ use cfg::{Cfg, RuleContainer};
 
 use crate::{
     phoneme::PhonemeBank,
-    phonotactics::{FromGbnf, Phonotactics, Term, parse::parse_gbnf_production},
+    phonotactics::{FormatGbnf, Phonotactics, Term, parse::parse_gbnf_production},
     segment::{FormatIpa, Segment},
 };
 
@@ -59,7 +59,7 @@ fn test_from_gbnf() {
     "
     .to_string();
 
-    let phonotactics = Phonotactics::from_gbnf(&bank, contents).expect("GBNF Parsing failed");
+    let phonotactics = Phonotactics::parse_gbnf(&bank, &contents).expect("GBNF Parsing failed");
 
     // since our assert_cfg_eq is naive, order matters in symbol generation.
     let mut expected_cfg = Cfg::new();

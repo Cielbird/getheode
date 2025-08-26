@@ -1,6 +1,6 @@
 use crate::{
     phoneme::{Phoneme, PhonemeId},
-    segment::Segment,
+    segment::{Segment, SegmentString},
 };
 use std::collections::HashMap;
 
@@ -35,6 +35,17 @@ impl PhonemeBank {
         Some(id)
     }
 
+    /// Get the underlying representation of a sequence of phonemes
+    pub fn underlying_rep(&self, phonemes: Vec<PhonemeId>) -> SegmentString {
+        let mut underlying = SegmentString::new();
+        for id in phonemes {
+            let phoneme = self.phonemes.get(&id).unwrap();
+            underlying.push(phoneme.segment.clone());
+        }
+        underlying
+    }
+
+    /// Generate a new id for a phoneme, unique for this bank
     fn new_id(&mut self) -> PhonemeId {
         let mut i: u64 = 0;
         loop {
