@@ -41,7 +41,7 @@ fn test_phonemes_sylables() {
         .add(Segment::parse_ipa("a").unwrap(), "a".to_string())
         .unwrap();
 
-    let string = PhonemeString::parse_phonemes("/ti.ta'at.ai/", &bank)
+    let string = PhonemeString::parse_phonemes("/'ti.ta'at.ai/", &bank)
         .expect("Phoneme string parsing failed");
 
     let expected = PhonemeString {
@@ -50,7 +50,7 @@ fn test_phonemes_sylables() {
             PhonemeStringSylable {
                 start: 0,
                 end: 2,
-                stressed: false,
+                stressed: true,
             },
             PhonemeStringSylable {
                 start: 2,

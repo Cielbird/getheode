@@ -3,6 +3,7 @@ s -> es / #_
 
 us -> o
 kt -> t͡ʃ
+e -> / _#
 
 # vowel shifts
 e -> a / C_C

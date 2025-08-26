@@ -80,13 +80,14 @@ impl PhonemeString {
         };
 
         while !remaining_input.is_empty() {
-            println!("{remaining_input}");
             // parse a sylable maker (. or ')
             let stressed_syl = remaining_input.starts_with('\'');
             let unstressed_syl = remaining_input.starts_with('.');
             if stressed_syl || unstressed_syl {
                 // record the last sylable
-                result.sylables.push(cur_sylable.clone());
+                if cur_sylable.start < cur_sylable.end {
+                    result.sylables.push(cur_sylable.clone());
+                }
                 // start the next sylable
                 cur_sylable = PhonemeStringSylable {
                     start: index,
