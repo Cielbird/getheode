@@ -7,7 +7,6 @@ use crate::error::*;
 use crate::phonological_rule::PhonologicalRule;
 use crate::segment::{FormatSegmentString, SegmentString};
 
-///
 pub trait FormatRuleStr {
     /// Build a phonological rule from a string. For formatting see the README.
     fn parse(rule_str: &str) -> Result<Self>
@@ -47,8 +46,6 @@ impl<T> FormatRulesFile for T where T: FormatRuleStr {}
 
 impl FormatRuleStr for PhonologicalRule {
     fn parse(rule_str: &str) -> Result<PhonologicalRule> {
-        let input_str: &str;
-        let output_str: &str;
         let pre_context_str: &str;
         let post_context_str: &str;
         // parse rule for input, output and contexts
@@ -64,8 +61,8 @@ impl FormatRuleStr for PhonologicalRule {
             return Err(Error::PhonologicalRuleParsingError(rule_str.to_string()));
         }
         let capts = first.unwrap();
-        input_str = capts[1].trim();
-        output_str = capts[2].trim();
+        let input_str: &str = capts[1].trim();
+        let output_str: &str = capts[2].trim();
         // if there is context
         if let Some(_x) = capts.get(3) {
             pre_context_str = capts[3].trim();
@@ -77,26 +74,23 @@ impl FormatRuleStr for PhonologicalRule {
 
         // parse input
         let mut input_opts;
-        match parse_seg_string_opts(&input_str) {
+        match parse_seg_string_opts(input_str) {
             Ok(seg_str_opts) => input_opts = seg_str_opts,
             Err(e) => return Err(e),
         }
         // input should never have no options
-        if input_opts.len() == 0 {
+        if input_opts.is_empty() {
             input_opts.push(SegmentString::parse("").unwrap());
         }
 
         // parse output
-        let output;
-        match SegmentString::parse(&output_str) {
-            Ok(seg_str) => output = seg_str,
-            Err(e) => return Err(e),
-        }
+
+        let output = SegmentString::parse(output_str)?;
 
         // parse pre-context
         let mut pre_context_opts = Vec::new();
-        if pre_context_str != "" {
-            match parse_seg_string_opts(&pre_context_str) {
+        if !pre_context_str.is_empty() {
+            match parse_seg_string_opts(pre_context_str) {
                 Ok(seg_str_opts) => pre_context_opts = seg_str_opts,
                 Err(e) => return Err(e),
             }
@@ -104,19 +98,19 @@ impl FormatRuleStr for PhonologicalRule {
 
         // parse post-context
         let mut post_context_opts = Vec::new();
-        if post_context_str != "" {
-            match parse_seg_string_opts(&post_context_str) {
+        if !post_context_str.is_empty() {
+            match parse_seg_string_opts(post_context_str) {
                 Ok(seg_str_opts) => post_context_opts = seg_str_opts,
                 Err(e) => return Err(e),
             }
         }
 
-        return Ok(PhonologicalRule {
-            input_opts: input_opts,
-            output: output,
-            pre_context_opts: pre_context_opts,
-            post_context_opts: post_context_opts,
-        });
+        Ok(PhonologicalRule {
+            input_opts,
+            output,
+            pre_context_opts,
+            post_context_opts,
+        })
     }
 
     fn format(&self) -> String {
@@ -127,8 +121,8 @@ impl FormatRuleStr for PhonologicalRule {
         let output_str = format!("{}", self.output);
 
         // format rule, do we have context or not?
-        if self.pre_context_opts.len() == 0 && self.post_context_opts.len() == 0 {
-            return format!("{} -> {}", input_str, output_str);
+        if self.pre_context_opts.is_empty() && self.post_context_opts.is_empty() {
+            format!("{} -> {}", input_str, output_str)
         } else {
             // format precontext
             let pre_context_str = format_seg_string_opts(&self.pre_context_opts);
@@ -136,10 +130,10 @@ impl FormatRuleStr for PhonologicalRule {
             // format postcontext
             let post_context_str = format_seg_string_opts(&self.post_context_opts);
 
-            return format!(
+            format!(
                 "{} -> {} / {}_{}",
                 input_str, output_str, pre_context_str, post_context_str
-            );
+            )
         }
     }
 }
@@ -157,16 +151,15 @@ fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>> {
     let s = s.trim();
     let mut seg_str_opts = Vec::new();
     let has_brackets = s.starts_with('{') && s.ends_with('}');
-    let opts: Vec<&str>;
-    if has_brackets {
+    let opts: Vec<&str> = if has_brackets {
         let inner = &s[1..(s.len() - 1)];
-        opts = inner.split(",").collect();
+        inner.split(",").collect()
     } else {
-        opts = vec![&s];
-    }
+        vec![&s]
+    };
     for opt in opts {
         let opt = opt.trim();
-        if opt == "" {
+        if opt.is_empty() {
             continue;
         }
         match SegmentString::parse(opt) {
@@ -174,22 +167,22 @@ fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>> {
             Err(e) => return Err(e),
         }
     }
-    return Ok(seg_str_opts);
+    Ok(seg_str_opts)
 }
 
 /// returns a formated string of a vector of segment strings in brackets: {x, y, z...}.
 fn format_seg_string_opts(opts: &Vec<SegmentString>) -> String {
     let mut str = String::new();
-    if opts.len() == 0 {
+    if opts.is_empty() {
         return "".to_owned();
     } else if opts.len() == 1 {
         str = format!("{}", opts[0]);
     } else {
-        str.push_str("{");
+        str.push('{');
         for opt in opts {
             str.push_str(&format!("{},", opt));
         }
-        str.push_str("}");
+        str.push('}');
     }
-    return str;
+    str
 }

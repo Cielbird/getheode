@@ -22,7 +22,7 @@ pub struct Segment {
 impl Segment {
     /// construct a segement from an array of features
     pub const fn from_features(features: [FeatureState; FEATURE_COUNT as usize]) -> Self {
-        Segment { features: features }
+        Segment { features }
     }
 
     /// construct a segement with all features undefied

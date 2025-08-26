@@ -9,6 +9,12 @@ pub struct Phonotactics {
     pub(crate) terms: HashMap<cfg::Symbol, Term>,
 }
 
+impl Default for Phonotactics {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Phonotactics {
     pub fn new() -> Self {
         Self {
@@ -38,7 +44,7 @@ impl Phonotactics {
     /// Find the cfg symbol for a term with a given name. Otherwise,
     /// create a new symbol and add the term
     fn get_term_symbol(&mut self, term: Term) -> cfg::Symbol {
-        if let Some((sym, _)) = self.terms.iter().filter(|(_, t)| *t == &term).next() {
+        if let Some((sym, _)) = self.terms.iter().find(|(_, t)| *t == &term) {
             // term was already defined.
             *sym
         } else {

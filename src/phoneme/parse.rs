@@ -43,7 +43,7 @@ impl FormatPhonemeBank for PhonemeBank {
 
     fn format(&self) -> String {
         let mut result = String::new();
-        for (_, phoneme) in &self.phonemes {
+        for phoneme in self.phonemes.values() {
             let line = format!("{}: {}\n", phoneme.symbol, phoneme.segment);
             result += &line;
         }
@@ -87,7 +87,7 @@ impl FormatPhonemes for PhonemeBank {
                 )));
             }
         }
-        return Ok(result);
+        Ok(result)
     }
 
     fn format_phonemes(&self, _phonemes: Vec<PhonemeId>) -> String {

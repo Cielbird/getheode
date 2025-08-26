@@ -110,7 +110,7 @@ impl FormatSegment for Segment {
                 result = result + "-" + feature;
             }
         }
-        
+
         (result + "]").to_string()
     }
 }

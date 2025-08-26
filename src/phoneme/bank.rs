@@ -9,6 +9,12 @@ pub struct PhonemeBank {
     pub(crate) phonemes: HashMap<PhonemeId, Phoneme>,
 }
 
+impl Default for PhonemeBank {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PhonemeBank {
     pub fn new() -> Self {
         Self {

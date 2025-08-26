@@ -1,6 +1,6 @@
 use crate::error::{Error, Result};
 
-/// a feature of a phonological segment
+// a feature of a phonological segment
 
 // MAJOR CLASS
 pub const SYL: u8 = 0;

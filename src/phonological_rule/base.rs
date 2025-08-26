@@ -22,7 +22,7 @@ impl PhonologicalRule {
                 }
                 // input matches
 
-                let mut is_context_match = self.pre_context_opts.len() == 0;
+                let mut is_context_match = self.pre_context_opts.is_empty();
                 for pre in self.pre_context_opts.iter() {
                     if i < pre.len() {
                         continue;
@@ -36,7 +36,7 @@ impl PhonologicalRule {
                 }
                 // precontext matches
 
-                is_context_match = self.post_context_opts.len() == 0;
+                is_context_match = self.post_context_opts.is_empty();
                 for post in self.post_context_opts.iter() {
                     if string.is_match(post, i + input.len()) {
                         is_context_match = true;
@@ -64,6 +64,6 @@ impl PhonologicalRule {
                 i += self.output.len();
             }
         }
-        return Result::Ok(string);
+        Result::Ok(string)
     }
 }
