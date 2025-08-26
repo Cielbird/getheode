@@ -1,6 +1,19 @@
+# initial e becore s
 s -> es / #_
+
 us -> o
-i -> e / C_C
 kt -> t͡ʃ
-m -> / _#
+
+# vowel shifts
 e -> a / C_C
+i -> e / C_C
+
+# qu becomes gu
+kʷ -> ɣu
+
+# loss of final consonants
+r -> / _#
+m -> / _#
+
+# stressed o becomes ue
+o(+stress) -> ue

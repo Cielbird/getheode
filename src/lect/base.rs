@@ -1,7 +1,7 @@
 use std::vec;
 
 use crate::error::*;
-use crate::phoneme::{FormatPhonemes, PhonemeBank, PhonemeId};
+use crate::phoneme::{PhonemeBank, PhonemeId, PhonemeString};
 use crate::phonological_rule::PhonologicalRule;
 use crate::phonotactics::Phonotactics;
 use crate::segment::SegmentString;
@@ -43,22 +43,23 @@ impl Lect {
     }
 
     /// Get the surface representation of a sequence of phonemes
-    pub fn get_surf_rep(&self, phonemes: Vec<PhonemeId>) -> SegmentString {
+    pub fn get_surf_rep(&self, phonemes: PhonemeString, worded: bool) -> SegmentString {
         let mut string = self.phonemes.underlying_rep(phonemes);
+        if worded {
+            string = string.worded();
+        }
         for rule in &self.realization_rules {
             string = rule.apply(&string).unwrap();
         }
 
         string
     }
-}
 
-impl FormatPhonemes for Lect {
-    fn parse_phonemes(&self, phonemes_str: &str) -> Result<Vec<PhonemeId>> {
-        self.phonemes.parse_phonemes(phonemes_str)
+    pub fn parse_phonemes(&self, phonemes_str: &str) -> Result<PhonemeString> {
+        PhonemeString::parse_phonemes(phonemes_str, &self.phonemes)
     }
 
-    fn format_phonemes(&self, phonemes: Vec<PhonemeId>) -> String {
-        self.phonemes.format_phonemes(phonemes)
+    pub fn format_phonemes(&self, phonemes: PhonemeString) -> String {
+        PhonemeString::format_phonemes(&phonemes, &self.phonemes)
     }
 }

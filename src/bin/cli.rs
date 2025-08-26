@@ -1,13 +1,14 @@
 // this is the cli tool to interact with the getheode library most directly
 
 use std::fs::{self, read_to_string};
+use std::io::{self, Read};
 use std::path::Path;
 
 use clap::{Arg, Command};
 
 use getheode::GETHEODE_VERSION;
 use getheode::lect::Lect;
-use getheode::phoneme::{FormatPhonemeBank, FormatPhonemes, PhonemeBank};
+use getheode::phoneme::PhonemeBank;
 use getheode::phonological_rule::{FormatRulesFile, PhonologicalRule};
 use getheode::phonotactics::{FormatGbnf, Phonotactics};
 use getheode::segment::FormatSegmentString;
@@ -38,7 +39,7 @@ fn surface(lect: Lect, input: &str) {
 
     for input in inputs {
         let phonemes = lect.parse_phonemes(input).expect("Couldn't parse phonemes");
-        let result = lect.get_surf_rep(phonemes);
+        let result = lect.get_surf_rep(phonemes, true);
 
         println!("{}", result.format());
     }
@@ -78,8 +79,8 @@ fn cli() -> Command {
                     Arg::new("input")
                         .short('i')
                         .value_name("INPUT")
-                        .required(true)
-                        .help("phonemes to parse"),
+                        .required(false)
+                        .help("phonemes to parse. if not provided, will take inout from stdin."),
                 ),
         )
 }
@@ -99,11 +100,20 @@ fn main() {
                 .get_one::<String>("phonotactics")
                 .map(|s| read_to_string(s).unwrap().clone());
 
-            let input = arg_matches.get_one::<String>("input").unwrap();
+            let input = if let Some(t) = arg_matches.get_one::<String>("input") {
+                t.clone()
+            } else {
+                // read from stdin
+                let mut buffer = String::new();
+                io::stdin()
+                    .read_to_string(&mut buffer)
+                    .expect("Failed to read stdin");
+                buffer
+            };
 
             let lect = build_lect(&bank, &rules, phonotactics.as_deref());
 
-            surface(lect, input)
+            surface(lect, &input)
         }
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachable
     }

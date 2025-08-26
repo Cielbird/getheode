@@ -1,4 +1,3 @@
-use crate::segment::FormatSegment;
 use crate::segment::{
     FeatureState::*,
     string::SegmentString,

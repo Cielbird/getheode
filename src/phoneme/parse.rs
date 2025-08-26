@@ -1,23 +1,9 @@
 use crate::error::*;
-use crate::phoneme::{PhonemeBank, PhonemeId};
-use crate::segment::{FormatSegment, Segment};
+use crate::phoneme::{PhonemeBank, PhonemeString, PhonemeStringSylable};
+use crate::segment::Segment;
 
-/// Defines how to format a phoneme bank as a string
-pub trait FormatPhonemeBank {
-    fn parse(input: &str) -> Result<Self>
-    where
-        Self: Sized;
-    fn format(&self) -> String;
-}
-
-/// Defines how to parse a sequence of phonemes
-pub trait FormatPhonemes {
-    fn parse_phonemes(&self, phonemes_str: &str) -> Result<Vec<PhonemeId>>;
-    fn format_phonemes(&self, phonemes: Vec<PhonemeId>) -> String;
-}
-
-impl FormatPhonemeBank for PhonemeBank {
-    fn parse(input: &str) -> Result<Self> {
+impl PhonemeBank {
+    pub fn parse(input: &str) -> Result<Self> {
         let mut result = Self::new();
         for input in input.split('\n') {
             let input = input.trim();
@@ -41,7 +27,7 @@ impl FormatPhonemeBank for PhonemeBank {
         Ok(result)
     }
 
-    fn format(&self) -> String {
+    pub fn format(&self) -> String {
         let mut result = String::new();
         for phoneme in self.phonemes.values() {
             let line = format!("{}: {}\n", phoneme.symbol, phoneme.segment);
@@ -52,29 +38,73 @@ impl FormatPhonemeBank for PhonemeBank {
     }
 }
 
-impl FormatPhonemes for PhonemeBank {
+impl PhonemeString {
     /// parses a string and identifies the sequence of phonemes used
     /// the phoneme symbols are used to identify them.
-    /// first match found is used, so if there are issues with findinf phonemes,
+    /// first match found is used, so if there are issues with finding phonemes,
     /// consider reordering the phoneme inventory.
-    fn parse_phonemes(&self, phonemes_str: &str) -> Result<Vec<PhonemeId>> {
+    /// apostrophe is used to indicate the beginning of a stressed sylable
+    /// must be surounded in slashes: //
+    pub fn parse_phonemes(phonemes_str: &str, bank: &PhonemeBank) -> Result<Self> {
         // remove all whitespace
         let input: String = phonemes_str
             .chars()
             .filter(|c| !c.is_whitespace())
             .collect();
 
+        let Some(input) = input.strip_prefix('/') else {
+            return Err(Error::PhonemeSymbolParsingError(format!(
+                "Phoneme must begin with slash: {}",
+                phonemes_str
+            )));
+        };
+        let Some(input) = input.strip_suffix('/') else {
+            return Err(Error::PhonemeSymbolParsingError(format!(
+                "Phoneme must end with slash: {}",
+                phonemes_str
+            )));
+        };
+
         let mut remaining_input: &str = &input;
-        let mut result: Vec<PhonemeId> = vec![];
+        // index of the first character of the remaining input
+        let mut index = 0;
+        let mut result = Self {
+            phonemes: vec![],
+            sylables: vec![],
+        };
+
+        let mut cur_sylable = PhonemeStringSylable {
+            start: 0,
+            end: 0,
+            stressed: false,
+        };
 
         while !remaining_input.is_empty() {
+            println!("{remaining_input}");
+            // parse a sylable maker (. or ')
+            let stressed_syl = remaining_input.starts_with('\'');
+            let unstressed_syl = remaining_input.starts_with('.');
+            if stressed_syl || unstressed_syl {
+                // record the last sylable
+                result.sylables.push(cur_sylable.clone());
+                // start the next sylable
+                cur_sylable = PhonemeStringSylable {
+                    start: index,
+                    end: index,
+                    stressed: stressed_syl,
+                };
+                remaining_input = &remaining_input[1..];
+                continue;
+            }
+            index += 1;
+            cur_sylable.end = index;
             // the phoneme symbol that matches is chosen
             let mut found = false;
-            for (id, phoneme) in &self.phonemes {
+            for (id, phoneme) in &bank.phonemes {
                 let sym = &phoneme.symbol;
                 if remaining_input.starts_with(sym) {
                     // first match
-                    result.push(*id);
+                    result.phonemes.push(*id);
                     found = true;
                     remaining_input = &remaining_input[sym.len()..];
                     break;
@@ -87,28 +117,12 @@ impl FormatPhonemes for PhonemeBank {
                 )));
             }
         }
+
+        result.sylables.push(cur_sylable);
         Ok(result)
     }
 
-    fn format_phonemes(&self, _phonemes: Vec<PhonemeId>) -> String {
+    pub fn format_phonemes(&self, _bank: &PhonemeBank) -> String {
         todo!()
     }
-}
-
-/// Parses the next phoneme from bank of phonemes in a string, returns the id of the next phoneme
-/// and the string
-pub fn parse_next_phoneme<'a>(
-    phonemes: &PhonemeBank,
-    term_str: &'a str,
-) -> Option<(PhonemeId, &'a str)> {
-    for (id, phoneme) in &phonemes.phonemes {
-        let sym = &phoneme.symbol;
-        if term_str.starts_with(sym) {
-            // first match
-            let term_str = &term_str[sym.len()..];
-            return Some((*id, term_str));
-        }
-    }
-
-    None
 }

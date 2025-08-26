@@ -3,9 +3,8 @@
 mod segment_tests {
     use crate::segment::FeatureState::{NA, NEG, POS, UNDEF};
     use crate::segment::FormatIpa;
-    use crate::segment::{FormatFeatureSet, Segment};
+    use crate::segment::Segment;
 
-    // TODO: see the todo in phonological_rule_test.rs: these tests are lazy
     #[test]
     fn test_segment_from_ipa() {
         let seg = Segment::parse_ipa("a").unwrap();
@@ -39,6 +38,18 @@ mod segment_tests {
             Segment::from_features([
                 NEG, NEG, NEG, POS, NEG, POS, NEG, NEG, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG,
                 NEG, NEG, NA, NA, NA, NEG, POS, POS, POS, NA, NA, NA
+            ]),
+        );
+    }
+
+    #[test]
+    fn test_segment_ipa_with_feature() {
+        let seg = Segment::parse_ipa("a(+stress)").unwrap();
+        assert_eq!(
+            seg,
+            Segment::from_features([
+                POS, POS, NEG, NEG, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG,
+                NEG, NEG, NA, NA, NA, NEG, POS, NEG, POS, NEG, NEG, NA
             ]),
         );
     }

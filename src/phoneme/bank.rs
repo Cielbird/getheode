@@ -1,8 +1,10 @@
 use crate::{
-    phoneme::{Phoneme, PhonemeId},
-    segment::{Segment, SegmentString},
+    phoneme::{Phoneme, PhonemeId, PhonemeString},
+    segment::{FeatureState, STRESS, Segment, SegmentString},
 };
 use std::collections::HashMap;
+
+use super::PhonemeStringSylable;
 
 pub struct PhonemeBank {
     /// set of phonemes used and their data
@@ -42,11 +44,30 @@ impl PhonemeBank {
     }
 
     /// Get the underlying representation of a sequence of phonemes
-    pub fn underlying_rep(&self, phonemes: Vec<PhonemeId>) -> SegmentString {
+    pub fn underlying_rep(&self, phonemes: PhonemeString) -> SegmentString {
         let mut underlying = SegmentString::new();
-        for id in phonemes {
-            let phoneme = self.phonemes.get(&id).unwrap();
-            underlying.push(phoneme.segment.clone());
+        let mut sylables = phonemes.sylables.iter();
+        let mut cur_sylable: Option<&PhonemeStringSylable> = None;
+
+        for (idx, id) in phonemes.phonemes.iter().enumerate() {
+            // get the segment for the cur phoneme
+            let mut segment = self.phonemes.get(&id).unwrap().segment.clone();
+
+            // apply stress from the current sylable
+            if cur_sylable.is_none() && let Some(first_syl) = sylables.next() {
+                cur_sylable = Some(first_syl);
+            } else if let Some(cur) = cur_sylable && cur.start == idx {
+                cur_sylable = sylables.next();
+            }
+            if let Some(cur_sylable) = cur_sylable {
+                segment.features[STRESS as usize] = if cur_sylable.stressed {
+                    FeatureState::POS
+                } else {
+                    FeatureState::NEG
+                };
+            }
+
+            underlying.push(segment);
         }
         underlying
     }

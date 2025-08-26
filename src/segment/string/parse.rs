@@ -1,5 +1,5 @@
 pub use crate::error::*;
-use crate::segment::{FormatSegment, SYL_BOUND_STR, Segment, SegmentString, WORD_BOUND_STR};
+use crate::segment::{SYL_BOUND_STR, Segment, SegmentString, WORD_BOUND_STR};
 
 /// Defines the formatting of a segment string
 pub trait FormatSegmentString {

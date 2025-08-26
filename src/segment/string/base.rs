@@ -56,18 +56,19 @@ impl SegmentString {
         }
     }
 
-    pub fn to_worded(mut seg_str: SegmentString) -> SegmentString {
+    /// Get a worded version of this segment string
+    pub fn worded(mut self) -> SegmentString {
         // don't make duplicate boundaries
-        let bounds = &mut seg_str.word_boundaries;
+        let bounds = &mut self.word_boundaries;
         if bounds.is_empty() || bounds[0] != 0 {
             bounds.insert(0, 0);
         }
 
         let last_word_bound = bounds[bounds.len() - 1];
-        if last_word_bound != seg_str.segs.len() {
-            bounds.push(seg_str.segs.len());
+        if last_word_bound != self.segs.len() {
+            bounds.push(self.segs.len());
         }
-        seg_str
+        self
     }
 
     pub fn from_segments(segments: Vec<Segment>) -> Self {
@@ -84,6 +85,7 @@ impl SegmentString {
     }
 
     /// does the pattern match this segment string at the given position
+    /// the features defined in the pattern must be defined the same in the string.
     pub fn is_match(&self, pattern: &SegmentString, pos: usize) -> bool {
         // call implementation in slice struct
         self.slice_all().is_match(pattern, pos)
@@ -326,6 +328,8 @@ impl<'x> SegmentStringSlice<'x> {
     /// does the pattern match this segment string at the given position
     /// returns true if the pattern matches the segments and boundaries at position `pos`
     /// returns false otherwise.
+    /// 
+    /// the features defined in the pattern must be defined the same in the string.
     pub fn is_match(&self, pattern: &SegmentString, pos: usize) -> bool {
         if pos + pattern.len() > self.segs.len() {
             return false;

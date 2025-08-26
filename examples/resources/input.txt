@@ -1,0 +1,4 @@
+/strictus/
+/a.qua/
+/'cor.pus/
+/dic'ta.re/

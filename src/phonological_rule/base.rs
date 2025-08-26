@@ -4,7 +4,9 @@ use crate::{error::Result, segment::SegmentString};
 pub struct PhonologicalRule {
     pub input_opts: Vec<SegmentString>,
     pub output: SegmentString,
+    /// What must procede the match
     pub pre_context_opts: Vec<SegmentString>,
+    /// What must follow the match
     pub post_context_opts: Vec<SegmentString>,
 }
 
