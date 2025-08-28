@@ -72,8 +72,8 @@ mod tests {
     #[test]
     fn test_rule_apply_word_bound() {
         let rule_str = "s -> es /#_".to_string();
-        let input = "#strasa#".to_string();
-        let expected_output = "#estrasa#".to_string();
+        let input = "_strasa_".to_string();
+        let expected_output = "_estrasa_".to_string();
         let rule = PhonologicalRule::parse(&rule_str).unwrap();
         assert_eq!(
             rule.apply(&SegmentString::parse(&input).unwrap())

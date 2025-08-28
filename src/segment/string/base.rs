@@ -1,13 +1,15 @@
 use core::fmt;
 use std::fmt::Display;
-use std::ops::Deref;
-use std::ops::DerefMut;
 
+use crate::segment::bounds::ChunkSequence;
 use crate::segment::FormatSegmentString;
 use crate::segment::Segment;
+use crate::segment::SegmentStringSlice;
+use crate::segment::Sylable;
 
-pub(crate) const WORD_BOUND_STR: &str = "#";
-pub(crate) const SYL_BOUND_STR: &str = ".";
+pub(crate) const WORD_BOUND_STR: [char; 2] = ['#', '_'];
+pub(crate) const SYL_STRESS_BOUND_CHAR: char = '\'';
+pub(crate) const SYL_BOUND_CHAR: char = '.';
 
 /// a versatile struct that represents a sequence of phonological segments, and can
 /// indicate word and sylable boundaries.
@@ -34,48 +36,36 @@ pub struct SegmentString {
     /// ordered in ascending order.
     /// the first and last element must be 0 and segs.len() respectively,
     /// representing the start and end of the string.
-    pub(crate) word_boundaries: Vec<usize>,
+    pub(crate) words: ChunkSequence<()>,
 
-    /// indices of sylable boundaries w/ respect to the segment vector.
-    /// given an element `i` the actual boundary is found between segment at `i` and
-    /// segment at `i-1`  
-    /// ordered in ascending order
-    /// word boundaries are sylable boundaries. to avoid redundancy,
-    /// sylable boundaries cannot have the same index as a word boundary.
-    /// all sylable boundaries should be considered optional data. there is no objective way of
-    /// delimiting sylables, it depends on the language.
-    pub(crate) syl_boundaries: Vec<usize>,
+    /// Sylables included in this string. Indices are relative to the first element in the
+    /// segments list
+    pub(crate) sylables: ChunkSequence<Sylable>,
 }
 
 impl SegmentString {
     pub fn new() -> Self {
         Self {
             segs: Vec::new(),
-            word_boundaries: Vec::new(),
-            syl_boundaries: Vec::new(),
+            words: ChunkSequence::single_unbounded(0),
+            sylables: ChunkSequence::single_unbounded(0),
         }
     }
 
     /// Get a worded version of this segment string
     pub fn worded(mut self) -> SegmentString {
-        // don't make duplicate boundaries
-        let bounds = &mut self.word_boundaries;
-        if bounds.is_empty() || bounds[0] != 0 {
-            bounds.insert(0, 0);
-        }
-
-        let last_word_bound = bounds[bounds.len() - 1];
-        if last_word_bound != self.segs.len() {
-            bounds.push(self.segs.len());
-        }
+        self.words = self.words.bounded();
         self
     }
 
-    pub fn from_segments(segments: Vec<Segment>) -> Self {
+    /// Create an unworded string of segments
+    pub fn from_segments<S>(segments: S) -> Self where S: Into<Vec<Segment>> {
+        let segments = segments.into();
+        let len = segments.len();
         Self {
             segs: segments,
-            word_boundaries: Vec::new(),
-            syl_boundaries: Vec::new(),
+            words: ChunkSequence::single_unbounded(len),
+            sylables: ChunkSequence::single_unbounded(len),
         }
     }
 
@@ -93,15 +83,8 @@ impl SegmentString {
 
     pub fn push(&mut self, seg: Segment) {
         self.segs.push(seg);
-        if self.word_boundaries.is_empty() {
-            return;
-        }
-        // update trailing word boundary
-        let bounds = &mut self.word_boundaries;
-        if !bounds.is_empty() && bounds[bounds.len() - 1] == self.segs.len() {
-            let i = bounds.len() - 1;
-            bounds[i] += 1;
-        }
+        self.words.extend_last(1);
+        self.sylables.extend_last(1);
     }
 
     /// moves the items of `str` to this seg string.  
@@ -109,43 +92,18 @@ impl SegmentString {
         self.segs.append(&mut str.segs);
     }
 
-    pub fn replace(&mut self, start: usize, end: usize, replacement: &SegmentString) {
+    pub fn replace(&mut self, start: usize, end: usize, mut replacement: SegmentString) {
+        // How did segments after the replacement shift
+        let shift = replacement.len() as isize - end as isize + start as isize;
+        println!("new end: {shift}");
         self.segs.drain(start..end);
 
-        for i in 0..replacement.len() {
-            self.segs.insert(start + i, replacement[i].clone());
+        for (i, seg) in replacement.segs.drain(..).enumerate() {
+            self.segs.insert(start + i, seg);
         }
-        // update any word boundaries that come after
-        let mut i = 0;
-        let bounds = &mut self.word_boundaries;
-        while i < bounds.len() {
-            if bounds[i] <= start {
-                i += 1;
-                continue;
-            } else if bounds[i] < end {
-                bounds.remove(i);
-            } else {
-                // otherwise, adjust as
-                let offset: isize = start as isize - end as isize + replacement.len() as isize;
-                bounds[i] = bounds[i].saturating_add_signed(offset);
-                i += 1;
-            }
-        }
-        // update any syl boundaries that come after
-        i = 0;
-        let bounds = &mut self.syl_boundaries;
-        while i < bounds.len() {
-            if bounds[i] <= start {
-                i += 1;
-                continue;
-            } else if bounds[i] < end {
-                bounds.remove(i);
-            } else {
-                // otherwise, adjust as
-                bounds[i] += start + replacement.len() - end;
-                i += 1;
-            }
-        }
+
+        self.words.replace(start, end, replacement.words);
+        self.sylables.replace(start, end, replacement.sylables);
     }
 
     // alternative to getting a one segment slice
@@ -159,42 +117,7 @@ impl SegmentString {
 
     /// get a slice reference of a segment string
     pub fn slice<'a>(&'a self, start: usize, end: usize) -> SegmentStringSlice<'a> {
-        // get the word boundary indices that are in the range we want
-        let word_bounds_start = self
-            .word_boundaries
-            .iter()
-            .position(|x| x >= &start)
-            .unwrap_or(0);
-        let word_bounds_end = self
-            .word_boundaries
-            .iter()
-            .enumerate()
-            .filter(|&(_i, &bound_index)| bound_index <= end)
-            .next_back()
-            .map(|(i, _)| i)
-            .unwrap_or(0);
-
-        // get the sylable boundary indices that are in the range we want
-        let syl_bounds_start = self
-            .syl_boundaries
-            .iter()
-            .position(|x| x >= &start)
-            .unwrap_or(0);
-        let syl_bounds_end = self
-            .syl_boundaries
-            .iter()
-            .enumerate()
-            .filter(|&(_i, &bound_index)| bound_index <= end)
-            .next_back()
-            .map(|(i, _)| i)
-            .unwrap_or(0);
-
-        SegmentStringSlice {
-            segs: &self.segs[start..end],
-            offset: start,
-            word_boundaries: &self.word_boundaries[word_bounds_start..word_bounds_end],
-            syl_boundaries: &self.syl_boundaries[syl_bounds_start..syl_bounds_end],
-        }
+        SegmentStringSlice::new(&self, start, end)
     }
 
     pub fn len(&self) -> usize {
@@ -203,42 +126,6 @@ impl SegmentString {
 
     pub fn is_empty(&self) -> bool {
         self.segs.is_empty()
-    }
-
-    /// returns a clone of the word boundaries vector
-    pub fn get_word_boundaries(&self) -> Vec<usize> {
-        self.word_boundaries.clone()
-    }
-
-    /// returns a clone of the symable boundaries vector
-    pub fn get_syl_boundaries(&self) -> Vec<usize> {
-        self.syl_boundaries.clone()
-    }
-}
-
-// allow SegmentString to act like a Vec<Segment>
-impl Deref for SegmentString {
-    type Target = Vec<Segment>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.segs
-    }
-}
-
-// allow SegmentString to act like a Vec<Segment>
-impl DerefMut for SegmentString {
-    fn deref_mut(&mut self) -> &mut Vec<Segment> {
-        &mut self.segs
-    }
-}
-
-impl FromIterator<Segment> for SegmentString {
-    fn from_iter<I: IntoIterator<Item = Segment>>(iter: I) -> Self {
-        let mut string = SegmentString::new();
-        for item in iter {
-            string.push(item);
-        }
-        string
     }
 }
 
@@ -252,114 +139,5 @@ impl Display for SegmentString {
 impl Default for SegmentString {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-/// a borrowed type (reference) of a section of an existing SegmentString type
-/// do not use this if you plan to modify the referenced struct.
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct SegmentStringSlice<'a> {
-    /// the segement string this refers to
-    segs: &'a [Segment],
-    /// where does this slice start in the og string?
-    offset: usize,
-    /// positions of word boundaries in the segments (- the offset)
-    word_boundaries: &'a [usize],
-    /// positions of sylable boundaries in the segments (- the offset)
-    syl_boundaries: &'a [usize],
-}
-
-// allow SegmentString to act like a Vec<Segment>
-impl<'x> SegmentStringSlice<'x> {
-    /// returns true if the segment slice is empty
-    pub fn is_empty(&self) -> bool {
-        self.segs.len() == 0
-    }
-
-    /// internal implementation of is_complete so that the SegmentStringSlice reference
-    ///     type can use the same code.
-    pub fn is_complete(&self) -> bool {
-        for seg in self.segs {
-            if !seg.is_complete() {
-                return false;
-            }
-        }
-        true
-    }
-
-    pub fn slice_all<'a>(&'a self) -> SegmentStringSlice<'a> {
-        *self
-    }
-
-    /// get a slice reference of a segment string
-    pub fn slice<'a>(&'a self, start: usize, end: usize) -> SegmentStringSlice<'a> {
-        // get the word boundary indices that are in the range we want
-        let word_bounds_start = self
-            .word_boundaries
-            .iter()
-            .position(|x| x >= &start)
-            .unwrap_or(0);
-        let word_bounds_end = self
-            .word_boundaries
-            .iter()
-            .position(|x| x < &end)
-            .unwrap_or(0);
-
-        // get the sylable boundary indices that are in the range we want
-        let syl_bounds_start = self
-            .syl_boundaries
-            .iter()
-            .position(|x| x >= &start)
-            .unwrap_or(0);
-        let syl_bounds_end = self
-            .syl_boundaries
-            .iter()
-            .position(|x| x < &end)
-            .unwrap_or(0);
-
-        SegmentStringSlice {
-            segs: &self.segs[start..end],
-            offset: start,
-            word_boundaries: &self.word_boundaries[word_bounds_start..word_bounds_end],
-            syl_boundaries: &self.syl_boundaries[syl_bounds_start..syl_bounds_end],
-        }
-    }
-
-    /// does the pattern match this segment string at the given position
-    /// returns true if the pattern matches the segments and boundaries at position `pos`
-    /// returns false otherwise.
-    /// 
-    /// the features defined in the pattern must be defined the same in the string.
-    pub fn is_match(&self, pattern: &SegmentString, pos: usize) -> bool {
-        if pos + pattern.len() > self.segs.len() {
-            return false;
-        }
-        for (i, pattern_seg) in pattern.segs.iter().enumerate() {
-            let seg = &self.segs[i + pos];
-            if !seg.matches(pattern_seg) {
-                return false;
-            }
-        }
-        for word_bound in &pattern.word_boundaries {
-            if !self
-                .word_boundaries
-                .contains(&(word_bound + self.offset + pos))
-            {
-                return false;
-            }
-        }
-        for syl_bound in &pattern.syl_boundaries {
-            if !self
-                .syl_boundaries
-                .contains(&(syl_bound + self.offset + pos))
-            {
-                return false;
-            }
-        }
-        true
-    }
-
-    pub fn len(&self) -> usize {
-        self.segs.len()
     }
 }

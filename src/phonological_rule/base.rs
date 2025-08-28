@@ -56,12 +56,12 @@ impl PhonologicalRule {
                 // if input and output are the same length, add the segments of corresponding indices
                 if self.output.len() == to_index - from_index {
                     for i in from_index..to_index {
-                        let new_seg = string[i].clone() + self.output[i - from_index].clone();
-                        string[i] = new_seg;
+                        let new_seg = string.segs[i].clone() + self.output.segs[i - from_index].clone();
+                        string.segs[i] = new_seg;
                     }
                 } else {
                     // simple splice
-                    string.replace(from_index, to_index, &self.output);
+                    string.replace(from_index, to_index, self.output.clone());
                 }
                 i += self.output.len();
             }

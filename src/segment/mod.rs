@@ -14,4 +14,5 @@ pub use natural_classes::*;
 pub use parse::*;
 pub use string::*;
 
+#[cfg(test)]
 pub mod test;
