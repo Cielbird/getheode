@@ -65,7 +65,7 @@ impl PhonemeString {
             )));
         };
 
-        let mut remaining_input: &str = &input;
+        let mut remaining_input: &str = input;
         // index of the first character of the remaining input
         let mut index = 0;
         let mut result = Self {

@@ -1,4 +1,4 @@
-use crate::segment::{FormatSegmentString, Segment, SegmentString};
+use crate::segment::{PhonologicalString, PhonologicalStringPattern, Segment};
 use crate::segment::FeatureState::{NA, NEG, POS};
 
 
@@ -18,9 +18,9 @@ const I_SEG: Segment = Segment::from_features([
 
 #[test]
 fn segment_string_is_match() {
-    let pattern = SegmentString::from_segments([K_SEG, A_SEG]);
-    let haystack = SegmentString::from_segments([K_SEG, A_SEG, I_SEG, K_SEG, A_SEG]);
-    let is_match = haystack.is_match(&pattern, 0) && haystack.is_match(&pattern, 3);
+    let pattern: PhonologicalStringPattern = PhonologicalString::from_segments([K_SEG, A_SEG]).into();
+    let haystack = PhonologicalString::from_segments([K_SEG, A_SEG, I_SEG, K_SEG, A_SEG]);
+    let is_match = pattern.is_match(&haystack, 0) && pattern.is_match(&haystack, 3);
     assert_eq!(
         is_match,
         true,

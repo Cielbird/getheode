@@ -11,7 +11,7 @@ use getheode::lect::Lect;
 use getheode::phoneme::PhonemeBank;
 use getheode::phonological_rule::{FormatRulesFile, PhonologicalRule};
 use getheode::phonotactics::{FormatGbnf, Phonotactics};
-use getheode::segment::FormatSegmentString;
+use getheode::segment::FormatPhonologicalString;
 
 /// Returns the contents of a file if the input is a valid file path.
 /// Otherwise, returns the input string itself.

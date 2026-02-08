@@ -1,6 +1,6 @@
 use crate::{
     phoneme::{Phoneme, PhonemeId, PhonemeString},
-    segment::{FeatureState, STRESS, Segment, SegmentString},
+    segment::{FeatureState, STRESS, Segment, PhonologicalString},
 };
 use std::collections::HashMap;
 
@@ -44,14 +44,14 @@ impl PhonemeBank {
     }
 
     /// Get the underlying representation of a sequence of phonemes
-    pub fn underlying_rep(&self, phonemes: PhonemeString) -> SegmentString {
-        let mut underlying = SegmentString::new();
+    pub fn underlying_rep(&self, phonemes: PhonemeString) -> PhonologicalString {
+        let mut underlying = vec![];
         let mut sylables = phonemes.sylables.iter();
         let mut cur_sylable: Option<&PhonemeStringSylable> = None;
 
         for (idx, id) in phonemes.phonemes.iter().enumerate() {
             // get the segment for the cur phoneme
-            let mut segment = self.phonemes.get(&id).unwrap().segment.clone();
+            let mut segment = self.phonemes.get(id).unwrap().segment.clone();
 
             // apply stress from the current sylable
             if cur_sylable.is_none() && let Some(first_syl) = sylables.next() {
@@ -69,7 +69,7 @@ impl PhonemeBank {
 
             underlying.push(segment);
         }
-        underlying
+        PhonologicalString::from_segments(underlying)
     }
 
     /// Generate a new id for a phoneme, unique for this bank

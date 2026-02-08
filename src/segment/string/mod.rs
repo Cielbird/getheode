@@ -1,11 +1,11 @@
 mod base;
 mod slice;
 mod parse;
-mod sylable;
+mod pattern;
+mod element;
 
 pub use base::*;
 pub use slice::*;
 pub use parse::*;
-pub(crate) use sylable::*;
-
-pub(crate) mod bounds;
+pub use pattern::*;
+pub use element::*;

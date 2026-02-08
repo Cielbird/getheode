@@ -4,7 +4,7 @@
 mod tests {
     use crate::{
         phonological_rule::{FormatRuleStr, PhonologicalRule},
-        segment::{FormatIpa, FormatSegmentString, Segment, SegmentString},
+        segment::{FormatIpa, FormatPhonologicalString, PhonologicalString, Segment},
     };
 
     #[test]
@@ -12,11 +12,11 @@ mod tests {
         let rule = PhonologicalRule::parse("a -> e").unwrap();
 
         let a_seg = Segment::parse_ipa("a").unwrap();
-        let a_seg = SegmentString::from_segments(vec![a_seg]);
-        assert_eq!(rule.input_opts, vec![a_seg]);
+        let a_seg = PhonologicalString::from_segments(vec![a_seg]);
+        assert_eq!(rule.input_opts, vec![a_seg.into()]);
 
         let e_seg = Segment::parse_ipa("e").unwrap();
-        let e_seg = SegmentString::from_segments(vec![e_seg]);
+        let e_seg = PhonologicalString::from_segments(vec![e_seg]);
         assert_eq!(rule.output, e_seg);
 
         assert_eq!(rule.pre_context_opts, vec![]);
@@ -27,31 +27,31 @@ mod tests {
     fn test_rule_single_context() {
         let rule = PhonologicalRule::parse("i -> j /_C").unwrap();
 
-        let i_seg = SegmentString::parse("i").unwrap();
-        assert_eq!(rule.input_opts, vec![i_seg]);
+        let i_seg = PhonologicalString::parse("i").unwrap();
+        assert_eq!(rule.input_opts, vec![i_seg.into()]);
 
-        let j_seg = SegmentString::parse("j").unwrap();
+        let j_seg = PhonologicalString::parse("j").unwrap();
         assert_eq!(rule.output, j_seg);
 
         assert_eq!(rule.pre_context_opts, vec![]);
-        let cons_seg = SegmentString::parse("C").unwrap();
-        assert_eq!(rule.post_context_opts, vec![cons_seg]);
+        let cons_seg = PhonologicalString::parse("C").unwrap();
+        assert_eq!(rule.post_context_opts, vec![cons_seg.into()]);
     }
 
     #[test]
     fn test_rule_multi_options() {
         let rule = PhonologicalRule::parse("{i, es} -> j /{a, o}_").unwrap();
 
-        let i_seg = SegmentString::parse("i").unwrap();
-        let es_seg = SegmentString::parse("es").unwrap();
-        assert_eq!(rule.input_opts, vec![i_seg, es_seg]);
+        let i_seg = PhonologicalString::parse("i").unwrap();
+        let es_seg = PhonologicalString::parse("es").unwrap();
+        assert_eq!(rule.input_opts, vec![i_seg.into(), es_seg.into()]);
 
-        let j_seg = SegmentString::parse("j").unwrap();
+        let j_seg = PhonologicalString::parse("j").unwrap();
         assert_eq!(rule.output, j_seg);
 
-        let a_seg = SegmentString::parse("a").unwrap();
-        let o_seg = SegmentString::parse("o").unwrap();
-        assert_eq!(rule.pre_context_opts, vec![a_seg, o_seg]);
+        let a_seg = PhonologicalString::parse("a").unwrap();
+        let o_seg = PhonologicalString::parse("o").unwrap();
+        assert_eq!(rule.pre_context_opts, vec![a_seg.into(), o_seg.into()]);
         assert_eq!(rule.post_context_opts, vec![]);
     }
 
@@ -62,7 +62,7 @@ mod tests {
         let expected_output = "tjotja".to_string();
         let rule = PhonologicalRule::parse(&rule_str).unwrap();
         assert_eq!(
-            rule.apply(&SegmentString::parse(&input).unwrap())
+            rule.apply(&PhonologicalString::parse(&input).unwrap())
                 .unwrap()
                 .to_string(),
             expected_output
@@ -76,7 +76,7 @@ mod tests {
         let expected_output = "_estrasa_".to_string();
         let rule = PhonologicalRule::parse(&rule_str).unwrap();
         assert_eq!(
-            rule.apply(&SegmentString::parse(&input).unwrap())
+            rule.apply(&PhonologicalString::parse(&input).unwrap())
                 .unwrap()
                 .to_string(),
             expected_output

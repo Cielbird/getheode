@@ -4,7 +4,7 @@ use crate::error::*;
 use crate::phoneme::{PhonemeBank, PhonemeId, PhonemeString};
 use crate::phonological_rule::PhonologicalRule;
 use crate::phonotactics::Phonotactics;
-use crate::segment::SegmentString;
+use crate::segment::PhonologicalString;
 
 /// Defines the phonology of a single way of speaking
 pub struct Lect {
@@ -43,7 +43,7 @@ impl Lect {
     }
 
     /// Get the surface representation of a sequence of phonemes
-    pub fn get_surf_rep(&self, phonemes: PhonemeString, worded: bool) -> SegmentString {
+    pub fn get_surf_rep(&self, phonemes: PhonemeString, worded: bool) -> PhonologicalString {
         let mut string = self.phonemes.underlying_rep(phonemes);
         if worded {
             string = string.worded();

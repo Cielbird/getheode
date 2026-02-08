@@ -1,10 +1,12 @@
 pub use crate::error::*;
 use crate::segment::{
-    Segment, SegmentString, Sylable, SYL_BOUND_CHAR, SYL_STRESS_BOUND_CHAR, WORD_BOUND_STR
+    PhonologicalString, SYL_BOUND_CHAR, SYL_STRESS_BOUND_CHAR, Segment, WORD_BOUND_STR,
 };
 
+use super::element::PhonologicalElement;
+
 /// Defines the formatting of a segment string
-pub trait FormatSegmentString {
+pub trait FormatPhonologicalString {
     /// Parse an ipa character segment
     fn parse(input: &str) -> Result<Self>
     where
@@ -14,60 +16,42 @@ pub trait FormatSegmentString {
     fn format(&self) -> String;
 }
 
-impl FormatSegmentString for SegmentString {
+impl FormatPhonologicalString for PhonologicalString {
     /// parses a string and identifies the sequence of segments
-    /// apostrophe is used to indicate the beginning of a stressed sylable
-    /// 
+    /// apostrophe is used to indicate the beginning of a stressed syllable
+    ///
     /// TODO docs
     fn parse(input_str: &str) -> Result<Self> {
         // remove all whitespace
         let input: String = input_str.chars().filter(|c| !c.is_whitespace()).collect();
 
+        // parse string from the beginning
         let mut remaining_input: &str = &input;
-        // index of the first character of the remaining input
-        let mut index = 0;
-        let mut result = SegmentString::new();
 
-        let mut cur_sylable = Sylable {
-            stressed: false,
-        };
-        let mut cur_word = ();
+        let mut result = PhonologicalString::new();
 
         while !remaining_input.is_empty() {
             // parse a sylable maker (. or ')
-            let stressed_syl = remaining_input.starts_with(SYL_STRESS_BOUND_CHAR);
-            let unstressed_syl = remaining_input.starts_with(SYL_BOUND_CHAR);
-            let is_word = remaining_input.starts_with(WORD_BOUND_STR);
-            if stressed_syl || unstressed_syl || is_word {
-                // // record the last sylable
-                // cur_sylable.end = index;
-                // if cur_sylable.start < cur_sylable.end {
-                //     result.sylables.push(cur_sylable.clone());
-                // }
-                // // start the next sylable
-                // cur_sylable = SegmentStringSylable {
-                //     start: index,
-                //     end: -1,
-                //     stressed: stressed_syl,
-                // };
-
-                // if is_word {
-                //     // record the last word
-                //     cur_word.end = index;
-                //     if cur_word.start < cur_word.end {
-                //         result.words.push(cur_word.clone());
-                //     }
-                //     // start the next word
-                //     cur_word = SegmentStringWord {
-                //         start: index,
-                //         end: -1,
-                //     };
-                // }
-                // remaining_input = &remaining_input[1..];
-                // continue;
+            if remaining_input.starts_with(SYL_STRESS_BOUND_CHAR) {
+                result
+                    .elements
+                    .push(PhonologicalElement::SyllableBoundary { stressed: true });
+                remaining_input = &remaining_input[1..];
+                continue;
             }
-
-            index += 1;
+            if remaining_input.starts_with(SYL_BOUND_CHAR) {
+                result
+                    .elements
+                    .push(PhonologicalElement::SyllableBoundary { stressed: false });
+                remaining_input = &remaining_input[1..];
+                continue;
+            }
+            // parse a word maker
+            if remaining_input.starts_with(WORD_BOUND_STR) {
+                result.elements.push(PhonologicalElement::WordBoundary);
+                remaining_input = &remaining_input[1..];
+                continue;
+            }
 
             // match the next segment
             let mut seg_from_substr = None;
@@ -91,7 +75,7 @@ impl FormatSegmentString for SegmentString {
 
             // if we found a substring that forms a segment, add it to the segment string
             if let Some(seg) = seg_from_substr {
-                result.segs.push(seg);
+                result.elements.push(PhonologicalElement::SegmentElement(seg));
                 remaining_input = &remaining_input[best_end..];
             } else {
                 // if not, return error
@@ -102,45 +86,34 @@ impl FormatSegmentString for SegmentString {
             }
         }
 
-        // result.sylables.push(cur_sylable);
-        // result.words.push(cur_word);
-
-        // result.fix_sylable_boundaries();
-        // result.fix_word_boundaries();
         Ok(result)
     }
 
     fn format(&self) -> String {
-        // TODO put this in a config struct
-        let show_word_bounds = true;
-
-        let mut s: String = String::new();
-        // we will remove the elements as we go
-        let word_bounds = &self.words;
-        let syl_bounds = &self.sylables;
-        if self.segs.is_empty() {
+        if self.elements.is_empty() {
             return "[]".to_string();
         }
-        for i in 0..(self.segs.len() + 1) {
-            // let is_word_bound = word_bounds
-            //     .iter()
-            //     .any(|x| x.start == i as isize || x.end == i as isize);
-            // if is_word_bound {
-            //     if show_word_bounds || i != 0 && i != self.segs.len() {
-            //         s.push(WORD_BOUND_STR[1])
-            //     }
-            // }
-            // if let Some(syl) = syl_bounds.iter().filter(|x| x.start == i as isize).next() {
-            //     if syl.stressed {
-            //         s.push(SYL_STRESS_BOUND_CHAR)
-            //     } else if !is_word_bound {
-            //         s.push(SYL_BOUND_CHAR)
-            //     }
-            // }
-            // if i < self.segs.len() {
-            //     s.push_str(&self.segs[i].to_string());
-            // }
+
+        let mut s: String = String::new();
+        for i in &self.elements {
+            s.push_str(&format_phonological_element(i));
         }
-        s.to_string()
+
+        s
+    }
+}
+
+// TODO add config options
+fn format_phonological_element(i: &PhonologicalElement) -> String {
+    match i {
+        PhonologicalElement::SegmentElement(segment) => segment.to_string(),
+        PhonologicalElement::SyllableBoundary { stressed } => {
+            if *stressed {
+                SYL_STRESS_BOUND_CHAR.to_string()
+            } else {
+                SYL_BOUND_CHAR.to_string()
+            }
+        }
+        PhonologicalElement::WordBoundary => WORD_BOUND_STR[1].to_string(),
     }
 }

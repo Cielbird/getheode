@@ -1,7 +1,5 @@
 use crate::segment::{
-    FeatureState::*,
-    string::SegmentString,
-    {FEATURE_COUNT, Feature, FeatureState},
+    FEATURE_COUNT, Feature, FeatureState::{self, *}, PhonologicalString
 };
 use core::fmt;
 use std::{
@@ -125,8 +123,8 @@ impl Display for Segment {
     }
 }
 
-impl From<Segment> for SegmentString {
+impl From<Segment> for PhonologicalString {
     fn from(val: Segment) -> Self {
-        SegmentString::from_segments(vec![val.clone()])
+        PhonologicalString::from_segments(vec![val.clone()])
     }
 }

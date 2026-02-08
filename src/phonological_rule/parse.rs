@@ -4,8 +4,8 @@ use std::fmt::Display;
 use regex::Regex;
 
 use crate::error::*;
-use crate::phonological_rule::PhonologicalRule;
-use crate::segment::{FormatSegmentString, SegmentString};
+use crate::phonological_rule::{PhonologicalRule, PhonologicalRuleStrategy};
+use crate::segment::{FormatPhonologicalString, PhonologicalString, PhonologicalStringPattern};
 
 pub trait FormatRuleStr {
     /// Build a phonological rule from a string. For formatting see the README.
@@ -73,19 +73,19 @@ impl FormatRuleStr for PhonologicalRule {
         }
 
         // parse input
-        let mut input_opts;
+        let mut input_opts: Vec<PhonologicalStringPattern>;
         match parse_seg_string_opts(input_str) {
             Ok(seg_str_opts) => input_opts = seg_str_opts,
             Err(e) => return Err(e),
         }
         // input should never have no options
         if input_opts.is_empty() {
-            input_opts.push(SegmentString::parse("").unwrap());
+            input_opts.push(PhonologicalStringPattern::parse("").unwrap());
         }
 
         // parse output
 
-        let output = SegmentString::parse(output_str)?;
+        let output = PhonologicalString::parse(output_str)?;
 
         // parse pre-context
         let mut pre_context_opts = Vec::new();
@@ -105,11 +105,22 @@ impl FormatRuleStr for PhonologicalRule {
             }
         }
 
+        let out_segments_len = output.segments_len();
+        let inputs_same_len_as_outputs = input_opts
+            .iter()
+            .all(|pat| pat.segment_len() == out_segments_len);
+        let strategy = if inputs_same_len_as_outputs {
+            PhonologicalRuleStrategy::Add
+        } else {
+            PhonologicalRuleStrategy::Replace
+        };
+
         Ok(PhonologicalRule {
             input_opts,
             output,
             pre_context_opts,
             post_context_opts,
+            strategy,
         })
     }
 
@@ -147,7 +158,7 @@ impl Display for PhonologicalRule {
 /// parses a list of segment strings in brackets: {x, y, z...}.
 /// allows for a single segmentstring, in which case returns a size 1 vector
 /// extra commas anywhere are allowed: {a, b, c,}
-fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>> {
+fn parse_seg_string_opts(s: &str) -> Result<Vec<PhonologicalStringPattern>> {
     let s = s.trim();
     let mut seg_str_opts = Vec::new();
     let has_brackets = s.starts_with('{') && s.ends_with('}');
@@ -162,7 +173,7 @@ fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>> {
         if opt.is_empty() {
             continue;
         }
-        match SegmentString::parse(opt) {
+        match PhonologicalStringPattern::parse(opt) {
             Ok(seg) => seg_str_opts.push(seg.clone()),
             Err(e) => return Err(e),
         }
@@ -171,7 +182,7 @@ fn parse_seg_string_opts(s: &str) -> Result<Vec<SegmentString>> {
 }
 
 /// returns a formated string of a vector of segment strings in brackets: {x, y, z...}.
-fn format_seg_string_opts(opts: &Vec<SegmentString>) -> String {
+fn format_seg_string_opts(opts: &Vec<PhonologicalStringPattern>) -> String {
     let mut str = String::new();
     if opts.is_empty() {
         return "".to_owned();

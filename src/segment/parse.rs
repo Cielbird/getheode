@@ -235,7 +235,7 @@ fn parse_features(mut features_str: &str) -> Result<Segment> {
         let name: &str;
         match re.captures(features_str) {
             Some(capts) => {
-                sign = capts[1].chars().nth(0).unwrap();
+                sign = capts[1].chars().next().unwrap();
                 name_match = capts.get(2).unwrap();
                 name = &features_str[name_match.range()];
             }
