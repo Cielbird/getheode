@@ -69,7 +69,7 @@ pub(crate) fn parse_gbnf_production(
 
     let rhs_str = parts[1].trim();
     let rhs_terms = parse_gbnf_production_rhs(phonemes, rhs_str)
-        .ok_or(Error::Other(format!("Invalid production Rhs: {lhs_str:?}")))?;
+        .ok_or(Error::Other(format!("Invalid production Rhs: {rhs_str:?}")))?;
 
     Ok((lhs, rhs_terms))
 }

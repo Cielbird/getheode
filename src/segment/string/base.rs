@@ -44,7 +44,7 @@ impl PhonologicalString {
         }
 
         if self.elements[0] != PhonologicalElement::WordBoundary {
-            if let PhonologicalElement::SyllableBoundary { stressed: _ } = self.elements[0] {
+            if let PhonologicalElement::SyllableBoundary = self.elements[0] {
                 self.elements[0] = PhonologicalElement::WordBoundary;
             }
             self.elements.insert(0, PhonologicalElement::WordBoundary);
@@ -52,7 +52,7 @@ impl PhonologicalString {
 
         let last = self.elements.last().unwrap().clone();
         if last != PhonologicalElement::WordBoundary {
-            if let PhonologicalElement::SyllableBoundary { stressed: _ } = last {
+            if let PhonologicalElement::SyllableBoundary = last {
                 *self.elements.last_mut().unwrap() = PhonologicalElement::WordBoundary;
             }
             self.elements.push(PhonologicalElement::WordBoundary);

@@ -1,5 +1,7 @@
 # Geþeode
 
+> TODO : This library is completely non-functional now. Major re-write under way.
+
 *[Geþeode](https://en.wiktionary.org/wiki/geþeode)* `/jeˈθeoː.de/` is an Old English word meaning 
 "language"
 
@@ -28,6 +30,11 @@ Future goals are
 Bruce Hayes and Eric Biggs for the ipa segment features csv data:
 https://linguistics.ucla.edu/people/hayes/IP/#features
 
+## Use
+
+Run a set of phonological rules on a set of words :
+
+`cargo run surface -b examples/romanization.txt -r examples/rules.txt -i examples/input.txt`
 
 ## Building
 

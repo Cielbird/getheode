@@ -56,10 +56,10 @@ impl Lect {
     }
 
     pub fn parse_phonemes(&self, phonemes_str: &str) -> Result<PhonemeString> {
-        PhonemeString::parse_phonemes(phonemes_str, &self.phonemes)
+        PhonemeString::parse(phonemes_str, &self.phonemes)
     }
 
     pub fn format_phonemes(&self, phonemes: PhonemeString) -> String {
-        PhonemeString::format_phonemes(&phonemes, &self.phonemes)
+        PhonemeString::format(&phonemes, &self.phonemes)
     }
 }

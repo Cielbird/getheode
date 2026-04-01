@@ -1,6 +1,6 @@
 // this is the cli tool to interact with the getheode library most directly
 
-use std::fs::{self, read_to_string};
+use std::fs::{self, read, read_to_string};
 use std::io::{self, Read};
 use std::path::Path;
 
@@ -79,8 +79,8 @@ fn cli() -> Command {
                     Arg::new("input")
                         .short('i')
                         .value_name("INPUT")
-                        .required(false)
-                        .help("phonemes to parse. if not provided, will take inout from stdin."),
+                        .required(true)
+                        .help("file containing phonemes to parse. if not provided, will take inout from stdin."),
                 ),
         )
 }
@@ -100,16 +100,8 @@ fn main() {
                 .get_one::<String>("phonotactics")
                 .map(|s| read_to_string(s).unwrap().clone());
 
-            let input = if let Some(t) = arg_matches.get_one::<String>("input") {
-                t.clone()
-            } else {
-                // read from stdin
-                let mut buffer = String::new();
-                io::stdin()
-                    .read_to_string(&mut buffer)
-                    .expect("Failed to read stdin");
-                buffer
-            };
+            let input_file = arg_matches.get_one::<String>("input").unwrap();
+            let input = read_to_string(Path::new(&input_file)).unwrap();
 
             let lect = build_lect(&bank, &rules, phonotactics.as_deref());
 

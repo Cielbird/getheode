@@ -45,7 +45,7 @@ impl PhonemeString {
     /// consider reordering the phoneme inventory.
     /// apostrophe is used to indicate the beginning of a stressed sylable
     /// must be surounded in slashes: //
-    pub fn parse_phonemes(phonemes_str: &str, bank: &PhonemeBank) -> Result<Self> {
+    pub fn parse(phonemes_str: &str, bank: &PhonemeBank) -> Result<Self> {
         // remove all whitespace
         let input: String = phonemes_str
             .chars()
@@ -123,7 +123,7 @@ impl PhonemeString {
         Ok(result)
     }
 
-    pub fn format_phonemes(&self, _bank: &PhonemeBank) -> String {
+    pub fn format(&self, _bank: &PhonemeBank) -> String {
         todo!()
     }
 }

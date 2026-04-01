@@ -4,7 +4,7 @@ use crate::segment::Segment;
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PhonologicalElement {
     SegmentElement(Segment),
-    SyllableBoundary { stressed: bool },
+    SyllableBoundary,
     WordBoundary,
 }
 
@@ -18,15 +18,8 @@ impl PhonologicalElement {
                     false
                 }
             },
-            PhonologicalElement::SyllableBoundary { stressed } => {
-                if let PhonologicalElement::SyllableBoundary{stressed: other_stressed } = other {
-                    *stressed == *other_stressed
-                } else {
-                    false
-                }
-            },
-            PhonologicalElement::WordBoundary => {
-                self == other 
+            other => {
+                self == other
             },
         }
     }

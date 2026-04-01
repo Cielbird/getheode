@@ -1,6 +1,6 @@
 pub use crate::error::*;
 use crate::segment::{
-    PhonologicalString, SYL_BOUND_CHAR, SYL_STRESS_BOUND_CHAR, Segment, WORD_BOUND_STR,
+    PhonologicalString, STRESS, SYL_BOUND_CHAR, SYL_STRESS_BOUND_CHAR, Segment, WORD_BOUND_STR
 };
 
 use super::element::PhonologicalElement;
@@ -95,25 +95,31 @@ impl FormatPhonologicalString for PhonologicalString {
         }
 
         let mut s: String = String::new();
-        for i in &self.elements {
-            s.push_str(&format_phonological_element(i));
+        for i in 0..self.element_len() {
+            let elem = &self.elements[i];
+            let elem_str = match i {
+                PhonologicalElement::SegmentElement(segment) => segment.to_string(),
+                PhonologicalElement::SyllableBoundary => {
+                    let mut next_elem_stressed = false;
+                    if i < self.element_len()-1 {
+                        let next_elem = &self.elements[i + 1];
+                        if let PhonologicalElement::SegmentElement(seg) = next_elem {
+                            seg.features[STRESS]
+                            PhonologicalElement::SegmentElement(segment) => todo!(),
+                            other => false,
+                        }
+                    }
+                    if next_elem_stressed {
+                        SYL_STRESS_BOUND_CHAR.to_string()
+                    } else {
+                        SYL_BOUND_CHAR.to_string()
+                    }
+                }
+                PhonologicalElement::WordBoundary => WORD_BOUND_STR[1].to_string(),
+            }
+            s.push_str(elem_str);
         }
 
         s
-    }
-}
-
-// TODO add config options
-fn format_phonological_element(i: &PhonologicalElement) -> String {
-    match i {
-        PhonologicalElement::SegmentElement(segment) => segment.to_string(),
-        PhonologicalElement::SyllableBoundary { stressed } => {
-            if *stressed {
-                SYL_STRESS_BOUND_CHAR.to_string()
-            } else {
-                SYL_BOUND_CHAR.to_string()
-            }
-        }
-        PhonologicalElement::WordBoundary => WORD_BOUND_STR[1].to_string(),
     }
 }
