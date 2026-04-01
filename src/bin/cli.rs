@@ -7,11 +7,6 @@ use std::path::Path;
 use clap::{Arg, Command};
 
 use getheode::GETHEODE_VERSION;
-use getheode::lect::Lect;
-use getheode::phoneme::PhonemeBank;
-use getheode::phonological_rule::{FormatRulesFile, PhonologicalRule};
-use getheode::phonotactics::{FormatGbnf, Phonotactics};
-use getheode::segment::FormatPhonologicalString;
 
 /// Returns the contents of a file if the input is a valid file path.
 /// Otherwise, returns the input string itself.
@@ -20,28 +15,6 @@ pub fn file_or_raw(input: &str) -> Result<String, String> {
         fs::read_to_string(input).map_err(|e| format!("Failed to read file '{}': {}", input, e))
     } else {
         Ok(input.to_string())
-    }
-}
-
-fn build_lect(bank: &str, rules: &str, phonotactics: Option<&str>) -> Lect {
-    let bank = PhonemeBank::parse(bank).expect("Couldn't parse phonemes bank");
-    let rules =
-        PhonologicalRule::parse_file(rules).expect("Couldn't parse phonological realization rules");
-    let phonotactics = phonotactics.map_or(Phonotactics::new(), |p| {
-        Phonotactics::parse_gbnf(&bank, p).expect("Couldn't parse phonotactics (GBNF format)")
-    });
-
-    Lect::new(bank, phonotactics, rules)
-}
-
-fn surface(lect: Lect, input: &str) {
-    let inputs = input.split_ascii_whitespace();
-
-    for input in inputs {
-        let phonemes = lect.parse_phonemes(input).expect("Couldn't parse phonemes");
-        let result = lect.get_surf_rep(phonemes, true);
-
-        println!("{}", result.format());
     }
 }
 
@@ -103,9 +76,7 @@ fn main() {
             let input_file = arg_matches.get_one::<String>("input").unwrap();
             let input = read_to_string(Path::new(&input_file)).unwrap();
 
-            let lect = build_lect(&bank, &rules, phonotactics.as_deref());
-
-            surface(lect, &input)
+            unimplemented!("Major refactor, this is unimplemented");
         }
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachable
     }
