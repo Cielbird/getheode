@@ -1,7 +1,8 @@
 use crate::string::segment::{
-    FeatureState::{POS, UNDEF},
     PhonoSegment,
 };
+
+use crate::string::feature::FeatureState::*;
 
 // syl,   	long,	cons,	son,	cont,	delrel,
 // approx,	tap,	trill,	nasal,	voi,	spgl,	congl,

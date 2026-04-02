@@ -1,7 +1,8 @@
 // tests/getheode_test.rs
 #[cfg(test)]
 mod segment_tests {
-    use crate::string::segment::FeatureState::{NA, NEG, POS, UNDEF};
+
+    use crate::string::feature::FeatureState::*;
     use crate::string::segment::{PhonoSegment, parse_segment_feature_set, parse_segment_ipa};
 
     #[test]
@@ -10,8 +11,8 @@ mod segment_tests {
         assert_eq!(
             seg,
             PhonoSegment::from_features([
-                POS, NEG, NEG, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG,
-                NEG, NEG, NA, NA, NA, NEG, POS, NEG, POS, NEG, NEG, NA
+                POS, NEG, NEG, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG,
+                NEG, NA, NA, NA, NEG, POS, NEG, POS, NEG, NEG, NA
             ]),
         );
     }
@@ -22,9 +23,9 @@ mod segment_tests {
         assert_eq!(
             seg,
             PhonoSegment::from_features([
-                UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, NEG,
+                UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, NEG, UNDEF,
                 UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF,
-                UNDEF, UNDEF, UNDEF, UNDEF,
+                UNDEF, UNDEF, UNDEF,
             ])
         );
     }
@@ -35,8 +36,8 @@ mod segment_tests {
         assert_eq!(
             seg,
             PhonoSegment::from_features([
-                NEG, NEG, POS, NEG, POS, NEG, NEG, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG,
-                NEG, NEG, NA, NA, NA, NEG, POS, POS, POS, NA, NA, NA
+                NEG, NEG, POS, NEG, POS, NEG, NEG, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG,
+                NEG, NA, NA, NA, NEG, POS, POS, POS, NA, NA, NA
             ]),
         );
     }
@@ -47,8 +48,8 @@ mod segment_tests {
         assert_eq!(
             seg,
             PhonoSegment::from_features([
-                POS, NEG, POS, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG,
-                NEG, NEG, NA, NA, NA, NEG, POS, NEG, POS, NEG, NEG, NA
+                POS, NEG, POS, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG,
+                NEG, NA, NA, NA, NEG, POS, NEG, POS, NEG, NEG, NA
             ]),
         );
     }

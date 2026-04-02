@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::{error::{Error, Result}, string::feature::Feature};
 
 // a feature of a phonological segment
 
@@ -45,8 +45,6 @@ pub const SEG_FEATURE_NAMES: [&str; SEG_FEATURE_COUNT as usize] = [
     "dor", "high", "low", "front", "back", "tense",
 ];
 
-pub type Feature = u8;
-
 /// converts a feature name string to the corresponding u8 index
 pub fn feature_from_string(string: &str) -> Result<Feature> {
     let index = SEG_FEATURE_NAMES.iter().position(|s| *s == string);
@@ -54,13 +52,4 @@ pub fn feature_from_string(string: &str) -> Result<Feature> {
         Some(i) => Ok(i as u8),
         None => Err(Error::UnknownFeatureName(string.to_string())),
     }
-}
-
-#[derive(Debug, Clone, Copy, Default, Eq, Hash, PartialEq)]
-pub enum FeatureState {
-    #[default]
-    UNDEF, // undefined for this segment.
-    POS, // (+) present in the segment
-    NEG, // (-) not present in the segment
-    NA,  // not applicable, could be either positive or negative for this segment, we don't care
 }

@@ -1,14 +1,18 @@
 use regex::Regex;
 use unicode_normalization::UnicodeNormalization;
 
+use crate::string::feature::FeatureState;
 use crate::{
-    error::*, string::segment::{DIACRITICS, FeatureState, IPA_BASES, NATURAL_CLASSES, PhonoSegment, SEG_FEATURE_NAMES, feature_from_string},
+    error::*,
+    string::segment::{
+        DIACRITICS, IPA_BASES, NATURAL_CLASSES, PhonoSegment, SEG_FEATURE_NAMES,
+        feature_from_string,
+    },
 };
 
 /// return a segment from either an ipa character, a feature set, or a phonological class.
 /// - input string is trimmed of whitespace
-pub fn parse_segment(string: &str) -> Result<PhonoSegment>
-{
+pub fn parse_segment(string: &str) -> Result<PhonoSegment> {
     let string = string.trim();
     if let Ok(seg) = parse_segment_ipa(string) {
         return Ok(seg);
@@ -22,7 +26,7 @@ pub fn parse_segment(string: &str) -> Result<PhonoSegment>
     Err(Error::SegmentParsingError(string.to_string()))
 }
 
-pub fn format_segment(seg : &PhonoSegment) -> String {
+pub fn format_segment(seg: &PhonoSegment) -> String {
     // see if there is a matching ipa symbol
     for (sym, seg) in IPA_BASES {
         if seg == seg {
@@ -67,7 +71,6 @@ pub fn format_segment(seg : &PhonoSegment) -> String {
     (result + "]").to_string()
 }
 
-
 /// construct a segement from an IPA symbol
 /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
 pub(crate) fn parse_segment_ipa(input: &str) -> Result<PhonoSegment> {
@@ -103,7 +106,7 @@ pub(crate) fn parse_segment_ipa(input: &str) -> Result<PhonoSegment> {
     Err(Error::IPASymbolParsingError(msg))
 }
 
-pub(crate) fn format_segment_ipa(seg : &PhonoSegment) -> String {
+pub(crate) fn format_segment_ipa(seg: &PhonoSegment) -> String {
     todo!()
 }
 
@@ -160,7 +163,7 @@ pub fn parse_segment_class(class_symbol: &str) -> Result<PhonoSegment> {
     Err(Error::IPASymbolParsingError(class_symbol.to_string()))
 }
 
-pub fn format_class(seg : & PhonoSegment) -> String {
+pub fn format_class(seg: &PhonoSegment) -> String {
     todo!()
 }
 
@@ -174,7 +177,7 @@ pub fn parse_segment_feature_set(s: &str) -> Result<PhonoSegment> {
     parse_segment_features(inner)
 }
 
-pub fn format_feature_set(seg : & PhonoSegment) -> String {
+pub fn format_feature_set(seg: &PhonoSegment) -> String {
     todo!()
 }
 
