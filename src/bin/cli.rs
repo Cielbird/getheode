@@ -1,7 +1,6 @@
 // this is the cli tool to interact with the getheode library most directly
 
-use std::fs::{self, read, read_to_string};
-use std::io::{self, Read};
+use std::fs::{self, read_to_string};
 use std::path::Path;
 
 use clap::{Arg, Command};
@@ -64,17 +63,17 @@ fn main() {
     match matches.subcommand() {
         Some(("surface", arg_matches)) => {
             let bank = arg_matches.get_one::<String>("phoneme_bank").unwrap();
-            let bank = read_to_string(bank).unwrap();
+            let _bank = read_to_string(bank).unwrap();
 
             let rules = arg_matches.get_one::<String>("rules").unwrap();
-            let rules = read_to_string(rules).unwrap();
+            let _rules = read_to_string(rules).unwrap();
 
-            let phonotactics = arg_matches
+            let _phonotactics = arg_matches
                 .get_one::<String>("phonotactics")
                 .map(|s| read_to_string(s).unwrap().clone());
 
             let input_file = arg_matches.get_one::<String>("input").unwrap();
-            let input = read_to_string(Path::new(&input_file)).unwrap();
+            let _input = read_to_string(Path::new(&input_file)).unwrap();
 
             unimplemented!("Major refactor, this is unimplemented");
         }

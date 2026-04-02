@@ -1,5 +1,5 @@
-use crate::string::segment::PhonoSegment;
-use crate::string::syllable::SyllableFeatures;
+use crate::phonology::segment::PhonoSegment;
+use crate::phonology::syllable::SyllableFeatures;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PhonoSyllable {
@@ -38,7 +38,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::string::feature::FeatureState::*;
+    use crate::phonology::feature::FeatureState::*;
 
     const A_SEG: PhonoSegment = PhonoSegment::from_features([
         POS, NEG, NEG, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, NEG, NA,

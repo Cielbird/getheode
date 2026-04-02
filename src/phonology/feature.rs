@@ -1,5 +1,3 @@
-
-
 #[derive(Debug, Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub enum FeatureState {
     #[default]
@@ -11,4 +9,3 @@ pub enum FeatureState {
 
 // useful for both syllables and segments
 pub type Feature = u8;
-

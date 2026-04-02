@@ -1,10 +1,10 @@
 use regex::Regex;
 use unicode_normalization::UnicodeNormalization;
 
-use crate::string::feature::FeatureState;
+use crate::phonology::feature::FeatureState;
 use crate::{
     error::*,
-    string::segment::{
+    phonology::segment::{
         DIACRITICS, IPA_BASES, NATURAL_CLASSES, PhonoSegment, SEG_FEATURE_NAMES,
         feature_from_string,
     },
@@ -26,10 +26,10 @@ pub fn parse_segment(string: &str) -> Result<PhonoSegment> {
     Err(Error::SegmentParsingError(string.to_string()))
 }
 
-pub fn format_segment(seg: &PhonoSegment) -> String {
+pub fn format_segment(segment: &PhonoSegment) -> String {
     // see if there is a matching ipa symbol
     for (sym, seg) in IPA_BASES {
-        if seg == seg {
+        if seg == segment {
             return sym.to_string();
         }
         // WARNING this tries all possible ipa symbols with all possible diacritics.
@@ -41,7 +41,7 @@ pub fn format_segment(seg: &PhonoSegment) -> String {
         // TODO this can be done recursively
         for (d, d_seg) in DIACRITICS {
             // TODO figure out if cloning these is really what i'm supposed to do
-            if (seg.clone() + d_seg.clone()) == *seg {
+            if (seg.clone() + d_seg.clone()) == *segment {
                 let mut s = sym.to_string();
                 s.push(*d);
                 return s.to_string();
@@ -51,7 +51,7 @@ pub fn format_segment(seg: &PhonoSegment) -> String {
 
     // see if there is a matching class
     for (sym, seg) in NATURAL_CLASSES {
-        if seg == seg {
+        if seg == segment {
             return sym.to_string();
         }
     }
@@ -59,11 +59,11 @@ pub fn format_segment(seg: &PhonoSegment) -> String {
     // otherwise spit out a list of the features
     let mut result: String = "[".to_string();
     for (i, feature) in SEG_FEATURE_NAMES.iter().enumerate() {
-        if seg.features[i] == FeatureState::NA {
+        if segment.features[i] == FeatureState::NA {
             continue;
-        } else if seg.features[i] == FeatureState::POS {
+        } else if segment.features[i] == FeatureState::POS {
             result = result + "+" + feature;
-        } else if seg.features[i] == FeatureState::NEG {
+        } else if segment.features[i] == FeatureState::NEG {
             result = result + "-" + feature;
         }
     }
@@ -106,7 +106,7 @@ pub(crate) fn parse_segment_ipa(input: &str) -> Result<PhonoSegment> {
     Err(Error::IPASymbolParsingError(msg))
 }
 
-pub(crate) fn format_segment_ipa(seg: &PhonoSegment) -> String {
+pub fn format_segment_ipa(_seg: &PhonoSegment) -> String {
     todo!()
 }
 
@@ -163,10 +163,6 @@ pub fn parse_segment_class(class_symbol: &str) -> Result<PhonoSegment> {
     Err(Error::IPASymbolParsingError(class_symbol.to_string()))
 }
 
-pub fn format_class(seg: &PhonoSegment) -> String {
-    todo!()
-}
-
 /// construct a segement from a list of features in brackets ex. [+voi-delrel]
 pub fn parse_segment_feature_set(s: &str) -> Result<PhonoSegment> {
     let s = s.trim();
@@ -175,10 +171,6 @@ pub fn parse_segment_feature_set(s: &str) -> Result<PhonoSegment> {
     }
     let inner = &s[1..(s.len() - 1)];
     parse_segment_features(inner)
-}
-
-pub fn format_feature_set(seg: &PhonoSegment) -> String {
-    todo!()
 }
 
 /// Parse a string of feature states, for example "+voi -spgl"

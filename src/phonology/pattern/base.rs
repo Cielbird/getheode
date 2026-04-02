@@ -1,15 +1,11 @@
-use crate::string::{
-    feature::FeatureState,
-    segment::{PhonoSegment, SEG_FEATURE_COUNT},
-    syllable::{SYL_FEATURE_COUNT, SyllableFeatures},
-};
+use crate::phonology::{segment::PhonoSegment, syllable::SyllableFeatures};
 
 pub struct PhonoPattern {
-    elems: Vec<PhonoPatternElement>,
+    pub(crate) elems: Vec<PhonoPatternElement>,
 }
 
 impl PhonoPattern {
-    pub(crate) fn new<E>(elems: E) -> Self
+    pub fn new<E>(elems: E) -> Self
     where
         E: IntoIterator<Item: Into<PhonoPatternElement>>,
     {
@@ -28,8 +24,8 @@ pub enum PhonoPatternElement {
 
 // A segment element of a pattern for phonological strings
 pub struct PhonoPatternSegment {
-    syllable_features: SyllableFeatures,
-    segment: PhonoSegment, // segment is only composed of it's features
+    pub(crate) syllable_features: SyllableFeatures,
+    pub(crate) segment: PhonoSegment, // segment is only composed of it's features
 }
 
 /// Convert (syllable_features, segment_features) to pattern element

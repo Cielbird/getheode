@@ -1,4 +1,4 @@
 pub mod error;
-pub mod string;
+pub mod phonology;
 
 pub const GETHEODE_VERSION: &str = env!("CARGO_PKG_VERSION");

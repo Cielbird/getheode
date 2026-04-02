@@ -1,4 +1,4 @@
-use crate::string::feature::{self, FeatureState};
+use crate::phonology::feature::FeatureState;
 
 // The features that a syllable can have
 pub const SYL_FEATURE_COUNT: u8 = 1;
@@ -7,13 +7,11 @@ pub const SYL_FEATURE_COUNT: u8 = 1;
 /// set of features a syllable can have
 #[derive(Debug, Clone, PartialEq)]
 pub struct SyllableFeatures {
-    features : [FeatureState; SYL_FEATURE_COUNT as usize]
+    features: [FeatureState; SYL_FEATURE_COUNT as usize],
 }
 
 impl From<[FeatureState; SYL_FEATURE_COUNT as usize]> for SyllableFeatures {
     fn from(features: [FeatureState; SYL_FEATURE_COUNT as usize]) -> Self {
-        Self {
-            features
-        }
+        Self { features }
     }
 }

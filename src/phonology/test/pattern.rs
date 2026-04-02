@@ -1,10 +1,10 @@
 // tests/getheode_test.rs
 #[cfg(test)]
 mod pattern_tests {
-    use crate::string::feature::FeatureState::{self, *};
-    use crate::string::pattern::PhonoPattern;
-    use crate::string::syllable::PhonoSyllable;
-    use crate::string::{segment::PhonoSegment, string::PhonoString};
+    use crate::phonology::feature::FeatureState::{self, *};
+    use crate::phonology::pattern::PhonoPattern;
+    use crate::phonology::syllable::PhonoSyllable;
+    use crate::phonology::{segment::PhonoSegment, string::PhonoString};
 
     const A_SEG: PhonoSegment = PhonoSegment::from_features([
         POS, NEG, NEG, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, NEG, NA,
@@ -28,13 +28,13 @@ mod pattern_tests {
         // replace first 3 segments with [ia]
         // end with ['ia.ka]
 
-        let mut string = PhonoString::new([
+        let string = PhonoString::new([
             PhonoSyllable::new(STRESSED, [K_SEG, A_SEG, I_SEG]), // stressed syllable, segments are [kai]
             PhonoSyllable::new(UNSTRESSED, [K_SEG, A_SEG]), // unstressed syllable, segments are [ka]
         ]);
 
         let replacement = PhonoPattern::new([([UNDEF], I_SEG), ([UNDEF], A_SEG)]);
-        let mut expected = PhonoString::new([
+        let expected = PhonoString::new([
             PhonoSyllable::new(STRESSED, [I_SEG, A_SEG]), // stressed syllable, segments are [ia]
             PhonoSyllable::new(UNSTRESSED, [K_SEG, A_SEG]), // unstressed syllable, segments are [ka]
         ]);
@@ -44,7 +44,7 @@ mod pattern_tests {
 
     #[test]
     fn segment_string_is_match() {
-        let replacement = PhonoPattern::new([([UNDEF], I_SEG), ([UNDEF], A_SEG)]);
+        let _replacement = PhonoPattern::new([([UNDEF], I_SEG), ([UNDEF], A_SEG)]);
         // let haystack = PhonologicalString::from_segments([K_SEG, A_SEG, I_SEG, K_SEG, A_SEG]);
         // let is_match = pattern.is_match(&haystack, 0) && pattern.is_match(&haystack, 3);
         // assert_eq!(

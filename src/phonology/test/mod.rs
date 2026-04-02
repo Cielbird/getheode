@@ -1,2 +1,2 @@
-pub mod segment;
 pub mod pattern;
+pub mod segment;

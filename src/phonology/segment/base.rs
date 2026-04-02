@@ -4,8 +4,11 @@ use std::{
     ops::{Add, Sub},
 };
 
-use crate::string::{
-    feature::{Feature, FeatureState::{self, NEG, POS, UNDEF}},
+use crate::phonology::{
+    feature::{
+        Feature,
+        FeatureState::{self, NEG, POS, UNDEF},
+    },
     segment::{SEG_FEATURE_COUNT, format_segment},
 };
 

@@ -1,4 +1,7 @@
-use crate::{error::{Error, Result}, string::feature::Feature};
+use crate::{
+    error::{Error, Result},
+    phonology::feature::Feature,
+};
 
 // a feature of a phonological segment
 
@@ -40,9 +43,9 @@ pub const TENSE: u8 = 26;
 pub const SEG_FEATURE_COUNT: u8 = 27;
 
 pub const SEG_FEATURE_NAMES: [&str; SEG_FEATURE_COUNT as usize] = [
-    "syl", "long", "cons", "son", "cont", "delrel", "approx", "tap", "trill", "nasal",
-    "voi", "spgl", "congl", "lab", "round", "labdent", "cor", "ant", "dist", "strident", "lateral",
-    "dor", "high", "low", "front", "back", "tense",
+    "syl", "long", "cons", "son", "cont", "delrel", "approx", "tap", "trill", "nasal", "voi",
+    "spgl", "congl", "lab", "round", "labdent", "cor", "ant", "dist", "strident", "lateral", "dor",
+    "high", "low", "front", "back", "tense",
 ];
 
 /// converts a feature name string to the corresponding u8 index

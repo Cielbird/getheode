@@ -2,8 +2,8 @@
 #[cfg(test)]
 mod segment_tests {
 
-    use crate::string::feature::FeatureState::*;
-    use crate::string::segment::{PhonoSegment, parse_segment_feature_set, parse_segment_ipa};
+    use crate::phonology::feature::FeatureState::*;
+    use crate::phonology::segment::{PhonoSegment, parse_segment_feature_set, parse_segment_ipa};
 
     #[test]
     fn test_segment_from_ipa() {
