@@ -1,17 +1,16 @@
 #![allow(unused)] // TODO remove once this mod is used
 
 use crate::phonology::{
-    segment::SegmentFeatures, syllable::SyllableFeatures, tree::UniformDepth3Tree,
+    pattern::PatternMatch, segment::SegmentFeatures, string::PhonoString, syllable::SyllableFeatures, tree::UniformDepth3Tree
 };
+
+pub type PatternTree = UniformDepth3Tree<(), SyllableInfo, SegmentInfo>;
 
 /// A pattern to match in phonological strings
 pub struct PhonoPattern {
-    pub(crate) options: Vec<PhonoPatternOpt>,
-}
-
-pub struct PhonoPatternOpt {
     // use a tree to represent the string, like phonological strings
-    pub(crate) tree: UniformDepth3Tree<(), SyllableInfo, SegmentInfo>,
+    pub(crate) match_tree: PatternTree,
+    pub(crate) replace_tree: PatternTree,
 }
 
 pub struct SyllableInfo {
@@ -37,7 +36,14 @@ impl SegmentInfo {
 }
 
 impl PhonoPattern {
-    pub(crate) fn new(options: Vec<PhonoPatternOpt>) -> Self {
-        Self { options }
+    pub(crate) fn new(match_tree: PatternTree, replace_tree: PatternTree) -> Self {
+        Self {
+            match_tree,
+            replace_tree,
+        }
+    }
+    
+    pub(crate) fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
+        todo!()
     }
 }

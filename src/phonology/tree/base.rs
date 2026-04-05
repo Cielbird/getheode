@@ -25,7 +25,7 @@ pub struct UniformDepth3Tree<T0, T1, T2> {
 }
 
 /// macro for easy construction. example : 
-/// ```
+/// ```json
 ///   x
 ///  |  \
 ///  a    b 
@@ -37,6 +37,7 @@ pub struct UniformDepth3Tree<T0, T1, T2> {
 /// would be :
 /// 
 /// ```
+/// use getheode::ud3tree;
 /// let x = ud3tree![
 ///     'a' => [
 ///         'c' => ['f'],
@@ -47,6 +48,7 @@ pub struct UniformDepth3Tree<T0, T1, T2> {
 ///     ],
 /// ];
 /// ```
+/// 
 #[macro_export]
 macro_rules! ud3tree {
     (
@@ -76,7 +78,7 @@ macro_rules! ud3tree {
         )*
         let _ = l0_idx;
 
-        UniformDepth3Tree { layer_0, layer_1, layer_2 }
+        $crate::phonology::tree::UniformDepth3Tree { layer_0, layer_1, layer_2 }
     }};
 }
 
