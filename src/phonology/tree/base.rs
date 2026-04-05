@@ -24,6 +24,29 @@ pub struct UniformDepth3Tree<T0, T1, T2> {
     pub layer_2: Vec<(T2, usize)>, // data with index of parent in `layer1`
 }
 
+/// macro for easy construction. example : 
+/// ```
+///   x
+///  |  \
+///  a    b 
+///  | \  |
+///  c d  e
+///  | |  |
+///  f g  h
+/// ```
+/// would be :
+/// 
+/// ```
+/// let x = ud3tree![
+///     'a' => [
+///         'c' => ['f'],
+///         'd' => ['g'],
+///     ],
+///     'b' => [
+///         'e' => ['h'],
+///     ],
+/// ];
+/// ```
 #[macro_export]
 macro_rules! ud3tree {
     (
