@@ -5,14 +5,14 @@ use crate::phonology::feature::FeatureState;
 use crate::{
     error::*,
     phonology::segment::{
-        DIACRITICS, IPA_BASES, NATURAL_CLASSES, PhonoSegment, SEG_FEATURE_NAMES,
+        DIACRITICS, IPA_BASES, NATURAL_CLASSES, SEG_FEATURE_NAMES, SegmentFeatures,
         feature_from_string,
     },
 };
 
 /// return a segment from either an ipa character, a feature set, or a phonological class.
 /// - input string is trimmed of whitespace
-pub fn parse_segment(string: &str) -> Result<PhonoSegment> {
+pub fn parse_segment(string: &str) -> Result<SegmentFeatures> {
     let string = string.trim();
     if let Ok(seg) = parse_segment_ipa(string) {
         return Ok(seg);
@@ -26,7 +26,7 @@ pub fn parse_segment(string: &str) -> Result<PhonoSegment> {
     Err(Error::SegmentParsingError(string.to_string()))
 }
 
-pub fn format_segment(segment: &PhonoSegment) -> String {
+pub fn format_segment(segment: &SegmentFeatures) -> String {
     // see if there is a matching ipa symbol
     for (sym, seg) in IPA_BASES {
         if seg == segment {
@@ -73,7 +73,7 @@ pub fn format_segment(segment: &PhonoSegment) -> String {
 
 /// construct a segement from an IPA symbol
 /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
-pub(crate) fn parse_segment_ipa(input: &str) -> Result<PhonoSegment> {
+pub(crate) fn parse_segment_ipa(input: &str) -> Result<SegmentFeatures> {
     for (symbol, seg) in IPA_BASES {
         // normalize the
         let mut input_norm = input.nfd();
@@ -106,12 +106,12 @@ pub(crate) fn parse_segment_ipa(input: &str) -> Result<PhonoSegment> {
     Err(Error::IPASymbolParsingError(msg))
 }
 
-pub fn format_segment_ipa(_seg: &PhonoSegment) -> String {
+pub fn format_segment_ipa(_seg: &SegmentFeatures) -> String {
     todo!()
 }
 
 /// recursive function to add the ipa diacritics in a string to a segment
-fn parse_remaining(remaining_chars: &str, cur_segment: PhonoSegment) -> Result<PhonoSegment> {
+fn parse_remaining(remaining_chars: &str, cur_segment: SegmentFeatures) -> Result<SegmentFeatures> {
     if remaining_chars.is_empty() {
         return Ok(cur_segment);
     }
@@ -154,7 +154,7 @@ fn parse_remaining(remaining_chars: &str, cur_segment: PhonoSegment) -> Result<P
 }
 
 /// construct a segement from an IPA symbol
-pub fn parse_segment_class(class_symbol: &str) -> Result<PhonoSegment> {
+pub fn parse_segment_class(class_symbol: &str) -> Result<SegmentFeatures> {
     for (sym, seg) in NATURAL_CLASSES {
         if *sym == class_symbol {
             return Ok(seg.clone());
@@ -164,7 +164,7 @@ pub fn parse_segment_class(class_symbol: &str) -> Result<PhonoSegment> {
 }
 
 /// construct a segement from a list of features in brackets ex. [+voi-delrel]
-pub fn parse_segment_feature_set(s: &str) -> Result<PhonoSegment> {
+pub fn parse_segment_feature_set(s: &str) -> Result<SegmentFeatures> {
     let s = s.trim();
     if !(s.starts_with('[') && s.ends_with(']')) {
         return Err(Error::SegmentParsingError(s.to_string()));
@@ -174,8 +174,8 @@ pub fn parse_segment_feature_set(s: &str) -> Result<PhonoSegment> {
 }
 
 /// Parse a string of feature states, for example "+voi -spgl"
-fn parse_segment_features(mut features_str: &str) -> Result<PhonoSegment> {
-    let mut seg = PhonoSegment::new_undef();
+fn parse_segment_features(mut features_str: &str) -> Result<SegmentFeatures> {
+    let mut seg = SegmentFeatures::new_undef();
     let re = Regex::new(r"^\s*([+-])\s*([a-z]+)").unwrap();
     while !features_str.is_empty() {
         let sign: char;

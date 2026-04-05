@@ -1,4 +1,4 @@
-use crate::phonology::segment::PhonoSegment;
+use crate::phonology::segment::SegmentFeatures;
 
 use crate::phonology::feature::FeatureState::*;
 
@@ -6,398 +6,398 @@ use crate::phonology::feature::FeatureState::*;
 
 // segments that represent common ipa symbols
 #[rustfmt::skip]
-pub const IPA_BASES: &[(&str, PhonoSegment)] = &[
-	("ɒ", PhonoSegment::from_features(
+pub const IPA_BASES: &[(&str, SegmentFeatures)] = &[
+	("ɒ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,POS,NA])
 	),
-	("ɑ", PhonoSegment::from_features(
+	("ɑ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,POS,NA])
 	),
-	("ɶ", PhonoSegment::from_features(
+	("ɶ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,POS,NEG,NA])
 	),
-	("a", PhonoSegment::from_features(
+	("a", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,NEG,NA])
 	),
-	("æ", PhonoSegment::from_features(
+	("æ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,POS,NEG,NA])
 	),
-	("ʌ", PhonoSegment::from_features(
+	("ʌ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NEG])
 	),
-	("ɔ", PhonoSegment::from_features(
+	("ɔ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NEG])
 	),
-	("o", PhonoSegment::from_features(
+	("o", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,POS])
 	),
-	("ɤ", PhonoSegment::from_features(
+	("ɤ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,POS])
 	),
-	("ɘ", PhonoSegment::from_features(
+	("ɘ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,NEG,POS])
 	),
-	("œ", PhonoSegment::from_features(
+	("œ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,POS,NEG,NEG])
 	),
-	("ə", PhonoSegment::from_features(
+	("ə", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,NEG,NEG])
 	),
-	("e", PhonoSegment::from_features(
+	("e", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,POS,NEG,POS])
 	),
-	("ɞ", PhonoSegment::from_features(
+	("ɞ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,NEG,NEG])
 	),
-	("ø", PhonoSegment::from_features(
+	("ø", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,POS,NEG,POS])
 	),
-	("ɛ", PhonoSegment::from_features(
+	("ɛ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,POS,NEG,NEG])
 	),
-	("ɵ", PhonoSegment::from_features(
+	("ɵ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,NEG,POS])
 	),
-	("ɯ", PhonoSegment::from_features(
+	("ɯ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,POS])
 	),
-	("u", PhonoSegment::from_features(
+	("u", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,POS])
 	),
-	("ʊ", PhonoSegment::from_features(
+	("ʊ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,NEG])
 	),
-	("ɨ", PhonoSegment::from_features(
+	("ɨ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,NEG,POS])
 	),
-	("ʉ", PhonoSegment::from_features(
+	("ʉ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,NEG,POS])
 	),
-	("y", PhonoSegment::from_features(
+	("y", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,POS,NEG,POS])
 	),
-	("i", PhonoSegment::from_features(
+	("i", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,POS,NEG,POS])
 	),
-	("ʏ", PhonoSegment::from_features(
+	("ʏ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,POS,NEG,NEG])
 	),
-	("ɪ", PhonoSegment::from_features(
+	("ɪ", SegmentFeatures::from_features(
 		[POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,POS,NEG,NEG])
 	),
-	("ɫ", PhonoSegment::from_features(
+	("ɫ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("ɴ", PhonoSegment::from_features(
+	("ɴ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("ʀ", PhonoSegment::from_features(
+	("ʀ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("ɲ", PhonoSegment::from_features(
+	("ɲ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("ʎ", PhonoSegment::from_features(
+	("ʎ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,POS,POS,POS,NEG,POS,NEG,NA])
 	),
-	("ŋ", PhonoSegment::from_features(
+	("ŋ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("ŋ̠", PhonoSegment::from_features(
+	("ŋ̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,NA])
 	),
-	("ʟ", PhonoSegment::from_features(
+	("ʟ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,POS,POS,POS,NEG,NA,NA,NA])
 	),
-	("ʟ̠", PhonoSegment::from_features(
+	("ʟ̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,POS,POS,POS,NEG,NEG,POS,NA])
 	),
-	("ɳ", PhonoSegment::from_features(
+	("ɳ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʙ", PhonoSegment::from_features(
+	("ʙ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,POS,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɭ", PhonoSegment::from_features(
+	("ɭ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɺ", PhonoSegment::from_features(
+	("ɺ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɻ", PhonoSegment::from_features(
+	("ɻ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɽ", PhonoSegment::from_features(
+	("ɽ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("r", PhonoSegment::from_features(
+	("r", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("n", PhonoSegment::from_features(
+	("n", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("m", PhonoSegment::from_features(
+	("m", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("l", PhonoSegment::from_features(
+	("l", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɾ", PhonoSegment::from_features(
+	("ɾ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,POS,NEG,POS,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɱ", PhonoSegment::from_features(
+	("ɱ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,POS,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʔ", PhonoSegment::from_features(
+	("ʔ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ħ", PhonoSegment::from_features(
+	("ħ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,POS,NA])
 	),
-	("ʕ", PhonoSegment::from_features(
+	("ʕ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,POS,NEG,POS,NA])
 	),
-	("ʁ", PhonoSegment::from_features(
+	("ʁ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("q", PhonoSegment::from_features(
+	("q", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("χ", PhonoSegment::from_features(
+	("χ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("ɢ", PhonoSegment::from_features(
+	("ɢ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("ɕ", PhonoSegment::from_features(
+	("ɕ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,POS,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("ɟ", PhonoSegment::from_features(
+	("ɟ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("ʝ", PhonoSegment::from_features(
+	("ʝ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("c", PhonoSegment::from_features(
+	("c", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("ç", PhonoSegment::from_features(
+	("ç", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("d͡ʑ", PhonoSegment::from_features(
+	("d͡ʑ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,POS,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("t͡ɕ", PhonoSegment::from_features(
+	("t͡ɕ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,POS,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("ɣ", PhonoSegment::from_features(
+	("ɣ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("ɣ̠", PhonoSegment::from_features(
+	("ɣ̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,NA])
 	),
-	("x", PhonoSegment::from_features(
+	("x", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("k", PhonoSegment::from_features(
+	("k", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("ɡ", PhonoSegment::from_features(
+	("ɡ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("g", PhonoSegment::from_features(
+	("g", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("ɡ̠", PhonoSegment::from_features(
+	("ɡ̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,NA])
 	),
-	("ʑ", PhonoSegment::from_features(
+	("ʑ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,POS,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("ʈ", PhonoSegment::from_features(
+	("ʈ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɖ", PhonoSegment::from_features(
+	("ɖ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɬ", PhonoSegment::from_features(
+	("ɬ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʐ", PhonoSegment::from_features(
+	("ʐ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɸ", PhonoSegment::from_features(
+	("ɸ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʂ", PhonoSegment::from_features(
+	("ʂ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʒ", PhonoSegment::from_features(
+	("ʒ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("z", PhonoSegment::from_features(
+	("z", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("v", PhonoSegment::from_features(
+	("v", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,POS,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("t", PhonoSegment::from_features(
+	("t", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʃ", PhonoSegment::from_features(
+	("ʃ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("s", PhonoSegment::from_features(
+	("s", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("p", PhonoSegment::from_features(
+	("p", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("f", PhonoSegment::from_features(
+	("f", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("d", PhonoSegment::from_features(
+	("d", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("b", PhonoSegment::from_features(
+	("b", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("θ", PhonoSegment::from_features(
+	("θ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɮ", PhonoSegment::from_features(
+	("ɮ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("ð", PhonoSegment::from_features(
+	("ð", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("β", PhonoSegment::from_features(
+	("β", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("d͡ʒ", PhonoSegment::from_features(
+	("d͡ʒ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("d͡z", PhonoSegment::from_features(
+	("d͡z", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("d͡ɮ", PhonoSegment::from_features(
+	("d͡ɮ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("d̠͡ɮ̠", PhonoSegment::from_features(
+	("d̠͡ɮ̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("t͡ʃ", PhonoSegment::from_features(
+	("t͡ʃ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("t̠͡ɬ̠", PhonoSegment::from_features(
+	("t̠͡ɬ̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("t͡s", PhonoSegment::from_features(
+	("t͡s", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("t͡ɬ", PhonoSegment::from_features(
+	("t͡ɬ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("t̪͡s̪", PhonoSegment::from_features(
+	("t̪͡s̪", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("t̪͡ɬ̪", PhonoSegment::from_features(
+	("t̪͡ɬ̪", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("d̪͡z̪", PhonoSegment::from_features(
+	("d̪͡z̪", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("d̪͡ɮ̪", PhonoSegment::from_features(
+	("d̪͡ɮ̪", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʈ͡ʂ", PhonoSegment::from_features(
+	("ʈ͡ʂ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɖ͡ʐ", PhonoSegment::from_features(
+	("ɖ͡ʐ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("p͡f", PhonoSegment::from_features(
+	("p͡f", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("b͡v", PhonoSegment::from_features(
+	("b͡v", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,POS,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("p͡ɸ", PhonoSegment::from_features(
+	("p͡ɸ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("b͡β", PhonoSegment::from_features(
+	("b͡β", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("t̪͡θ", PhonoSegment::from_features(
+	("t̪͡θ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,POS,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("c͡ç", PhonoSegment::from_features(
+	("c͡ç", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("ɟ͡ʝ", PhonoSegment::from_features(
+	("ɟ͡ʝ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NA])
 	),
-	("k͡x", PhonoSegment::from_features(
+	("k͡x", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("k̠͡x̠", PhonoSegment::from_features(
+	("k̠͡x̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,NA])
 	),
-	("ɡ͡ɣ", PhonoSegment::from_features(
+	("ɡ͡ɣ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("ɡ̠͡ɣ̠", PhonoSegment::from_features(
+	("ɡ̠͡ɣ̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,NA])
 	),
-	("q͡χ", PhonoSegment::from_features(
+	("q͡χ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("ɢ͡ʁ", PhonoSegment::from_features(
+	("ɢ͡ʁ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,NEG,NEG,NEG,POS,NA])
 	),
-	("ɧ", PhonoSegment::from_features(
+	("ɧ", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,POS,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("k͡p", PhonoSegment::from_features(
+	("k͡p", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("ɡ͡b", PhonoSegment::from_features(
+	("ɡ͡b", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,NA])
 	),
-	("p͡t", PhonoSegment::from_features(
+	("p͡t", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("b͡d", PhonoSegment::from_features(
+	("b͡d", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ɰ", PhonoSegment::from_features(
+	("ɰ", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,POS,POS,NA,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NA,NA,POS])
 	),
-	("ɰ̠", PhonoSegment::from_features(
+	("ɰ̠", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,POS,POS,NA,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,POS])
 	),
-	("w", PhonoSegment::from_features(
+	("w", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,POS,POS,NA,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,POS])
 	),
-	("ɥ", PhonoSegment::from_features(
+	("ɥ", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,POS,POS,NA,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,POS,NEG,POS])
 	),
-	("j", PhonoSegment::from_features(
+	("j", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,POS,POS,NA,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,POS,NEG,POS])
 	),
-	("ɹ", PhonoSegment::from_features(
+	("ɹ", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,POS,POS,NA,POS,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʋ", PhonoSegment::from_features(
+	("ʋ", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,POS,POS,NA,POS,NEG,NEG,NEG,POS,NEG,NEG,POS,NEG,POS,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("ʍ", PhonoSegment::from_features(
+	("ʍ", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,POS,NEG,NEG,NA,NA,NA,NEG,POS,POS,NEG,NEG,POS,POS])
 	),
-	("ɦ", PhonoSegment::from_features(
+	("ɦ", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	),
-	("h", PhonoSegment::from_features(
+	("h", SegmentFeatures::from_features(
 		[NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NA,NA,NA,NEG,NEG,NA,NA,NA,NA,NA])
 	)
 ];

@@ -3,7 +3,6 @@
 Phonological strings represent *prosodic words*. These hierarchy is as follows :
 
 - `PhonoString` : Prosodic words / phonological "strings"
-- ~~`PhonoFoot`~~ : Prosodic feet
 - `PhonoSyllable` : Prosodic syllables
 - `PhonoSegment` : Phonological segments
 

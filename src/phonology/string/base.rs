@@ -1,36 +1,16 @@
 use crate::phonology::{
-    pattern::{
-        PhonoPattern,
-        PhonoPatternElement::{Segment, SyllableBoundary, WordBoundary},
-    },
-    syllable::PhonoSyllable,
+    segment::SegmentFeatures, syllable::SyllableFeatures, tree::UniformDepth3Tree,
 };
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PhonoString {
-    pub(crate) syllables: Vec<PhonoSyllable>,
+    pub(crate) tree: UniformDepth3Tree<(), SyllableFeatures, SegmentFeatures>,
 }
 
 impl PhonoString {
-    /// construct a string from syllables
-    pub fn new(syllables: impl IntoIterator<Item = impl Into<PhonoSyllable>>) -> Self {
-        PhonoString {
-            syllables: syllables.into_iter().map(|s| s.into()).collect(),
-        }
-    }
-
-    pub fn replace(self, _start: usize, _end: usize, replacement: PhonoPattern) -> Self {
-        for e in replacement.elems {
-            match e {
-                WordBoundary => todo!(),
-                SyllableBoundary => todo!(),
-                Segment(seg) => {
-                    let _seg_feats = seg.segment;
-                    let _syl_feats = seg.syllable_features;
-                }
-            }
-        }
-        // TODO
-        self
+    pub(crate) fn new(x: Vec<Vec<(SyllableFeatures, Vec<SegmentFeatures>)>>) -> Self {
+        let v2 = x.into_iter().map(|v| ((), v)).collect();
+        let tree = UniformDepth3Tree::new(v2);
+        Self { tree }
     }
 }

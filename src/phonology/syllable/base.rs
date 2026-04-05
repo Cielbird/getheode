@@ -1,17 +1,17 @@
-use crate::phonology::segment::PhonoSegment;
+use crate::phonology::segment::SegmentFeatures;
 use crate::phonology::syllable::SyllableFeatures;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PhonoSyllable {
     features: SyllableFeatures,
-    segments: Vec<PhonoSegment>,
+    segments: Vec<SegmentFeatures>,
 }
 
 impl PhonoSyllable {
     /// construct a segement from an array of features
     pub fn new(
         features: impl Into<SyllableFeatures>,
-        segments: impl IntoIterator<Item = impl Into<PhonoSegment>>,
+        segments: impl IntoIterator<Item = impl Into<SegmentFeatures>>,
     ) -> Self {
         PhonoSyllable {
             features: features.into(),
@@ -23,7 +23,7 @@ impl PhonoSyllable {
 impl<F, S> From<(F, S)> for PhonoSyllable
 where
     F: Into<SyllableFeatures>,
-    S: IntoIterator<Item: Into<PhonoSegment>>,
+    S: IntoIterator<Item: Into<SegmentFeatures>>,
 {
     fn from(tup: (F, S)) -> Self {
         let (features, segments) = tup;
@@ -40,7 +40,7 @@ mod test {
     use super::*;
     use crate::phonology::feature::FeatureState::*;
 
-    const A_SEG: PhonoSegment = PhonoSegment::from_features([
+    const A_SEG: SegmentFeatures = SegmentFeatures::from_features([
         POS, NEG, NEG, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, NEG, NA,
         NA, NA, NEG, POS, NEG, POS, NEG, NEG, NA,
     ]);

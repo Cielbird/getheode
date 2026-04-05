@@ -17,19 +17,19 @@ use crate::phonology::{
 /// can represent either a complete phonological segment (if all features are defined)
 /// or a set of features that can be used to match or modify other segments
 #[derive(Debug, Clone, Default, Eq, Hash, PartialEq)]
-pub struct PhonoSegment {
+pub struct SegmentFeatures {
     pub(crate) features: [FeatureState; SEG_FEATURE_COUNT as usize],
 }
 
-impl PhonoSegment {
+impl SegmentFeatures {
     /// construct a segement from an array of features
     pub const fn from_features(features: [FeatureState; SEG_FEATURE_COUNT as usize]) -> Self {
-        PhonoSegment { features }
+        SegmentFeatures { features }
     }
 
     /// construct a segement with all features undefied
     pub const fn new_undef() -> Self {
-        PhonoSegment {
+        SegmentFeatures {
             features: [FeatureState::UNDEF; SEG_FEATURE_COUNT as usize],
         }
     }
@@ -53,7 +53,7 @@ impl PhonoSegment {
     /// - if a features is `NA` in `other`, it can be `POS`, `NEG`, or `NA` in this segment
     ///
     /// otherwise, returns false.
-    pub fn matches(&self, other: &PhonoSegment) -> bool {
+    pub fn matches(&self, other: &SegmentFeatures) -> bool {
         for i in 0..(SEG_FEATURE_COUNT as usize) {
             if other.features[i] == UNDEF || other.features[i] == self.features[i] {
                 continue;
@@ -67,7 +67,7 @@ impl PhonoSegment {
 
     /// returns the number of features that would have to change
     /// to make the lhs segment equal to the rhs one
-    fn _dist(&self, other: &PhonoSegment) -> u8 {
+    fn _dist(&self, other: &SegmentFeatures) -> u8 {
         let mut dist = 0;
         for i in 0..(SEG_FEATURE_COUNT as usize) {
             if self.features[i] != other.features[i] {
@@ -79,7 +79,7 @@ impl PhonoSegment {
     }
 }
 
-impl Add<PhonoSegment> for PhonoSegment {
+impl Add<SegmentFeatures> for SegmentFeatures {
     type Output = Self;
 
     /// adds the features of the rhs segment to the lhs segment.
@@ -97,7 +97,7 @@ impl Add<PhonoSegment> for PhonoSegment {
     }
 }
 
-impl Add<Feature> for PhonoSegment {
+impl Add<Feature> for SegmentFeatures {
     type Output = Self;
 
     /// adds the feature to the segment; sets the feature to `POS`
@@ -109,7 +109,7 @@ impl Add<Feature> for PhonoSegment {
     }
 }
 
-impl Sub<Feature> for PhonoSegment {
+impl Sub<Feature> for SegmentFeatures {
     type Output = Self;
 
     // removes the feature from the segment: sets the feature to `NEG`
@@ -122,7 +122,7 @@ impl Sub<Feature> for PhonoSegment {
 }
 
 /// returns the segment's defined non-NA features, concatenated
-impl Display for PhonoSegment {
+impl Display for SegmentFeatures {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", format_segment(self))
     }

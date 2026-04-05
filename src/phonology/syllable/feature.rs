@@ -10,6 +10,12 @@ pub struct SyllableFeatures {
     features: [FeatureState; SYL_FEATURE_COUNT as usize],
 }
 
+impl SyllableFeatures {
+    pub const fn new(features: [FeatureState; SYL_FEATURE_COUNT as usize]) -> Self {
+        Self { features }
+    }
+}
+
 impl From<[FeatureState; SYL_FEATURE_COUNT as usize]> for SyllableFeatures {
     fn from(features: [FeatureState; SYL_FEATURE_COUNT as usize]) -> Self {
         Self { features }
