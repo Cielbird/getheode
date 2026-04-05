@@ -1,3 +1,5 @@
+#![allow(unused)] // TODO remove once this mod is used
+
 use crate::phonology::{
     segment::SegmentFeatures, syllable::SyllableFeatures, tree::UniformDepth3Tree,
 };
@@ -9,19 +11,33 @@ pub struct PhonoPattern {
 
 pub struct PhonoPatternOpt {
     // use a tree to represent the string, like phonological strings
-    tree: UniformDepth3Tree<(), SyllableInfo, SegmentInfo>,
+    pub(crate) tree: UniformDepth3Tree<(), SyllableInfo, SegmentInfo>,
 }
 
 pub struct SyllableInfo {
-    id: CaptureId,
-    features: SyllableFeatures,
+    pub(crate) id: u32,
+    pub(crate) features: SyllableFeatures,
+}
+
+impl SyllableInfo {
+    pub fn new(id: u32, features: SyllableFeatures) -> Self {
+        Self { id, features }
+    }
 }
 
 pub struct SegmentInfo {
-    id: CaptureId,
-    segment: SegmentFeatures,
+    pub(crate) id: u32,
+    pub(crate) features: SegmentFeatures,
 }
 
-pub struct CaptureId(u32);
+impl SegmentInfo {
+    pub fn new(id: u32, features: SegmentFeatures) -> Self {
+        Self { id, features }
+    }
+}
 
-impl PhonoPattern {}
+impl PhonoPattern {
+    pub(crate) fn new(options: Vec<PhonoPatternOpt>) -> Self {
+        Self { options }
+    }
+}

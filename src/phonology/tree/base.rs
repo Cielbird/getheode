@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::ops::Range;
 
 /// A uniform 3-depth tree, where each "layer" has it's own node data type. Node order relative to
 /// other nodes at the same depth is important.
@@ -24,36 +24,45 @@ pub struct UniformDepth3Tree<T0, T1, T2> {
     pub layer_2: Vec<(T2, usize)>, // data with index of parent in `layer1`
 }
 
+#[macro_export]
+macro_rules! ud3tree {
+    (
+        $( $l0:expr => [
+            $( $l1:expr => [
+                $( $l2:expr ),* $(,)?
+            ] ),* $(,)?
+        ] ),* $(,)?
+    ) => {{
+        let mut layer_0 = Vec::new();
+        let mut layer_1 = Vec::new();
+        let mut layer_2 = Vec::new();
+
+        let mut l0_idx = 0usize;
+        $(
+            layer_0.push($l0);
+            let mut l1_idx = layer_1.len();
+            $(
+                layer_1.push(($l1, l0_idx));
+                $(
+                    layer_2.push(($l2, l1_idx));
+                )*
+                l1_idx += 1;
+            )*
+            let _ = l1_idx;
+            l0_idx += 1;
+        )*
+        let _ = l0_idx;
+
+        UniformDepth3Tree { layer_0, layer_1, layer_2 }
+    }};
+}
+
 impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
-    pub fn new(tree: Vec<(T0, Vec<(T1, Vec<T2>)>)>) -> Self {
-        let mut layer_0 = vec![];
-        let mut layer_1 = vec![];
-        let mut layer_2 = vec![];
-        for (data, subtree) in tree {
-            for (data, subtree_2) in subtree {
-                for data in subtree_2 {
-                    let parent_idx = layer_1.len();
-                    layer_2.push((data, parent_idx));
-                }
-
-                let parent_idx = layer_0.len();
-                layer_1.push((data, parent_idx));
-            }
-
-            layer_0.push(data);
-        }
-        Self {
-            layer_0,
-            layer_1,
-            layer_2,
-        }
-    }
-
     pub fn test_invariants(&self) -> bool {
         // all nodes of layer 0 need to be parent of at least one node in layer 1
         let n0 = self.layer_0.len();
         let mut is_parent = vec![false; n0];
-        for (node, parent_idx) in &self.layer_1 {
+        for (_, parent_idx) in &self.layer_1 {
             if *parent_idx >= n0 {
                 // node on layer 1 has invalid parent index !
                 return false;
@@ -67,7 +76,7 @@ impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
         // all nodes of layer 1 need to be parent of at least one node in layer 2
         let n1 = self.layer_1.len();
         let mut is_parent = vec![false; n1];
-        for (node, parent_idx) in &self.layer_2 {
+        for (_, parent_idx) in &self.layer_2 {
             if *parent_idx >= n1 {
                 // node on layer 2 has invalid parent index !
                 return false;
@@ -81,86 +90,66 @@ impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
         true
     }
 
-    /// A graft operation. Using two "spines", cut out a subtree, from the root, and replace it
-    /// with another UniformDepth3Tree. nodes on the spines are replaced by the corresponding
-    /// nodes on the edge of the inserted subtree.
-    pub fn splice_subtree(
+    /// Replace a section of the tree delimited by a range on leaf nodes, up to the root.
+    /// The leaf node range creates two "spines", which cut out a subtree, from the root.
+    /// This zone is replaced with another UniformDepth3Tree.
+    /// nodes on the spines are replaced by the corresponding nodes on the edge of the inserted
+    /// subtree.
+    pub fn replace_range(
         mut self,
-        l_spine: Depth3TreeSpine,
-        r_spine: Depth3TreeSpine,
-        mut replacement: UniformDepth3Tree<T0, T1, T2>,
-    ) -> Result<Self, ()> {
-        // assert validity of spines
-        l_spine.assert_fits_tree(&self);
-        r_spine.assert_fits_tree(&self);
+        leaf_range: Range<usize>,
+        mut replace_with: UniformDepth3Tree<T0, T1, T2>,
+    ) -> Result<Self, String> {
+        if leaf_range.start >= self.layer_2.len() {
+            return Err("Invalid range".to_string());
+        }
+        if leaf_range.end >= self.layer_2.len() {
+            return Err("Invalid range".to_string());
+        }
 
-        // assert left spine is on the left of the right spine
-        l_spine.assert_dont_cross(&r_spine);
+        // construct left and right spines
+        let l_spine_2 = leaf_range.start;
+        let l_spine_1 = self.layer_2[l_spine_2].1;
+        let l_spine_0 = self.layer_1[l_spine_1].1;
+        // (range.end is not inclusive, we want the spine to include the replacement zone)
+        let r_spine_2 = leaf_range.end - 1;
+        let r_spine_1 = self.layer_2[r_spine_2].1;
+        let r_spine_0 = self.layer_1[r_spine_1].1;
 
         // adjust replacement's indices
-        replacement
+        replace_with
             .layer_1
             .iter_mut()
-            .for_each(|(data, parent)| *parent += l_spine.idx[0]);
-        replacement
+            .for_each(|(_, parent)| *parent += l_spine_0);
+        replace_with
             .layer_2
             .iter_mut()
-            .for_each(|(data, parent)| *parent += l_spine.idx[1]);
+            .for_each(|(_, parent)| *parent += l_spine_1);
 
         // layer 1: adjust parent indices after replacement zone
-        let adjustment =
-            replacement.layer_0.len() as isize - (r_spine.idx[0] + 1 - l_spine.idx[0]) as isize;
+        let adjustment = replace_with.layer_0.len() as isize - (r_spine_0 + 1 - l_spine_0) as isize;
         self.layer_1
             .iter_mut()
-            .skip(r_spine.idx[1] + 1)
+            .skip(r_spine_1 + 1)
             .for_each(|(_, idx)| *idx = ((*idx) as isize + adjustment) as usize);
 
         // layer 2: adjust parent indices after replacement zone
-        let adjustment =
-            replacement.layer_1.len() as isize - (r_spine.idx[1] + 1 - l_spine.idx[1]) as isize;
+        let adjustment = replace_with.layer_1.len() as isize - (r_spine_1 + 1 - l_spine_1) as isize;
         self.layer_2
             .iter_mut()
-            .skip(r_spine.idx[2] + 1)
+            .skip(r_spine_2 + 1)
             .for_each(|(_, idx)| *idx = ((*idx) as isize + adjustment) as usize);
 
         // replace layers, from left to right spine (inclusive !)
-        let range_0 = l_spine.idx[0]..=r_spine.idx[0];
-        self.layer_0.splice(range_0, replacement.layer_0);
+        let range_0 = l_spine_0..=r_spine_0;
+        self.layer_0.splice(range_0, replace_with.layer_0);
 
-        let range_1 = l_spine.idx[1]..=r_spine.idx[1];
-        self.layer_1.splice(range_1, replacement.layer_1);
+        let range_1 = l_spine_1..=r_spine_1;
+        self.layer_1.splice(range_1, replace_with.layer_1);
 
-        let range_2 = l_spine.idx[2]..=r_spine.idx[2];
-        self.layer_2.splice(range_2, replacement.layer_2);
+        let range_2 = l_spine_2..=r_spine_2;
+        self.layer_2.splice(range_2, replace_with.layer_2);
 
         Ok(self)
-    }
-}
-
-/// A path from the root to a leaf of a depth-3 uniform tree
-pub struct Depth3TreeSpine {
-    // within-layer (same depth) index for each node of the spine
-    idx: [usize; 3],
-}
-
-impl Depth3TreeSpine {
-    pub fn new(idx: [usize; 3]) -> Self {
-        Self { idx }
-    }
-
-    pub fn assert_fits_tree<T0, T1, T2>(&self, tree: &UniformDepth3Tree<T0, T1, T2>) {
-        // assert first index of spine is valid
-        assert!(tree.layer_0.len() > self.idx[0]);
-
-        // make sure spine nodes are parent/child
-        assert_eq!(tree.layer_1[self.idx[1]].1, self.idx[0]);
-        assert_eq!(tree.layer_2[self.idx[2]].1, self.idx[1]);
-    }
-
-    /// Assert `self` is on the left or on top of (equal to) the `other` spine
-    pub fn assert_dont_cross(&self, other: &Self) {
-        assert!(self.idx[0] <= other.idx[0]);
-        assert!(self.idx[1] <= other.idx[1]);
-        assert!(self.idx[2] <= other.idx[2]);
     }
 }

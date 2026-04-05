@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::phonology::{
     segment::SegmentFeatures, syllable::SyllableFeatures, tree::UniformDepth3Tree,
 };
@@ -8,9 +10,17 @@ pub struct PhonoString {
 }
 
 impl PhonoString {
-    pub(crate) fn new(x: Vec<Vec<(SyllableFeatures, Vec<SegmentFeatures>)>>) -> Self {
-        let v2 = x.into_iter().map(|v| ((), v)).collect();
-        let tree = UniformDepth3Tree::new(v2);
+    pub fn new(tree: UniformDepth3Tree<(), SyllableFeatures, SegmentFeatures>) -> Self {
         Self { tree }
+    }
+
+    pub fn replace_range(
+        mut self,
+        range: Range<usize>,
+        replace_with: PhonoString,
+    ) -> Result<Self, String> {
+        self.tree = self.tree.replace_range(range, replace_with.tree)?;
+
+        Ok(self)
     }
 }
