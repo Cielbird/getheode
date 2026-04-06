@@ -1,7 +1,6 @@
-use std::ops::Add;
-use crate::phonology::syllable::{SYL_FEATURE_COUNT};
 use crate::phonology::feature::FeatureState::{self, *};
-
+use crate::phonology::syllable::SYL_FEATURE_COUNT;
+use std::ops::Add;
 
 /// set of features a syllable can have
 #[derive(Debug, Clone, PartialEq)]

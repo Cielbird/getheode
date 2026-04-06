@@ -24,18 +24,18 @@ pub struct UniformDepth3Tree<T0, T1, T2> {
     pub layer_2: Vec<(T2, usize)>, // data with index of parent in `layer1`
 }
 
-/// macro for easy construction. example : 
+/// macro for easy construction. example :
 /// ```json
 ///   x
 ///  |  \
-///  a    b 
+///  a    b
 ///  | \  |
 ///  c d  e
 ///  | |  |
 ///  f g  h
 /// ```
 /// would be :
-/// 
+///
 /// ```
 /// use getheode::ud3tree;
 /// let x = ud3tree![
@@ -48,7 +48,7 @@ pub struct UniformDepth3Tree<T0, T1, T2> {
 ///     ],
 /// ];
 /// ```
-/// 
+///
 #[macro_export]
 macro_rules! ud3tree {
     (

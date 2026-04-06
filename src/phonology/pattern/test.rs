@@ -64,12 +64,11 @@ fn test_pattern() {
 
     let mut matches = pattern.find(hay);
 
-
     assert_eq!(matches.len(), 1);
     let pat_match = matches.remove(0);
 
     assert_eq!(pat_match.range, 2..5);
-    
+
     let expected_replace_with = PhonoString::new(ud3tree![
         () => [
             UNSTRESSED => [A_SEG, I_SEG],

@@ -4,8 +4,11 @@ use std::{collections::HashMap, process::id};
 
 use crate::{
     phonology::{
-        pattern::PatternMatch, segment::SegmentFeatures, string::PhonoString,
-        syllable::{self, SyllableFeatures}, tree::UniformDepth3Tree,
+        pattern::PatternMatch,
+        segment::SegmentFeatures,
+        string::PhonoString,
+        syllable::{self, SyllableFeatures},
+        tree::UniformDepth3Tree,
     },
     ud3tree,
 };
@@ -136,8 +139,8 @@ impl PhonoPattern {
 
             // build replacement
             let mut replace_with = PhonoString { tree: ud3tree![] };
-            for word in &self.replace_tree.layer_0 {
-                replace_with.tree.layer_0.push(*word);
+            for _word in &self.replace_tree.layer_0 {
+                replace_with.tree.layer_0.push(());
             }
             for (syllable_info, parent_idx) in &self.replace_tree.layer_1 {
                 let id = syllable_info.id;
@@ -161,6 +164,6 @@ impl PhonoPattern {
         matches_vec
     }
 
-    // TODO function to verify invariants of pattern : ids should be unique and have corresponding 
+    // TODO function to verify invariants of pattern : ids should be unique and have corresponding
     // ids in replace_with
 }
