@@ -13,6 +13,13 @@ impl SyllableFeatures {
         Self { features }
     }
 
+    /// construct a syllable feature set with all features undefied
+    pub const fn new_undef() -> Self {
+        SyllableFeatures {
+            features: [FeatureState::UNDEF; SYL_FEATURE_COUNT as usize],
+        }
+    }
+
     /// returns true if this segment matches `pattern`'s defined features.  
     /// to return true:
     /// - if a feature is defined in `pattern`, it must be defined in this segment

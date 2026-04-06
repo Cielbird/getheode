@@ -19,24 +19,24 @@ pub struct PhonoPattern {
 
 #[derive(Debug)]
 pub struct SyllableInfo {
-    pub id: u32,
+    pub id: Option<u32>,
     pub features: SyllableFeatures,
 }
 
 impl SyllableInfo {
-    pub fn new(id: u32, features: SyllableFeatures) -> Self {
+    pub fn new(id: Option<u32>, features: SyllableFeatures) -> Self {
         Self { id, features }
     }
 }
 
 #[derive(Debug)]
 pub struct SegmentInfo {
-    pub id: u32,
+    pub id: Option<u32>,
     pub features: SegmentFeatures,
 }
 
 impl SegmentInfo {
-    pub fn new(id: u32, features: SegmentFeatures) -> Self {
+    pub fn new(id: Option<u32>, features: SegmentFeatures) -> Self {
         Self { id, features }
     }
 }
@@ -57,7 +57,6 @@ impl PhonoPattern {
         let match_syl_n = self.match_tree.layer_1.len();
         let match_word_n = self.match_tree.layer_0.len();
         for seg_offset in 0..(hay_seg_n - match_seg_n + 1) {
-            println!("offset: {seg_offset}");
             // iterate on segments
             let mut segments_match = true;
             let syl_offset = hay.tree.layer_2[seg_offset].1;
@@ -122,14 +121,16 @@ impl PhonoPattern {
             let mut seg_captures = HashMap::<u32, SegmentFeatures>::new();
             // for x in self.match_tree.layer_0 {}
             for (idx, (syl_info, _)) in self.match_tree.layer_1.iter().enumerate() {
-                let id = syl_info.id;
-                let (syl, _) = &hay.tree.layer_1[syl_offset + idx];
-                syl_captures.insert(id, syl.clone());
+                if let Some(id) = syl_info.id {
+                    let (syl, _) = &hay.tree.layer_1[syl_offset + idx];
+                    syl_captures.insert(id, syl.clone());
+                }
             }
             for (idx, (seg_info, _)) in self.match_tree.layer_2.iter().enumerate() {
-                let id = seg_info.id;
-                let (seg, _) = &hay.tree.layer_2[seg_offset + idx];
-                seg_captures.insert(id, seg.clone());
+                if let Some(id) = seg_info.id {
+                    let (seg, _) = &hay.tree.layer_2[seg_offset + idx];
+                    seg_captures.insert(id, seg.clone());
+                }
             }
 
             // build replacement
@@ -138,19 +139,26 @@ impl PhonoPattern {
                 replace_with.tree.layer_0.push(());
             }
             for (syllable_info, parent_idx) in &self.replace_tree.layer_1 {
-                let id = syllable_info.id;
-                let syllable = syl_captures
-                    .get(&id)
-                    .expect("Invalid pattern : syllable capture id not found");
-                let new_syllable = syllable.clone() + syllable_info.features.clone();
+                let mut new_syllable = SyllableFeatures::new_undef();
+                if let Some(id) = syllable_info.id {
+                    let syllable = syl_captures
+                        .get(&id)
+                        .expect("Invalid pattern : syllable capture id not found");
+                    new_syllable = new_syllable + syllable.clone();
+                }
+                new_syllable = new_syllable + syllable_info.features.clone();
                 replace_with.tree.layer_1.push((new_syllable, *parent_idx));
             }
+
             for (segment_info, parent_idx) in &self.replace_tree.layer_2 {
-                let id = segment_info.id;
-                let segment = seg_captures
-                    .get(&id)
-                    .expect("Invalid pattern : segment capture id not found");
-                let new_segment = segment.clone() + segment_info.features.clone();
+                let mut new_segment = SegmentFeatures::new_undef();
+                if let Some(id) = segment_info.id {
+                    let segment = seg_captures
+                        .get(&id)
+                        .expect("Invalid pattern : segment capture id not found");
+                    new_segment = new_segment.clone() + segment.clone();
+                }
+                new_segment = new_segment.clone() + segment_info.features.clone();
                 replace_with.tree.layer_2.push((new_segment, *parent_idx));
             }
 
