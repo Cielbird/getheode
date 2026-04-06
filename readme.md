@@ -1,29 +1,23 @@
 # Geþeode
 
-> TODO : This library is completely non-functional now. Major re-write under way.
-
 *[Geþeode](https://en.wiktionary.org/wiki/geþeode)* `/jeˈθeoː.de/` is an Old English word meaning 
 "language"
 
 A Rust library that provides tools for building fictional languages. 
 
-The end goal is an engine that automates the process of conlanging (constructing ficitonal languages).
-it will aim to mimic the patterns of real languages as well as possible.
+The library provides :
+- A universal representation for phonological strings
+- A way to apply phonological changes to words 
 
-For now the library will only be capable of working with language phonologies.
-It will be able to generate or load a user-built phonology. it will be able to apply sound changes,
-and "evolve" it, as if it were a real language changing in time.
-
-This is an early version of a project I previously began developing in C#. I am also
-still learning Rust. 
-
-Future goals are
+Future goals:
+- A CLI
+- Representation of phonotactic grammar
 - Design a "phonological optimisation". after a set of sound changes, the definitions 
     for the phonology can be optimized to minimise the transformations used. both lossy and lossless
     algorithms could be used.
 - Including machine learning
   - audio rendition of a language's words
-  - an attempt at grammar and auto-translation
+  - training an LM on phonological strings
 
 *Thanks to:*
 
@@ -32,6 +26,8 @@ https://linguistics.ucla.edu/people/hayes/IP/#features
 
 ## Use
 
+> Due to a re-write under way, the CLI is unusable now.
+
 Run a set of phonological rules on a set of words :
 
 `cargo run surface -b examples/romanization.txt -r examples/rules.txt -i examples/input.txt`
@@ -39,12 +35,3 @@ Run a set of phonological rules on a set of words :
 ## Building
 
 `cargo build`
-
-## Glossary
-
-| term    | description                                                            |
-| ------- | ---------------------------------------------------------------------- |
-| segment | can be represented by a single IPA character. one discrete sound.      |
-| lect    | a single way of speaking. this should not be confused with a language. |
-
-A lect could be a particular dialect, sociolect, or even just a single person's way of speaking.
