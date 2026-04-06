@@ -1,6 +1,6 @@
 use crate::{
     phonology::{
-        feature::FeatureState::{self, *},
+        feature::FeatureState::*,
         rule::{PhonoRule, SegmentInfo, SyllableInfo},
         segment::{SEG_FEATURE_COUNT, SegmentFeatures},
         string::PhonoString,

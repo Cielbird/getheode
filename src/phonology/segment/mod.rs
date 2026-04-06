@@ -11,3 +11,6 @@ pub use feature::*;
 pub use ipa::*;
 pub use natural_classes::*;
 pub use parse::*;
+
+#[cfg(test)]
+mod test;
