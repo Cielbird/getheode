@@ -29,7 +29,6 @@ const UNDEF_SEG: SegmentFeatures =
     SegmentFeatures::from_features([UNDEF; SEG_FEATURE_COUNT as usize]);
 
 const UNSTRESSED: SyllableFeatures = SyllableFeatures::new([NEG]);
-const STRESSED: SyllableFeatures = SyllableFeatures::new([POS]);
 const UNDEF_SYL: SyllableFeatures = SyllableFeatures::new([UNDEF]);
 
 #[test]

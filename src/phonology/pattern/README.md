@@ -1,3 +1,3 @@
-# Segment string patterns
+# Phonological string patterns
 
 

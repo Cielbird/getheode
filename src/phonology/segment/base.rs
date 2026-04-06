@@ -46,16 +46,16 @@ impl SegmentFeatures {
         true
     }
 
-    /// returns true if this segment matches `other`'s defined features.  
+    /// returns true if this segment matches `pattern`'s defined features.  
     /// to return true:
-    /// - if a feature is defined in `other`, it must be defined in this segment
-    /// - if a feature is `POS` or `NEG` in `other`, it must be identical in this segment
-    /// - if a features is `NA` in `other`, it can be `POS`, `NEG`, or `NA` in this segment
+    /// - if a feature is defined in `pattern`, it must be defined in this segment
+    /// - if a feature is `POS` or `NEG` in `pattern`, it must be identical in this segment
+    /// - if a features is `NA` in `pattern`, it can be `POS`, `NEG`, or `NA` in this segment
     ///
     /// otherwise, returns false.
-    pub fn matches(&self, other: &SegmentFeatures) -> bool {
+    pub fn matches(&self, pattern: &SegmentFeatures) -> bool {
         for i in 0..(SEG_FEATURE_COUNT as usize) {
-            if other.features[i] == UNDEF || other.features[i] == self.features[i] {
+            if pattern.features[i] == UNDEF || pattern.features[i] == self.features[i] {
                 continue;
             } else {
                 return false;

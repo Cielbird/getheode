@@ -112,6 +112,8 @@ impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
             return false;
         }
 
+        // TODO parent indices of layers 0 and 1 should never be descending
+
         true
     }
 
