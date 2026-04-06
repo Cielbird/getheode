@@ -2,19 +2,19 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     phonology::{
-        pattern::PatternMatch, segment::SegmentFeatures, string::PhonoString,
-        syllable::SyllableFeatures, tree::UniformDepth3Tree,
+        rule::RuleMatch, segment::SegmentFeatures, string::PhonoString, syllable::SyllableFeatures,
+        tree::UniformDepth3Tree,
     },
     ud3tree,
 };
 
-pub type PatternTree = UniformDepth3Tree<(), SyllableInfo, SegmentInfo>;
+pub type RuleTree = UniformDepth3Tree<(), SyllableInfo, SegmentInfo>;
 
 /// A pattern to match in phonological strings
-pub struct PhonoPattern {
+pub struct PhonoRule {
     // use a tree to represent the string, like phonological strings
-    pub match_tree: PatternTree,
-    pub replace_tree: PatternTree,
+    pub match_tree: RuleTree,
+    pub replace_tree: RuleTree,
 }
 
 #[derive(Debug)]
@@ -41,15 +41,15 @@ impl SegmentInfo {
     }
 }
 
-impl PhonoPattern {
-    pub fn new(match_tree: PatternTree, replace_tree: PatternTree) -> Self {
+impl PhonoRule {
+    pub fn new(match_tree: RuleTree, replace_tree: RuleTree) -> Self {
         Self {
             match_tree,
             replace_tree,
         }
     }
 
-    pub fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
+    pub fn find(&self, hay: PhonoString) -> Vec<RuleMatch> {
         let mut matches_vec = vec![];
 
         let hay_seg_n = hay.tree.layer_2.len();
@@ -143,7 +143,7 @@ impl PhonoPattern {
                 if let Some(id) = syllable_info.id {
                     let syllable = syl_captures
                         .get(&id)
-                        .expect("Invalid pattern : syllable capture id not found");
+                        .expect("Invalid rule : syllable capture id not found");
                     new_syllable = new_syllable + syllable.clone();
                 }
                 new_syllable = new_syllable + syllable_info.features.clone();
@@ -155,14 +155,14 @@ impl PhonoPattern {
                 if let Some(id) = segment_info.id {
                     let segment = seg_captures
                         .get(&id)
-                        .expect("Invalid pattern : segment capture id not found");
+                        .expect("Invalid rule : segment capture id not found");
                     new_segment = new_segment.clone() + segment.clone();
                 }
                 new_segment = new_segment.clone() + segment_info.features.clone();
                 replace_with.tree.layer_2.push((new_segment, *parent_idx));
             }
 
-            matches_vec.push(PatternMatch {
+            matches_vec.push(RuleMatch {
                 range: seg_offset..(seg_offset + match_seg_n),
                 replace_with,
             });
@@ -207,6 +207,4 @@ impl PhonoPattern {
 
         true
     }
-    // TODO function to verify invariants of pattern : ids should be unique and have corresponding
-    // ids in replace_with
 }

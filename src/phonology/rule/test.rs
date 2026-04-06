@@ -1,7 +1,7 @@
 use crate::{
     phonology::{
         feature::FeatureState::*,
-        pattern::{PhonoPattern, SegmentInfo, SyllableInfo},
+        rule::{PhonoRule, SegmentInfo, SyllableInfo},
         segment::{SEG_FEATURE_COUNT, SegmentFeatures},
         string::PhonoString,
         syllable::SyllableFeatures,
@@ -32,8 +32,8 @@ const UNSTRESSED: SyllableFeatures = SyllableFeatures::new([NEG]);
 const UNDEF_SYL: SyllableFeatures = SyllableFeatures::new([UNDEF]);
 
 #[test]
-fn test_pattern_simple() {
-    // pattern follows this rule:
+fn test_rule_simple() {
+    // rule follows this rule:
     // VtV => VV / (all in same syllable and word)
     let match_tree = ud3tree![
         () => [
@@ -52,7 +52,7 @@ fn test_pattern_simple() {
             ]
         ]
     ];
-    let pattern = PhonoPattern::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(match_tree, replace_tree);
 
     // [ta.ati]
     let hay = PhonoString::new(ud3tree![
@@ -62,7 +62,7 @@ fn test_pattern_simple() {
         ]
     ]);
 
-    let mut matches = pattern.find(hay);
+    let mut matches = rule.find(hay);
 
     assert_eq!(matches.len(), 1);
     let pat_match = matches.remove(0);
@@ -78,8 +78,8 @@ fn test_pattern_simple() {
 }
 
 #[test]
-fn test_pattern_new_syllable() {
-    // pattern follows this rule:
+fn test_rule_new_syllable() {
+    // rule follows this rule:
     // VtV => V.V / (in same syllable and word, creates new syllable boundary)
     let match_tree = ud3tree![
         () => [
@@ -100,7 +100,7 @@ fn test_pattern_new_syllable() {
             ]
         ]
     ];
-    let pattern = PhonoPattern::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(match_tree, replace_tree);
 
     // [ta.ati]
     let hay = PhonoString::new(ud3tree![
@@ -110,7 +110,7 @@ fn test_pattern_new_syllable() {
         ]
     ]);
 
-    let mut matches = pattern.find(hay);
+    let mut matches = rule.find(hay);
 
     assert_eq!(matches.len(), 1);
     let pat_match = matches.remove(0);
@@ -127,8 +127,8 @@ fn test_pattern_new_syllable() {
 }
 
 #[test]
-fn test_pattern_across_syllable() {
-    // pattern follows this rule:
+fn test_rule_across_syllable() {
+    // rule follows this rule:
     // V.V => VtV / (across syllable bound, removes it)
     let match_tree = ud3tree![
         () => [
@@ -149,7 +149,7 @@ fn test_pattern_across_syllable() {
             ]
         ]
     ];
-    let pattern = PhonoPattern::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(match_tree, replace_tree);
 
     // [ta.ati]
     let hay = PhonoString::new(ud3tree![
@@ -159,7 +159,7 @@ fn test_pattern_across_syllable() {
         ]
     ]);
 
-    let mut matches = pattern.find(hay);
+    let mut matches = rule.find(hay);
 
     assert_eq!(matches.len(), 1);
     let pat_match = matches.remove(0);
@@ -174,10 +174,9 @@ fn test_pattern_across_syllable() {
     assert_eq!(pat_match.replace_with, expected_replace_with)
 }
 
-
 #[test]
-fn test_pattern_new_word() {
-    // pattern follows this rule:
+fn test_rule_new_word() {
+    // rule follows this rule:
     // VtV => V.V / (in same syllable and word, creates new syllable boundary)
     let match_tree = ud3tree![
         () => [
@@ -200,7 +199,7 @@ fn test_pattern_new_word() {
             ]
         ]
     ];
-    let pattern = PhonoPattern::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(match_tree, replace_tree);
 
     // [ta.ati]
     let hay = PhonoString::new(ud3tree![
@@ -210,7 +209,7 @@ fn test_pattern_new_word() {
         ]
     ]);
 
-    let mut matches = pattern.find(hay);
+    let mut matches = rule.find(hay);
 
     assert_eq!(matches.len(), 1);
     let pat_match = matches.remove(0);
@@ -229,8 +228,8 @@ fn test_pattern_new_word() {
 }
 
 #[test]
-fn test_pattern_across_word() {
-    // pattern follows this rule:
+fn test_rule_across_word() {
+    // rule follows this rule:
     // V.V => VtV / (across syllable bound, removes it)
     let match_tree = ud3tree![
         () => [
@@ -253,7 +252,7 @@ fn test_pattern_across_word() {
             ]
         ]
     ];
-    let pattern = PhonoPattern::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(match_tree, replace_tree);
 
     // [ta.ati]
     let hay = PhonoString::new(ud3tree![
@@ -265,7 +264,7 @@ fn test_pattern_across_word() {
         ]
     ]);
 
-    let mut matches = pattern.find(hay);
+    let mut matches = rule.find(hay);
 
     assert_eq!(matches.len(), 1);
     let pat_match = matches.remove(0);
@@ -281,8 +280,8 @@ fn test_pattern_across_word() {
 }
 
 #[test]
-fn test_invalid_pattern_double_id() {
-    // pattern follows this rule:
+fn test_invalid_rule_double_id() {
+    // rule follows this rule:
     // V.V => VtV
     let match_tree = ud3tree![
         () => [
@@ -305,14 +304,14 @@ fn test_invalid_pattern_double_id() {
             ]
         ]
     ];
-    let pattern = PhonoPattern::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(match_tree, replace_tree);
 
-    assert!(!pattern.test_invariants());
+    assert!(!rule.test_invariants());
 }
 
 #[test]
-fn test_invalid_pattern_undef_id() {
-    // pattern follows this rule:
+fn test_invalid_rule_undef_id() {
+    // rule follows this rule:
     // V.V => VtV
     let match_tree = ud3tree![
         () => [
@@ -335,7 +334,7 @@ fn test_invalid_pattern_undef_id() {
             ]
         ]
     ];
-    let pattern = PhonoPattern::new(match_tree, replace_tree);
-    
-    assert!(!pattern.test_invariants());
+    let rule = PhonoRule::new(match_tree, replace_tree);
+
+    assert!(!rule.test_invariants());
 }

@@ -1,3 +1,0 @@
-# Phonological string patterns
-
-

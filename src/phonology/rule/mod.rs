@@ -1,8 +1,8 @@
 mod base;
-mod pattern_match;
+mod rule_match;
 
 pub use base::*;
-pub use pattern_match::*;
+pub use rule_match::*;
 
 #[cfg(test)]
 mod test;
