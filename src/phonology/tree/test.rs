@@ -1,5 +1,5 @@
 mod uniform_depth3 {
-    use crate::{phonology::tree::base::UniformDepth3Tree, ud3tree};
+    use crate::ud3tree;
 
     #[test]
     fn test_splice() {

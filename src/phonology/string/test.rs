@@ -1,6 +1,5 @@
 use crate::phonology::feature::FeatureState::*;
 use crate::phonology::syllable::SyllableFeatures;
-use crate::phonology::tree::UniformDepth3Tree;
 use crate::phonology::{segment::SegmentFeatures, string::PhonoString};
 use crate::ud3tree;
 

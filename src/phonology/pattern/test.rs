@@ -1,7 +1,7 @@
 use crate::{
     phonology::{
         feature::FeatureState::*,
-        pattern::{PatternMatch, PhonoPattern, SegmentInfo, SyllableInfo},
+        pattern::{PhonoPattern, SegmentInfo, SyllableInfo},
         segment::{SEG_FEATURE_COUNT, SegmentFeatures},
         string::PhonoString,
         syllable::SyllableFeatures,

@@ -58,10 +58,13 @@ macro_rules! ud3tree {
             ] ),* $(,)?
         ] ),* $(,)?
     ) => {{
+        #[allow(unused_mut)]
         let mut layer_0 = Vec::new();
+        #[allow(unused_mut)]
         let mut layer_1 = Vec::new();
+        #[allow(unused_mut)]
         let mut layer_2 = Vec::new();
-
+        #[allow(unused_mut)]
         let mut l0_idx = 0usize;
         $(
             layer_0.push($l0);

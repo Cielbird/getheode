@@ -1,14 +1,9 @@
-#![allow(unused)] // TODO remove once this mod is used
-
-use std::{collections::HashMap, process::id};
+use std::collections::HashMap;
 
 use crate::{
     phonology::{
-        pattern::PatternMatch,
-        segment::SegmentFeatures,
-        string::PhonoString,
-        syllable::{self, SyllableFeatures},
-        tree::UniformDepth3Tree,
+        pattern::PatternMatch, segment::SegmentFeatures, string::PhonoString,
+        syllable::SyllableFeatures, tree::UniformDepth3Tree,
     },
     ud3tree,
 };
@@ -18,14 +13,14 @@ pub type PatternTree = UniformDepth3Tree<(), SyllableInfo, SegmentInfo>;
 /// A pattern to match in phonological strings
 pub struct PhonoPattern {
     // use a tree to represent the string, like phonological strings
-    pub(crate) match_tree: PatternTree,
-    pub(crate) replace_tree: PatternTree,
+    pub match_tree: PatternTree,
+    pub replace_tree: PatternTree,
 }
 
 #[derive(Debug)]
 pub struct SyllableInfo {
-    pub(crate) id: u32,
-    pub(crate) features: SyllableFeatures,
+    pub id: u32,
+    pub features: SyllableFeatures,
 }
 
 impl SyllableInfo {
@@ -36,8 +31,8 @@ impl SyllableInfo {
 
 #[derive(Debug)]
 pub struct SegmentInfo {
-    pub(crate) id: u32,
-    pub(crate) features: SegmentFeatures,
+    pub id: u32,
+    pub features: SegmentFeatures,
 }
 
 impl SegmentInfo {
@@ -47,14 +42,14 @@ impl SegmentInfo {
 }
 
 impl PhonoPattern {
-    pub(crate) fn new(match_tree: PatternTree, replace_tree: PatternTree) -> Self {
+    pub fn new(match_tree: PatternTree, replace_tree: PatternTree) -> Self {
         Self {
             match_tree,
             replace_tree,
         }
     }
 
-    pub(crate) fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
+    pub fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
         let mut matches_vec = vec![];
 
         let hay_seg_n = hay.tree.layer_2.len();
@@ -105,10 +100,10 @@ impl PhonoPattern {
             }
 
             // iterate on words
-            let mut words_match = true;
+            let words_match = true;
             for word_idx in 0..match_word_n {
-                let match_word = &self.match_tree.layer_1[word_idx];
-                let hay_word = &hay.tree.layer_1[word_offset + word_idx];
+                let _match_word = &self.match_tree.layer_1[word_idx];
+                let _hay_word = &hay.tree.layer_1[word_offset + word_idx];
 
                 // This will be implemented if words have features
                 // if !match_word.features.matches(hay_word) {
