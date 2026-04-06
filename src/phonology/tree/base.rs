@@ -68,6 +68,7 @@ macro_rules! ud3tree {
         let mut l0_idx = 0usize;
         $(
             layer_0.push($l0);
+            #[allow(unused_mut)]
             let mut l1_idx = layer_1.len();
             $(
                 layer_1.push(($l1, l0_idx));
@@ -90,7 +91,13 @@ impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
         // all nodes of layer 0 need to be parent of at least one node in layer 1
         let n0 = self.layer_0.len();
         let mut is_parent = vec![false; n0];
+        let mut last_idx = 0;
         for (_, parent_idx) in &self.layer_1 {
+            if last_idx > *parent_idx {
+                // parent index should never descend : tree would be unordered
+                return false;
+            }
+            last_idx = *parent_idx;
             if *parent_idx >= n0 {
                 // node on layer 1 has invalid parent index !
                 return false;
@@ -104,7 +111,13 @@ impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
         // all nodes of layer 1 need to be parent of at least one node in layer 2
         let n1 = self.layer_1.len();
         let mut is_parent = vec![false; n1];
+        let mut last_idx = 0;
         for (_, parent_idx) in &self.layer_2 {
+            if last_idx > *parent_idx {
+                // parent index should never descend : tree would be unordered
+                return false;
+            }
+            last_idx = *parent_idx;
             if *parent_idx >= n1 {
                 // node on layer 2 has invalid parent index !
                 return false;

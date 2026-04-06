@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     phonology::{
@@ -139,13 +139,17 @@ impl PhonoPattern {
             }
             for (syllable_info, parent_idx) in &self.replace_tree.layer_1 {
                 let id = syllable_info.id;
-                let syllable = syl_captures.get(&id).unwrap(); // TODO manage error
+                let syllable = syl_captures
+                    .get(&id)
+                    .expect("Invalid pattern : syllable capture id not found");
                 let new_syllable = syllable.clone() + syllable_info.features.clone();
                 replace_with.tree.layer_1.push((new_syllable, *parent_idx));
             }
             for (segment_info, parent_idx) in &self.replace_tree.layer_2 {
                 let id = segment_info.id;
-                let segment = seg_captures.get(&id).unwrap(); // TODO manage error
+                let segment = seg_captures
+                    .get(&id)
+                    .expect("Invalid pattern : segment capture id not found");
                 let new_segment = segment.clone() + segment_info.features.clone();
                 replace_with.tree.layer_2.push((new_segment, *parent_idx));
             }
@@ -159,6 +163,42 @@ impl PhonoPattern {
         matches_vec
     }
 
+    /// Check if invariants are respected.
+    /// Returns false if the capture ids are not unique (on the same hierarchical level)
+    /// or if the ids in the replacement tree aren't found in the match tree
+    pub fn test_invariants(&self) -> bool {
+        let mut syl_captures = HashSet::new();
+        let mut seg_captures = HashSet::new();
+        // verify match tree
+        for (info, _) in &self.match_tree.layer_1 {
+            if !syl_captures.insert(info.id) {
+                // syllable capture id already exists !
+                return false;
+            }
+        }
+        for (info, _) in &self.match_tree.layer_2 {
+            if !seg_captures.insert(info.id) {
+                // segment capture id already exists !
+                return false;
+            }
+        }
+
+        // verify replace_tree
+        for (info, _) in &self.replace_tree.layer_1 {
+            if !syl_captures.remove(&info.id) {
+                // syllable capture id not defined in match tree !
+                return false;
+            }
+        }
+        for (info, _) in &self.replace_tree.layer_2 {
+            if !seg_captures.remove(&info.id) {
+                // syllable capture id not defined in match tree !
+                return false;
+            }
+        }
+
+        true
+    }
     // TODO function to verify invariants of pattern : ids should be unique and have corresponding
     // ids in replace_with
 }

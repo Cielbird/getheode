@@ -32,7 +32,7 @@ const UNSTRESSED: SyllableFeatures = SyllableFeatures::new([NEG]);
 const UNDEF_SYL: SyllableFeatures = SyllableFeatures::new([UNDEF]);
 
 #[test]
-fn test_pattern() {
+fn test_pattern_simple() {
     // pattern follows this rule:
     // VtV => VV / (all in same syllable and word)
     let match_tree = ud3tree![
@@ -75,4 +75,34 @@ fn test_pattern() {
         ]
     ]);
     assert_eq!(pat_match.replace_with, expected_replace_with)
+}
+
+#[test]
+fn test_pattern_new_syllable() {
+    todo!()
+}
+
+#[test]
+fn test_pattern_across_syllable() {
+    todo!()
+}
+
+#[test]
+fn test_pattern_new_word() {
+    todo!()
+}
+
+#[test]
+fn test_pattern_across_word() {
+    todo!()
+}
+
+#[test]
+fn test_invalid_pattern_double_id() {
+    todo!()
+}
+
+#[test]
+fn test_invalid_pattern_undef_id() {
+    todo!()
 }

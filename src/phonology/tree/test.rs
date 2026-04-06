@@ -1,8 +1,86 @@
 mod uniform_depth3 {
-    use crate::ud3tree;
+    use crate::{phonology::tree::UniformDepth3Tree, ud3tree};
 
     #[test]
-    fn test_splice() {
+    fn test_construction_macro() {
+        let tree = ud3tree![
+            0 => [
+                3 => [7, 8],
+                4 => [9],
+            ],
+            1 => [
+                5 => [10, 11],
+            ],
+            2 => [
+                6 => [12],
+            ],
+        ];
+
+        assert_eq!(tree.layer_0, vec![0, 1, 2]);
+        assert_eq!(tree.layer_1, vec![(3, 0), (4, 0), (5, 1), (6, 2)]);
+        assert_eq!(
+            tree.layer_2,
+            vec![(7, 0), (8, 0), (9, 1), (10, 2), (11, 2), (12, 3)]
+        );
+    }
+
+    #[test]
+    fn test_invariants() {
+        let tree = ud3tree![
+            0 => [
+                3 => [7, 8],
+                4 => [9],
+            ],
+            1 => [
+                5 => [10, 11],
+            ],
+            2 => [
+                6 => [12],
+            ],
+        ];
+        assert!(tree.test_invariants());
+    }
+
+    #[test]
+    fn test_invalid_invariants_1() {
+        let tree = ud3tree![
+            0 => [2 => [5, 6],3 => [7],],
+            1 => [4 => [],],
+        ];
+        assert!(!tree.test_invariants());
+    }
+
+    #[test]
+    fn test_invalid_invariants_2() {
+        let tree = ud3tree![
+            0 => [2 => [4, 5], 3 => [6]],
+            1 => [],
+        ];
+        assert!(!tree.test_invariants());
+    }
+
+    #[test]
+    fn test_invalid_invariants_3() {
+        let tree = UniformDepth3Tree {
+            layer_0: vec![0, 1],
+            layer_1: vec![(0, 1), (1, 0), (2, 1)], // out of order ! invalid
+            layer_2: vec![(0, 0), (1, 1), (2, 2)],
+        };
+        assert!(!tree.test_invariants());
+    }
+
+    #[test]
+    fn test_invalid_invariants_4() {
+        let tree = UniformDepth3Tree {
+            layer_0: vec![0, 1],
+            layer_1: vec![(0, 0), (1, 1)],
+            layer_2: vec![(0, 1), (1, 0), (2, 1)], // out of order ! invalid
+        };
+        assert!(!tree.test_invariants());
+    }
+
+    #[test]
+    fn test_replace_range_1() {
         // tree looks like:
         //      x
         //   /  | \
@@ -65,6 +143,44 @@ mod uniform_depth3 {
         ];
 
         let res = tree.replace_range(1..4, replacement).unwrap();
+
+        assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn test_replace_range_2() {
+        let tree = ud3tree![
+            0 => [
+                4 => [11, 12, 13],
+                5 => [14, 15],
+                6 => [16, 17, 18],
+            ],
+            1 => [
+                7 => [19],
+            ],
+            2 => [
+                8 => [20, 21, 22],
+            ],
+            3 => [
+                9 => [23, 24],
+                10 => [25, 26],
+            ],
+        ];
+
+        let replacement = ud3tree![
+            0 => [1 => [2]]
+        ];
+
+        let expected = ud3tree![
+            0 => [
+                4 => [11, 12, 13],
+                5 => [14, 15],
+                1 => [16, 2, 24],
+                10 => [25, 26],
+            ],
+        ];
+
+        let res = tree.replace_range(6..13, replacement).unwrap();
 
         assert_eq!(res, expected);
     }
