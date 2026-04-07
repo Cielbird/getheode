@@ -1,5 +1,15 @@
 # todo
 
+Future goals:
+- A CLI
+- Representation of phonotactic grammar
+- Design a "phonological optimisation". after a set of sound changes, the definitions 
+    for the phonology can be optimized to minimise the transformations used. both lossy and lossless
+    algorithms could be used.
+- Including machine learning
+  - audio rendition of a language's words
+  - training an LM on phonological strings
+
 ## eventually
 - fn to assert feature set validity (NA could be replaced by UNDEF, when a feature is no longer 
   applicable it is rendered UNDEF) 
