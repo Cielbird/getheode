@@ -1,7 +1,8 @@
 mod base;
-mod constructor;
+mod opts;
 
 pub use base::*;
+pub use opts::*;
 
 #[cfg(test)]
 mod test;

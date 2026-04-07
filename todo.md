@@ -1,14 +1,10 @@
 # todo
-- use cfg crate for grammar
 
-## soon
-- switch to using `cfg` library
-- improve segment diacritic printing
-- add segment diacritic parsing
-- add empty outputs to phonological rules
-- document rule documents
-`
 ## eventually
+- fn to assert feature set validity (NA could be replaced by UNDEF, when a feature is no longer 
+  applicable it is rendered UNDEF) 
+- improve segment diacritic printing
+- use cfg crate for grammar
 - add phoneme definitions for simple word definition
 - phonemes, phonotactics, and word generations with BNF
 - packing lect changes in lect change nodes
@@ -22,4 +18,5 @@
 - use phonotactic production labels in phonological rules
 - get random sound changes from online databases
 - generate sound changes with ml
+- synthesize strings with ml
 - web app tool

@@ -5,19 +5,19 @@ edition = "2024"
 default-run = "getheode"
 
 [dependencies]
-rand = "0.9.1" # Or the latest version
+rand = "0.9.1"                                         # Or the latest version
 serde = { version = "1.0.219", features = ["derive"] }
 serde_yml = "0.0.12"
 clap = "4.5.37"
 regex = "1.11.1"
 unicode-normalization = "0.1.24"
 cfg = "0.9.0"
+paste = "1.0"
+nom = { version = "8.0.0", features = ["alloc"] }
 
 [dependencies.uuid]
 version = "1.15.1"
-features = [
-    "v4",
-]
+features = ["v4"]
 
 [[bin]]
 name = "getheode"
