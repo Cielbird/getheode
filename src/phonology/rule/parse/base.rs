@@ -61,7 +61,7 @@ pub fn parse_rule(rule: &str, opts: PhonoRuleParseOpts) -> IResult<&str, PhonoRu
             let match_tree = todo!();
             let replace_tree = todo!();
             let rule = PhonoRule {
-                match_tree,
+                pattern: match_tree,
                 replace_tree,
             };
             rules.push(rule);

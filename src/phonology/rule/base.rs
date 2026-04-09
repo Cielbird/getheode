@@ -2,7 +2,9 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     phonology::{
-        rule::RuleMatch, segment::SegmentFeatures, string::PhonoString, syllable::SyllableFeatures,
+        segment::SegmentFeatures,
+        string::PhonoString,
+        syllable::SyllableFeatures,
         tree::UniformDepth3Tree,
     },
     ud3tree,
@@ -13,8 +15,8 @@ pub type RuleTree = UniformDepth3Tree<(), SyllableInfo, SegmentInfo>;
 /// A pattern to match in phonological strings
 pub struct PhonoRule {
     // use a tree to represent the string, like phonological strings
-    pub match_tree: RuleTree,
-    pub replace_tree: RuleTree,
+    pub pattern: PhonoStringPattern,
+    pub replace_tree: UniformDepth3Tree<(), SyllableInfo, SegmentInfo>,
 }
 
 #[derive(Debug)]
@@ -42,36 +44,58 @@ impl SegmentInfo {
 }
 
 impl PhonoRule {
-    pub fn new(match_tree: RuleTree, replace_tree: RuleTree) -> Self {
+    pub fn new(pattern: PhonoStringPattern, replace_tree: RuleTree) -> Self {
         Self {
-            match_tree,
+            pattern,
             replace_tree,
         }
     }
 
-    pub fn find(&self, hay: PhonoString) -> Vec<RuleMatch> {
+    pub fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
         let mut matches_vec = vec![];
 
-        let hay_seg_n = hay.tree.layer_2.len();
-        let match_seg_n = self.match_tree.layer_2.len();
-        let match_syl_n = self.match_tree.layer_1.len();
-        let match_word_n = self.match_tree.layer_0.len();
+        let hay_l0 = hay.tree.layer_0;
+        let hay_l1 = hay.tree.layer_1;
+        let hay_l2 = hay.tree.layer_2;
+        let pattern_l0 = self.pattern.tree.layer_0;
+        let pattern_l1 = self.pattern.tree.layer_1;
+        let pattern_l2 = self.pattern.tree.layer_2;
+
+        let hay_seg_n = hay_l2.len();
+        let match_seg_n = pattern_l2
+            .iter()
+            .filter(|(node, _)| matches!(node, SegmentPatternNode::Segment(_)))
+            .count();
+        let match_syl_n = pattern_l1
+            .iter()
+            .filter(|(node, _)| matches!(node, SyllablePatternNode::Syllable(_)))
+            .count();
+        let match_word_n = pattern_l0.len();
         for seg_offset in 0..(hay_seg_n - match_seg_n + 1) {
             // iterate on segments
             let mut segments_match = true;
             let syl_offset = hay.tree.layer_2[seg_offset].1;
-            for seg_idx in 0..match_seg_n {
-                let (match_seg, syl_idx) = &self.match_tree.layer_2[seg_idx];
-                let (hay_seg, hay_syl_idx) = &hay.tree.layer_2[seg_offset + seg_idx];
+            let mut seg_idx = 0;
+            for (pattern_node, syl_idx) in pattern_l2 {
+                match pattern_node {
+                    SegmentPatternNode::Segment(pattern_seg) => {
+                        let (hay_seg, hay_syl_idx) = &hay_l2[seg_offset + seg_idx];
 
-                if *syl_idx != hay_syl_idx - syl_offset {
-                    segments_match = false; // segment's parent isn't the same
-                    break;
-                }
+                        if syl_idx != hay_syl_idx - syl_offset {
+                            segments_match = false; // segment's parent isn't the same
+                            break;
+                        }
 
-                if !hay_seg.matches(&match_seg.features) {
-                    segments_match = false;
-                    break;
+                        if !hay_seg.matches(&pattern_seg.features) {
+                            segments_match = false;
+                            break;
+                        }
+                        seg_idx += 1;
+                    },
+                    SegmentPatternNode::Unknown => {
+                        // assume right boundary
+
+                    },
                 }
             }
             if !segments_match {

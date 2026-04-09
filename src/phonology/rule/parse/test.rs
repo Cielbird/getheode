@@ -33,15 +33,16 @@ fn test_rule_simple_multi_pattern() {
     for i in 0..3 {
         let rule = &rule_set.rules[i];
 
+        todo!()
         // assert syllable id
-        let (_, match_syl_id) = rule.match_tree.layer_1[0];
-        let (_, replace_syl_id) = rule.replace_tree.layer_1[0];
-        assert_eq!(match_syl_id, replace_syl_id);
+        // let (_, match_syl_id) = rule.match_tree.layer_1[0];
+        // let (_, replace_syl_id) = rule.replace_tree.layer_1[0];
+        // assert_eq!(match_syl_id, replace_syl_id);
 
-        // assert segment id
-        let (_, match_seg_id) = rule.match_tree.layer_2[0];
-        let (_, replace_seg_id) = rule.replace_tree.layer_2[0];
-        assert_eq!(match_seg_id, replace_seg_id);
+        // // assert segment id
+        // let (_, match_seg_id) = rule.match_tree.layer_2[0];
+        // let (_, replace_seg_id) = rule.replace_tree.layer_2[0];
+        // assert_eq!(match_seg_id, replace_seg_id);
     }
 }
 
