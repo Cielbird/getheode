@@ -101,7 +101,7 @@ pub(crate) fn parse_segment_ipa(input: &str) -> IResult<&str, SegmentFeatures> {
 }
 
 /// parse a natural class
-pub fn parse_natural_class<'a>(class_symbol: &'a str) -> IResult<&'a str, SegmentFeatures> {
+pub fn parse_natural_class(class_symbol: &str) -> IResult<&str, SegmentFeatures> {
     let index = NATURAL_CLASSES.iter().position(|(symbol, _)| {
         // normalizing to NFD not necessary here...
         class_symbol.starts_with(symbol)
@@ -127,16 +127,14 @@ pub fn parse_segment_feature_set(s: &str) -> IResult<&str, SegmentFeatures> {
 
     let features = parser.parse(s);
 
-    let combined_result = features.map(|(remaining, features)| {
+    features.map(|(remaining, features)| {
         let mut combined = SegmentFeatures::new_undef();
         for f in features {
             combined = combined + f;
         }
 
         (remaining, combined)
-    });
-
-    combined_result
+    })
 }
 
 /// parse a feature name with plus or minus sign before

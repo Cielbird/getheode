@@ -1,5 +1,7 @@
-use crate::phonology::{feature::FeatureState, segment::{DIACRITICS, IPA_BASES, NATURAL_CLASSES, SEG_FEATURE_NAMES, SegmentFeatures}};
-
+use crate::phonology::{
+    feature::FeatureState,
+    segment::{DIACRITICS, IPA_BASES, NATURAL_CLASSES, SEG_FEATURE_NAMES, SegmentFeatures},
+};
 
 pub fn format_segment(segment: &SegmentFeatures) -> String {
     // see if there is a matching ipa symbol
@@ -49,4 +51,3 @@ pub fn format_segment(segment: &SegmentFeatures) -> String {
 pub fn format_segment_ipa(_seg: &SegmentFeatures) -> String {
     todo!()
 }
-
