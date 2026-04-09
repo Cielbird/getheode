@@ -1,210 +1,171 @@
-use regex::Regex;
+use nom::branch::alt;
+use nom::bytes::complete::tag;
+use nom::character::complete::multispace0;
+use nom::combinator::{map_res, opt};
+use nom::error::{Error, ErrorKind};
+use nom::multi::{many0, many1};
+use nom::sequence::{delimited, preceded, terminated};
+use nom::{Err, IResult, Parser as _};
 use unicode_normalization::UnicodeNormalization;
 
-use crate::phonology::feature::FeatureState;
-use crate::{
-    error::*,
-    phonology::segment::{
-        DIACRITICS, IPA_BASES, NATURAL_CLASSES, SEG_FEATURE_NAMES, SegmentFeatures,
-        feature_from_string,
-    },
+use crate::phonology::feature::{Feature, FeatureState};
+use crate::phonology::segment::{
+    DIACRITICS, IPA_BASES, NATURAL_CLASSES, SEG_FEATURE_NAMES, SegmentFeatures,
 };
 
-/// return a segment from either an ipa character, a feature set, or a phonological class.
-/// - input string is trimmed of whitespace
-pub fn parse_segment(string: &str) -> Result<SegmentFeatures> {
-    let string = string.trim();
-    if let Ok(seg) = parse_segment_ipa(string) {
-        return Ok(seg);
-    }
-    if let Ok(seg) = parse_segment_class(string) {
-        return Ok(seg);
-    }
-    if let Ok(seg) = parse_segment_feature_set(string) {
-        return Ok(seg);
-    }
-    Err(Error::SegmentParsingError(string.to_string()))
-}
-
-pub fn format_segment(segment: &SegmentFeatures) -> String {
-    // see if there is a matching ipa symbol
-    for (sym, seg) in IPA_BASES {
-        if seg == segment {
-            return sym.to_string();
-        }
-        // WARNING this tries all possible ipa symbols with all possible diacritics.
-        // not only is it limited to only one diacritic, but it is extremely slow, in theory.
-        // for now, there are only a handfull of diacritics. the algorithm to do this well and
-        // fast is too much for me to think of right now; a fun puzzle for later.
-        // TODO tackle this when performance becomes important, or when i need multiple
-        // diacritics
-        // TODO this can be done recursively
-        for (d, d_seg) in DIACRITICS {
-            // TODO figure out if cloning these is really what i'm supposed to do
-            if (seg.clone() + d_seg.clone()) == *segment {
-                let mut s = sym.to_string();
-                s.push(*d);
-                return s.to_string();
+/// return a segment from either an ipa character, or a phonological class. this may be
+/// followed by a feature set within brackets.
+/// input string is trimmed of whitespace
+pub fn parse_segment(input: &str) -> IResult<&str, SegmentFeatures> {
+    let mut parser = map_res(
+        preceded(
+            multispace0,
+            (
+                alt((parse_segment_ipa, parse_natural_class)),
+                multispace0,
+                opt(delimited(tag("["), parse_segment_feature_set, tag("]"))),
+            ),
+        ),
+        // apply feature set in brackets to the ipa symbol or class symbol
+        |(mut base, _, features)| {
+            if let Some(features) = features {
+                base = base + features;
             }
-        }
-    }
+            Ok::<_, ()>(base)
+        },
+    );
 
-    // see if there is a matching class
-    for (sym, seg) in NATURAL_CLASSES {
-        if seg == segment {
-            return sym.to_string();
-        }
-    }
-
-    // otherwise spit out a list of the features
-    let mut result: String = "[".to_string();
-    for (i, feature) in SEG_FEATURE_NAMES.iter().enumerate() {
-        if segment.features[i] == FeatureState::NA {
-            continue;
-        } else if segment.features[i] == FeatureState::POS {
-            result = result + "+" + feature;
-        } else if segment.features[i] == FeatureState::NEG {
-            result = result + "-" + feature;
-        }
-    }
-
-    (result + "]").to_string()
+    parser.parse(input)
 }
 
-/// construct a segement from an IPA symbol
+/// Parse an ipa symbol, no diacritics, no extra features
+/// ex: "b"
+/// should parse a bilabial voiced plosive
+fn parse_ipa_base(input: &str) -> IResult<&str, SegmentFeatures> {
+    let index = IPA_BASES.iter().position(|(symbol, _)| {
+        // normalize unicode to NFD form !
+        let input_norm = input.nfd().to_string();
+        let symbol_norm = symbol.nfd().to_string();
+        input_norm.starts_with(&symbol_norm)
+    });
+    match index {
+        Some(i) => {
+            let end = IPA_BASES[i].0.len();
+            let ipa_base = IPA_BASES[i].1.clone();
+            Ok((&input[end..], ipa_base))
+        }
+        None => {
+            // unknown ipa base
+            Err(Err::Error(Error::new(input, ErrorKind::Verify)))
+        }
+    }
+}
+
+/// Parse a diacritic at the beginning of `input`,
+/// returning the diacritic's features with remaining input
+fn parse_ipa_diacritic(input: &str) -> IResult<&str, SegmentFeatures> {
+    let index = DIACRITICS.iter().position(|(symbol, _)| {
+        // normalize unicode to NFD form !
+        let input_norm = input.nfd().to_string();
+        let symbol_norm = symbol.nfd().to_string();
+        input_norm.starts_with(&symbol_norm)
+    });
+    match index {
+        Some(i) => {
+            let end = DIACRITICS[i].0.len_utf8();
+            let ipa_base = DIACRITICS[i].1.clone();
+            Ok((&input[end..], ipa_base))
+        }
+        None => {
+            // unknown ipa diacritic
+            Err(Err::Error(Error::new(input, ErrorKind::Verify)))
+        }
+    }
+}
+
+/// parse an IPA symbol, with diacritics
+/// ex : "t̪"
 /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
-pub(crate) fn parse_segment_ipa(input: &str) -> Result<SegmentFeatures> {
-    for (symbol, seg) in IPA_BASES {
-        // normalize the
-        let mut input_norm = input.nfd();
-        let symbol_norm = symbol.nfd();
-
-        // do the first utf8 code points match the first of our symbol?
-        let mut matches = true;
-        for symbol_char in symbol_norm {
-            if input_norm.next() != Some(symbol_char) {
-                matches = false;
-                break;
+pub(crate) fn parse_segment_ipa(input: &str) -> IResult<&str, SegmentFeatures> {
+    let mut parser = map_res(
+        (parse_ipa_base, many0(parse_ipa_diacritic)),
+        |(mut base, diacritics)| {
+            for d in diacritics {
+                base = base + d;
             }
-        }
-        if !matches {
-            // try next symbol
-            continue;
-        }
+            Ok::<_, ()>(base)
+        },
+    );
 
-        // collect remaining (unchecked) characters
-        let remaining = input_norm.collect::<String>();
-        // if there are no diacritics to add it will do nothing
-        match parse_remaining(&remaining, seg.clone()) {
-            Ok(segment) => {
-                return Ok(segment);
-            }
-            Err(_e) => continue,
-        }
-    }
-    let msg = format!("The symbol {} could not be parsed", input);
-    Err(Error::IPASymbolParsingError(msg))
+    parser.parse(input)
 }
 
-pub fn format_segment_ipa(_seg: &SegmentFeatures) -> String {
-    todo!()
-}
-
-/// recursive function to add the ipa diacritics in a string to a segment
-fn parse_remaining(remaining_chars: &str, cur_segment: SegmentFeatures) -> Result<SegmentFeatures> {
-    if remaining_chars.is_empty() {
-        return Ok(cur_segment);
-    }
-    if remaining_chars.starts_with('(') && remaining_chars.ends_with(')') {
-        let remaining_chars = &remaining_chars[1..(remaining_chars.len() - 1)];
-
-        return Ok(cur_segment + parse_segment_features(remaining_chars)?);
-    }
-    for (symbol, diac) in DIACRITICS {
-        // do the first utf8 code points match the first of our symbol?
-        // normalize the
-        let mut input_norm = remaining_chars.nfd();
-        let symbol_norm = symbol.nfd();
-
-        // do the first utf8 code points match the first of our symbol?
-        let mut matches = true;
-        for symbol_char in symbol_norm {
-            if input_norm.next() != Some(symbol_char) {
-                matches = false;
-                break;
-            }
+/// parse a natural class
+pub fn parse_natural_class<'a>(class_symbol: &'a str) -> IResult<&'a str, SegmentFeatures> {
+    let index = NATURAL_CLASSES.iter().position(|(symbol, _)| {
+        // normalizing to NFD not necessary here...
+        class_symbol.starts_with(symbol)
+    });
+    match index {
+        Some(i) => {
+            let end = NATURAL_CLASSES[i].0.len();
+            let ipa_base = NATURAL_CLASSES[i].1.clone();
+            Ok((&class_symbol[end..], ipa_base))
         }
-        if !matches {
-            // try next symbol
-            continue;
-        }
-
-        // collect remaining (unchecked) characters
-        let remaining = &input_norm.collect::<String>();
-        let new_seg = cur_segment.clone() + diac.clone();
-        match parse_remaining(remaining, new_seg) {
-            Ok(segment) => {
-                return Ok(segment);
-            }
-            Err(_e) => continue,
+        None => {
+            // unknown ipa diacritic
+            Err(Err::Error(Error::new(class_symbol, ErrorKind::Verify)))
         }
     }
-    let msg = format!("The symbol {} could not be parsed", remaining_chars);
-    Err(Error::IPASymbolParsingError(msg))
 }
 
-/// construct a segement from an IPA symbol
-pub fn parse_segment_class(class_symbol: &str) -> Result<SegmentFeatures> {
-    for (sym, seg) in NATURAL_CLASSES {
-        if *sym == class_symbol {
-            return Ok(seg.clone());
+/// construct a segement from a list of features in brackets
+/// ex. "+voi-delrel"
+/// may be preceded by whitespace
+pub fn parse_segment_feature_set(s: &str) -> IResult<&str, SegmentFeatures> {
+    let mut parser = preceded(multispace0, many1(parse_segment_feature));
+
+    let features = parser.parse(s);
+
+    let combined_result = features.map(|(remaining, features)| {
+        let mut combined = SegmentFeatures::new_undef();
+        for f in features {
+            combined = combined + f;
         }
-    }
-    Err(Error::IPASymbolParsingError(class_symbol.to_string()))
+
+        (remaining, combined)
+    });
+
+    combined_result
 }
 
-/// construct a segement from a list of features in brackets ex. [+voi-delrel]
-pub fn parse_segment_feature_set(s: &str) -> Result<SegmentFeatures> {
-    let s = s.trim();
-    if !(s.starts_with('[') && s.ends_with(']')) {
-        return Err(Error::SegmentParsingError(s.to_string()));
-    }
-    let inner = &s[1..(s.len() - 1)];
-    parse_segment_features(inner)
-}
+/// parse a feature name with plus or minus sign before
+/// ex: "+delrel"
+/// may be preceded by whitespace
+fn parse_segment_feature(s: &str) -> IResult<&str, SegmentFeatures> {
+    let mut parser = preceded(multispace0, (alt((tag("+"), tag("-"))), parse_feature_tag));
 
-/// Parse a string of feature states, for example "+voi -spgl"
-fn parse_segment_features(mut features_str: &str) -> Result<SegmentFeatures> {
+    let (remainder, (sign, feature)) = parser.parse(s)?;
+
     let mut seg = SegmentFeatures::new_undef();
-    let re = Regex::new(r"^\s*([+-])\s*([a-z]+)").unwrap();
-    while !features_str.is_empty() {
-        let sign: char;
-        let name_match;
-        let name: &str;
-        match re.captures(features_str) {
-            Some(capts) => {
-                sign = capts[1].chars().next().unwrap();
-                name_match = capts.get(2).unwrap();
-                name = &features_str[name_match.range()];
-            }
-            None => {
-                return Err(Error::SegmentParsingError(features_str.to_string()));
-            }
-        }
-        let feature = match feature_from_string(name) {
-            Ok(f) => f,
-            Err(e) => {
-                return Err(e);
-            }
-        };
-        // set feature
-        if sign == '+' {
-            seg.features[feature as usize] = FeatureState::POS;
-        } else if sign == '-' {
-            seg.features[feature as usize] = FeatureState::NEG;
-        }
-
-        features_str = features_str[name_match.end()..features_str.len()].trim();
+    // set feature
+    if sign == "+" {
+        seg.features[feature as usize] = FeatureState::POS;
+    } else if sign == "-" {
+        seg.features[feature as usize] = FeatureState::NEG;
     }
-    Ok(seg)
+
+    Ok((remainder, seg))
+}
+
+/// converts a feature name string to the corresponding u8 index
+pub fn parse_feature_tag(string: &str) -> IResult<&str, Feature> {
+    let index = SEG_FEATURE_NAMES.iter().position(|s| string.starts_with(s));
+    match index {
+        Some(i) => {
+            let end = SEG_FEATURE_NAMES[i].len();
+            Ok((&string[end..], i as u8))
+        }
+        None => todo!("Handle error better"), //Err(Error::UnknownFeatureName(string.to_string())),
+    }
 }

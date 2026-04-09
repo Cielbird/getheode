@@ -45,4 +45,12 @@ pub const DIACRITICS: &[(char, SegmentFeatures)] = &[
 		 POS,  POS  ,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
 		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF])
 	),
+	// dental : COMBINING BRIDGE BELOW
+	// dental diacritic (t̪) indicates [+anterior, +distributed] within the coronal node [+cor]
+	('\u{032A}', SegmentFeatures::from_features(
+		[UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
+		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
+		 UNDEF,UNDEF,UNDEF,POS  ,POS  ,POS  ,UNDEF,
+		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF])
+	),
 ];

@@ -23,6 +23,7 @@ pub struct SegmentFeatures {
 
 impl SegmentFeatures {
     /// construct a segement from an array of features
+    /// syl,long,cons,son,cont,delrel,approx,tap,trill,nasal,voi,spgl,congl,lab,round,labdent,cor,ant,dist,strident,lateral,dor,high,low,front,back,tense
     pub const fn from_features(features: [FeatureState; SEG_FEATURE_COUNT as usize]) -> Self {
         SegmentFeatures { features }
     }

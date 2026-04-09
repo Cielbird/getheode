@@ -3,7 +3,7 @@
 *[Geþeode](https://en.wiktionary.org/wiki/geþeode)* `/jeˈθeoː.de/` is an Old English word meaning 
 "language"
 
-Geþeode library that provides tools for building fictional languages, written in Rust
+Geþeode is a library that provides tools for building fictional languages, written in Rust
 
 The library provides :
 - A universal representation for phonological strings

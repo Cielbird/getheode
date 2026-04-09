@@ -47,12 +47,3 @@ pub const SEG_FEATURE_NAMES: [&str; SEG_FEATURE_COUNT as usize] = [
     "spgl", "congl", "lab", "round", "labdent", "cor", "ant", "dist", "strident", "lateral", "dor",
     "high", "low", "front", "back", "tense",
 ];
-
-/// converts a feature name string to the corresponding u8 index
-pub fn feature_from_string(string: &str) -> Result<Feature> {
-    let index = SEG_FEATURE_NAMES.iter().position(|s| *s == string);
-    match index {
-        Some(i) => Ok(i as u8),
-        None => Err(Error::UnknownFeatureName(string.to_string())),
-    }
-}
