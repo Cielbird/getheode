@@ -1,12 +1,12 @@
 use crate::{
+    d3tree,
     phonology::{
         feature::FeatureState::*,
-        rule::{PhonoRule, SegmentInfo, SyllableInfo},
+        rule::{PatternBorder, PhonoRule, PhonoStringPattern, SegmentInfo, SyllableInfo},
         segment::{SEG_FEATURE_COUNT, SegmentFeatures},
         string::PhonoString,
         syllable::SyllableFeatures,
     },
-    ud3tree,
 };
 
 const VOWEL_SEG: SegmentFeatures = SegmentFeatures::from_features([
@@ -47,7 +47,7 @@ const UNDEF_SYL: SyllableFeatures = SyllableFeatures::new([UNDEF]);
 fn test_rule_simple() {
     // rule follows this rule:
     // VtV => VV / (all in same syllable and word)
-    let match_tree = ud3tree![
+    let match_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: VOWEL_SEG},
@@ -56,7 +56,7 @@ fn test_rule_simple() {
             ]
         ]
     ];
-    let replace_tree = ud3tree![
+    let replace_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: UNDEF_SEG},
@@ -64,10 +64,10 @@ fn test_rule_simple() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
 
     // [ta.ati]
-    let hay = PhonoString::new(ud3tree![
+    let hay = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [T_SEG, A_SEG],
             UNSTRESSED => [A_SEG, T_SEG, I_SEG],
@@ -81,7 +81,7 @@ fn test_rule_simple() {
 
     assert_eq!(pat_match.range, 2..5);
 
-    let expected_replace_with = PhonoString::new(ud3tree![
+    let expected_replace_with = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [A_SEG, I_SEG],
         ]
@@ -94,7 +94,7 @@ fn test_rule_modify_vowel() {
     // rule follows this rule:
     // VCV => VC[+voi]V / (all in same syllable and word)
     // for example, [ati] becomes [adi]
-    let match_tree = ud3tree![
+    let match_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: VOWEL_SEG},
@@ -103,7 +103,7 @@ fn test_rule_modify_vowel() {
             ]
         ]
     ];
-    let replace_tree = ud3tree![
+    let replace_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: VOWEL_SEG},
@@ -112,10 +112,10 @@ fn test_rule_modify_vowel() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
 
     // [ta.ati]
-    let hay = PhonoString::new(ud3tree![
+    let hay = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [T_SEG, A_SEG],
             UNSTRESSED => [A_SEG, T_SEG, I_SEG],
@@ -129,7 +129,7 @@ fn test_rule_modify_vowel() {
 
     assert_eq!(pat_match.range, 2..5);
 
-    let expected_replace_with = PhonoString::new(ud3tree![
+    let expected_replace_with = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [A_SEG, D_SEG, I_SEG],
         ]
@@ -141,7 +141,7 @@ fn test_rule_modify_vowel() {
 fn test_rule_new_syllable() {
     // rule follows this rule:
     // VtV => V.V / (in same syllable and word, creates new syllable boundary)
-    let match_tree = ud3tree![
+    let match_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: VOWEL_SEG},
@@ -150,7 +150,7 @@ fn test_rule_new_syllable() {
             ]
         ]
     ];
-    let replace_tree = ud3tree![
+    let replace_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: UNDEF_SEG},
@@ -160,10 +160,10 @@ fn test_rule_new_syllable() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
 
     // [ta.ati]
-    let hay = PhonoString::new(ud3tree![
+    let hay = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [T_SEG, A_SEG],
             UNSTRESSED => [A_SEG, T_SEG, I_SEG],
@@ -177,7 +177,7 @@ fn test_rule_new_syllable() {
 
     assert_eq!(pat_match.range, 2..5);
 
-    let expected_replace_with = PhonoString::new(ud3tree![
+    let expected_replace_with = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [A_SEG],
             UNDEF_SYL => [I_SEG],
@@ -190,7 +190,7 @@ fn test_rule_new_syllable() {
 fn test_rule_across_syllable() {
     // rule follows this rule:
     // V.V => VtV / (across syllable bound, removes it)
-    let match_tree = ud3tree![
+    let match_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(0), features: VOWEL_SEG},
@@ -200,7 +200,7 @@ fn test_rule_across_syllable() {
             ]
         ]
     ];
-    let replace_tree = ud3tree![
+    let replace_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(0), features: UNDEF_SEG},
@@ -209,10 +209,10 @@ fn test_rule_across_syllable() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
 
     // [ta.ati]
-    let hay = PhonoString::new(ud3tree![
+    let hay = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [T_SEG, A_SEG],
             UNSTRESSED => [A_SEG, T_SEG, I_SEG],
@@ -226,7 +226,7 @@ fn test_rule_across_syllable() {
 
     assert_eq!(pat_match.range, 1..3);
 
-    let expected_replace_with = PhonoString::new(ud3tree![
+    let expected_replace_with = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [A_SEG, T_SEG, A_SEG],
         ]
@@ -238,7 +238,7 @@ fn test_rule_across_syllable() {
 fn test_rule_new_word() {
     // rule follows this rule:
     // VtV => V.V / (in same syllable and word, creates new syllable boundary)
-    let match_tree = ud3tree![
+    let match_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: VOWEL_SEG},
@@ -247,7 +247,7 @@ fn test_rule_new_word() {
             ]
         ]
     ];
-    let replace_tree = ud3tree![
+    let replace_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: UNDEF_SEG},
@@ -259,10 +259,10 @@ fn test_rule_new_word() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
 
     // [ta.ati]
-    let hay = PhonoString::new(ud3tree![
+    let hay = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [T_SEG, A_SEG],
             UNSTRESSED => [A_SEG, T_SEG, I_SEG],
@@ -276,7 +276,7 @@ fn test_rule_new_word() {
 
     assert_eq!(pat_match.range, 2..5);
 
-    let expected_replace_with = PhonoString::new(ud3tree![
+    let expected_replace_with = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [A_SEG],
         ],
@@ -291,7 +291,7 @@ fn test_rule_new_word() {
 fn test_rule_across_word() {
     // rule follows this rule:
     // V.V => VtV / (across syllable bound, removes it)
-    let match_tree = ud3tree![
+    let match_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(0), features: VOWEL_SEG},
@@ -303,7 +303,7 @@ fn test_rule_across_word() {
             ]
         ]
     ];
-    let replace_tree = ud3tree![
+    let replace_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(0), features: UNDEF_SEG},
@@ -312,10 +312,10 @@ fn test_rule_across_word() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
 
     // [ta.ati]
-    let hay = PhonoString::new(ud3tree![
+    let hay = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [T_SEG, A_SEG],
         ],
@@ -331,7 +331,7 @@ fn test_rule_across_word() {
 
     assert_eq!(pat_match.range, 1..3);
 
-    let expected_replace_with = PhonoString::new(ud3tree![
+    let expected_replace_with = PhonoString::new(d3tree![
         () => [
             UNSTRESSED => [A_SEG, T_SEG, A_SEG],
         ]
@@ -340,10 +340,116 @@ fn test_rule_across_word() {
 }
 
 #[test]
+fn test_rule_syllable_border_1() {
+    // rule follows this rule:
+    // V => Vt / _$
+    let pattern = PhonoStringPattern {
+        tree: d3tree![
+            () => [
+                SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
+                    SegmentInfo {id: Some(0), features: VOWEL_SEG},
+                ],
+            ],
+        ],
+        left_bound: PatternBorder::StrictSegment,
+        right_bound: PatternBorder::SyllableOrWord,
+    };
+    let replace_tree = d3tree![
+        () => [
+            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {id: Some(0), features: UNDEF_SEG},
+                SegmentInfo {id: None, features: T_SEG},
+            ]
+        ]
+    ];
+    let rule = PhonoRule::new(pattern, replace_tree);
+
+    // [ta.ati]
+    let hay = PhonoString::new(d3tree![
+        () => [
+            UNSTRESSED => [T_SEG, A_SEG],
+            UNSTRESSED => [A_SEG, T_SEG, I_SEG],
+        ]
+    ]);
+
+    let matches = rule.find(hay);
+
+    assert_eq!(matches.len(), 2);
+
+    assert_eq!(matches[0].range, 1..2);
+    assert_eq!(matches[1].range, 4..5);
+
+    let expected_replace_with = PhonoString::new(d3tree![
+        () => [
+            UNSTRESSED => [A_SEG, T_SEG],
+        ]
+    ]);
+    assert_eq!(matches[0].replace_with, expected_replace_with);
+
+    let expected_replace_with = PhonoString::new(d3tree![
+        () => [
+            UNSTRESSED => [I_SEG, T_SEG],
+        ]
+    ]);
+    assert_eq!(matches[1].replace_with, expected_replace_with);
+}
+
+#[test]
+fn test_rule_syllable_border_2() {
+    // rule follows this rule:
+    // V => Vt / #_
+    let pattern = PhonoStringPattern {
+        tree: d3tree![
+            () => [
+                SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
+                    SegmentInfo {id: Some(0), features: VOWEL_SEG},
+                ],
+            ],
+        ],
+        left_bound: PatternBorder::Word,
+        right_bound: PatternBorder::Any,
+    };
+    let replace_tree = d3tree![
+        () => [
+            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {id: Some(0), features: UNDEF_SEG},
+                SegmentInfo {id: None, features: T_SEG},
+            ]
+        ]
+    ];
+    let rule = PhonoRule::new(pattern, replace_tree);
+
+    // [a#a.ti]
+    let hay = PhonoString::new(d3tree![
+        () => [
+            UNSTRESSED => [A_SEG],
+        ],
+        () => [
+            UNSTRESSED => [A_SEG, T_SEG, I_SEG],
+        ]
+    ]);
+
+    let matches = rule.find(hay);
+
+    assert_eq!(matches.len(), 2);
+
+    assert_eq!(matches[0].range, 0..1);
+    assert_eq!(matches[1].range, 1..2);
+
+    let expected_replace_with = PhonoString::new(d3tree![
+        () => [
+            UNSTRESSED => [A_SEG, T_SEG],
+        ]
+    ]);
+    assert_eq!(matches[0].replace_with, expected_replace_with);
+    assert_eq!(matches[1].replace_with, expected_replace_with);
+}
+
+#[test]
 fn test_invalid_rule_double_id() {
     // rule follows this rule:
     // V.V => VtV
-    let match_tree = ud3tree![
+    let match_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(0), features: VOWEL_SEG},
@@ -355,7 +461,7 @@ fn test_invalid_rule_double_id() {
             ]
         ]
     ];
-    let replace_tree = ud3tree![
+    let replace_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(0), features: UNDEF_SEG},
@@ -364,7 +470,7 @@ fn test_invalid_rule_double_id() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
 
     assert!(!rule.test_invariants());
 }
@@ -373,7 +479,7 @@ fn test_invalid_rule_double_id() {
 fn test_invalid_rule_undef_id() {
     // rule follows this rule:
     // V.V => VtV
-    let match_tree = ud3tree![
+    let match_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(0), features: VOWEL_SEG},
@@ -385,7 +491,7 @@ fn test_invalid_rule_undef_id() {
             ]
         ]
     ];
-    let replace_tree = ud3tree![
+    let replace_tree = d3tree![
         () => [
             SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
                 SegmentInfo {id: Some(1), features: UNDEF_SEG},
@@ -394,7 +500,7 @@ fn test_invalid_rule_undef_id() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(match_tree, replace_tree);
+    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
 
     assert!(!rule.test_invariants());
 }

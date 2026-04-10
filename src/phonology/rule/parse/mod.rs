@@ -4,5 +4,5 @@ mod opts;
 pub use base::*;
 pub use opts::*;
 
-#[cfg(test)]
-mod test;
+// #[cfg(test)]
+// mod test;

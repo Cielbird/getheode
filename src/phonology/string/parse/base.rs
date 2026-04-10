@@ -1,13 +1,10 @@
-use nom::combinator::map_res;
-use nom::error::ParseError;
-
 use nom::multi::many1;
-use nom::{IResult, PResult, Parser};
+use nom::{IResult, Parser};
 
+use crate::d3tree;
 use crate::phonology::segment::parse_segment;
 use crate::phonology::string::PhonoString;
 use crate::phonology::syllable::SyllableFeatures;
-use crate::ud3tree;
 
 /// Parse a phonological string
 pub fn parse_phono_string(input: &str) -> IResult<&str, PhonoString> {
@@ -19,7 +16,7 @@ pub fn parse_phono_string(input: &str) -> IResult<&str, PhonoString> {
 
     let (remainder, segments) = parser.parse(input)?;
 
-    let mut string = PhonoString::new(ud3tree![() => [SyllableFeatures::new_undef() => []]]);
+    let mut string = PhonoString::new(d3tree![() => [SyllableFeatures::new_undef() => []]]);
     for seg in segments {
         string.tree.layer_2.push((seg, 0));
     }

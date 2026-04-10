@@ -26,7 +26,7 @@
 /// ```
 ///
 #[macro_export]
-macro_rules! ud3tree {
+macro_rules! d3tree {
     (
         $( $l0:expr => [
             $( $l1:expr => [
@@ -58,6 +58,6 @@ macro_rules! ud3tree {
         )*
         let _ = l0_idx;
 
-        $crate::phonology::tree::UniformDepth3Tree { layer_0, layer_1, layer_2 }
+        $crate::phonology::tree::Depth3Tree { layer_0, layer_1, layer_2 }
     }};
 }

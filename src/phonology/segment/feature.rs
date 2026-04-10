@@ -1,8 +1,3 @@
-use crate::{
-    error::{Error, Result},
-    phonology::feature::Feature,
-};
-
 // a feature of a phonological segment
 
 // MAJOR CLASS

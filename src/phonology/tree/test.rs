@@ -1,9 +1,9 @@
-mod uniform_depth3 {
-    use crate::{phonology::tree::UniformDepth3Tree, ud3tree};
+mod depth3 {
+    use crate::{d3tree, phonology::tree::Depth3Tree};
 
     #[test]
-    fn test_construction_macro() {
-        let tree = ud3tree![
+    fn test_macro() {
+        let tree = d3tree![
             0 => [
                 3 => [7, 8],
                 4 => [9],
@@ -25,8 +25,26 @@ mod uniform_depth3 {
     }
 
     #[test]
-    fn test_invariants() {
-        let tree = ud3tree![
+    fn test_nonuniform_macro() {
+        let tree = d3tree![
+            0 => [
+                3 => [7, 8],
+                4 => [9],
+            ],
+            1 => [],
+            2 => [
+                6 => [12],
+            ],
+        ];
+
+        assert_eq!(tree.layer_0, vec![0, 1, 2]);
+        assert_eq!(tree.layer_1, vec![(3, 0), (4, 0), (6, 2)]);
+        assert_eq!(tree.layer_2, vec![(7, 0), (8, 0), (9, 1), (12, 2)]);
+    }
+
+    #[test]
+    fn test_leaves_depth_3() {
+        let tree = d3tree![
             0 => [
                 3 => [7, 8],
                 4 => [9],
@@ -38,30 +56,30 @@ mod uniform_depth3 {
                 6 => [12],
             ],
         ];
-        assert!(tree.test_invariants());
+        assert!(tree.are_leaves_depth_3());
     }
 
     #[test]
-    fn test_invalid_invariants_1() {
-        let tree = ud3tree![
+    fn test_leaves_not_depth_3_1() {
+        let tree = d3tree![
             0 => [2 => [5, 6],3 => [7],],
             1 => [4 => [],],
         ];
-        assert!(!tree.test_invariants());
+        assert!(!tree.are_leaves_depth_3());
     }
 
     #[test]
-    fn test_invalid_invariants_2() {
-        let tree = ud3tree![
+    fn test_leaves_not_depth_3_2() {
+        let tree = d3tree![
             0 => [2 => [4, 5], 3 => [6]],
             1 => [],
         ];
-        assert!(!tree.test_invariants());
+        assert!(!tree.are_leaves_depth_3());
     }
 
     #[test]
     fn test_invalid_invariants_3() {
-        let tree = UniformDepth3Tree {
+        let tree = Depth3Tree {
             layer_0: vec![0, 1],
             layer_1: vec![(0, 1), (1, 0), (2, 1)], // out of order ! invalid
             layer_2: vec![(0, 0), (1, 1), (2, 2)],
@@ -71,7 +89,7 @@ mod uniform_depth3 {
 
     #[test]
     fn test_invalid_invariants_4() {
-        let tree = UniformDepth3Tree {
+        let tree = Depth3Tree {
             layer_0: vec![0, 1],
             layer_1: vec![(0, 0), (1, 1)],
             layer_2: vec![(0, 1), (1, 0), (2, 1)], // out of order ! invalid
@@ -89,7 +107,7 @@ mod uniform_depth3 {
         //  3  4   5   6
         //  |  |\  |   | \
         //  7  8 9 10  11 12
-        let tree = ud3tree![
+        let tree = d3tree![
             0 => [
                 3 => [7],
                 4 => [8, 9],
@@ -110,7 +128,7 @@ mod uniform_depth3 {
         //  2  3  4
         //  |  |  |
         //  5  6  7
-        let replacement = ud3tree![
+        let replacement = d3tree![
             0 => [
                 2 => [5],
             ],
@@ -128,7 +146,7 @@ mod uniform_depth3 {
         //  3 2  3  4   6
         //  | |  |  |   | \
         //  7 5  6  7   11 12
-        let expected = ud3tree![
+        let expected = d3tree![
             0 => [
                 3 => [7],
                 2 => [5],
@@ -149,7 +167,7 @@ mod uniform_depth3 {
 
     #[test]
     fn test_replace_range_2() {
-        let tree = ud3tree![
+        let tree = d3tree![
             0 => [
                 4 => [11, 12, 13],
                 5 => [14, 15],
@@ -167,11 +185,11 @@ mod uniform_depth3 {
             ],
         ];
 
-        let replacement = ud3tree![
+        let replacement = d3tree![
             0 => [1 => [2]]
         ];
 
-        let expected = ud3tree![
+        let expected = d3tree![
             0 => [
                 4 => [11, 12, 13],
                 5 => [14, 15],

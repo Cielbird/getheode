@@ -1,11 +1,6 @@
 // TODO make parser for these rule sets
 use paste::paste;
 
-use crate::{
-    phonology::{rule::SyllableInfo, syllable::SyllableFeatures},
-    ud3tree,
-};
-
 /// Macro for generating tests for phonlogical rule syntax parsing
 macro_rules! test_phono_rule_syntax {
     ($name:ident, $rule:expr) => {

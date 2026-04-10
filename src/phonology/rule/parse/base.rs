@@ -1,3 +1,4 @@
+#![allow(unused)] // TODO
 use std::iter::zip;
 
 use crate::phonology::rule::{PhonoRule, PhonoRuleParseOpts, PhonoRuleSet};

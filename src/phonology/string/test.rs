@@ -1,7 +1,7 @@
+use crate::d3tree;
 use crate::phonology::feature::FeatureState::*;
 use crate::phonology::syllable::SyllableFeatures;
 use crate::phonology::{segment::SegmentFeatures, string::PhonoString};
-use crate::ud3tree;
 
 const A_SEG: SegmentFeatures = SegmentFeatures::from_features([
     POS, NEG, NEG, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, NEG, NA, NA,
@@ -25,18 +25,18 @@ fn string_replace_in_syl() {
     // replace first 3 segments with [ia]
     // end with ['ia.ka]
 
-    let string = PhonoString::new(ud3tree![
+    let string = PhonoString::new(d3tree![
         () => [
             STRESSED => [K_SEG, A_SEG, I_SEG],
             UNSTRESSED => [K_SEG, A_SEG]
         ]
     ]);
 
-    let replacement = PhonoString::new(ud3tree!(
+    let replacement = PhonoString::new(d3tree!(
         () => [STRESSED => [I_SEG, A_SEG]]
     ));
 
-    let expected = PhonoString::new(ud3tree!(
+    let expected = PhonoString::new(d3tree!(
         () => [
             STRESSED => [I_SEG, A_SEG],
             UNSTRESSED => [K_SEG, A_SEG],
@@ -54,18 +54,18 @@ fn string_replace_across_syl_bound() {
     // end with ['kaiaa]
     // syllable boundary in source is replaced
 
-    let string = PhonoString::new(ud3tree!(
+    let string = PhonoString::new(d3tree!(
         () => [
             STRESSED => [K_SEG, A_SEG, I_SEG],
             UNSTRESSED => [K_SEG, A_SEG],
         ]
     ));
 
-    let replacement = PhonoString::new(ud3tree!(
+    let replacement = PhonoString::new(d3tree!(
         () => [STRESSED => [I_SEG, A_SEG]]
     ));
 
-    let expected = PhonoString::new(ud3tree![
+    let expected = PhonoString::new(d3tree![
         () => [
             STRESSED => [K_SEG, A_SEG, I_SEG, A_SEG, A_SEG],
         ],
@@ -82,21 +82,21 @@ fn string_replace_with_syl_bound() {
     // end with ['ki.kii.ka]
     // syllable boundary in source is replaced
 
-    let string = PhonoString::new(ud3tree!(
+    let string = PhonoString::new(d3tree!(
         () => [
             STRESSED => [K_SEG, A_SEG, I_SEG],
             UNSTRESSED => [K_SEG, A_SEG],
         ]
     ));
 
-    let replacement = PhonoString::new(ud3tree!(
+    let replacement = PhonoString::new(d3tree!(
         () => [
             STRESSED => [I_SEG],
             UNSTRESSED => [K_SEG, I_SEG],
         ]
     ));
 
-    let expected = PhonoString::new(ud3tree!(
+    let expected = PhonoString::new(d3tree!(
         () => [
             STRESSED => [K_SEG, I_SEG],
             UNSTRESSED => [K_SEG, I_SEG, I_SEG],

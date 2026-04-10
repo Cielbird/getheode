@@ -4,7 +4,7 @@ use nom::character::complete::multispace0;
 use nom::combinator::{map_res, opt};
 use nom::error::{Error, ErrorKind};
 use nom::multi::{many0, many1};
-use nom::sequence::{delimited, preceded, terminated};
+use nom::sequence::{delimited, preceded};
 use nom::{Err, IResult, Parser as _};
 use unicode_normalization::UnicodeNormalization;
 

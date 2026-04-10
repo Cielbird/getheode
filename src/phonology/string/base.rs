@@ -1,16 +1,14 @@
 use std::ops::Range;
 
-use crate::phonology::{
-    segment::SegmentFeatures, syllable::SyllableFeatures, tree::UniformDepth3Tree,
-};
+use crate::phonology::{segment::SegmentFeatures, syllable::SyllableFeatures, tree::Depth3Tree};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PhonoString {
-    pub(crate) tree: UniformDepth3Tree<(), SyllableFeatures, SegmentFeatures>,
+    pub(crate) tree: Depth3Tree<(), SyllableFeatures, SegmentFeatures>,
 }
 
 impl PhonoString {
-    pub fn new(tree: UniformDepth3Tree<(), SyllableFeatures, SegmentFeatures>) -> Self {
+    pub fn new(tree: Depth3Tree<(), SyllableFeatures, SegmentFeatures>) -> Self {
         Self { tree }
     }
 

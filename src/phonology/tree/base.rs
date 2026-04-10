@@ -18,17 +18,15 @@ use std::ops::Range;
 /// This could be used to represent phonological sequences. Each layer contains feature data about
 /// that layer of the hierarchy.
 #[derive(Debug, PartialEq, Clone)]
-pub struct UniformDepth3Tree<T0, T1, T2> {
+pub struct Depth3Tree<T0, T1, T2> {
     pub layer_0: Vec<T0>,          // parent is always root for these nodes
     pub layer_1: Vec<(T1, usize)>, // data with index of parent in `layer0`
     pub layer_2: Vec<(T2, usize)>, // data with index of parent in `layer1`
 }
 
-impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
+impl<T0, T1, T2> Depth3Tree<T0, T1, T2> {
+    /// Tests if all leaf nodes of the tree are depth 3, in other words, is the tree "uniform"
     pub fn test_invariants(&self) -> bool {
-        // all nodes of layer 0 need to be parent of at least one node in layer 1
-        let n0 = self.layer_0.len();
-        let mut is_parent = vec![false; n0];
         let mut last_idx = 0;
         for (_, parent_idx) in &self.layer_1 {
             if last_idx > *parent_idx {
@@ -36,19 +34,12 @@ impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
                 return false;
             }
             last_idx = *parent_idx;
-            if *parent_idx >= n0 {
+            if *parent_idx >= self.layer_0.len() {
                 // node on layer 1 has invalid parent index !
                 return false;
             }
-            is_parent[*parent_idx] = true;
-        }
-        if !is_parent.iter().all(|x| *x) {
-            return false;
         }
 
-        // all nodes of layer 1 need to be parent of at least one node in layer 2
-        let n1 = self.layer_1.len();
-        let mut is_parent = vec![false; n1];
         let mut last_idx = 0;
         for (_, parent_idx) in &self.layer_2 {
             if last_idx > *parent_idx {
@@ -56,17 +47,38 @@ impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
                 return false;
             }
             last_idx = *parent_idx;
-            if *parent_idx >= n1 {
+            if *parent_idx >= self.layer_1.len() {
                 // node on layer 2 has invalid parent index !
                 return false;
             }
+        }
+
+        true
+    }
+
+    /// Tests if all leaf nodes of the tree are depth 3, in other words, is the tree "uniform"
+    pub fn are_leaves_depth_3(&self) -> bool {
+        // all nodes of layer 0 need to be parent of at least one node in layer 1
+        let n0 = self.layer_0.len();
+        let mut is_parent = vec![false; n0];
+        for (_, parent_idx) in &self.layer_1 {
             is_parent[*parent_idx] = true;
         }
         if !is_parent.iter().all(|x| *x) {
+            // a node on layer 0 is a leaf !
             return false;
         }
 
-        // TODO parent indices of layers 0 and 1 should never be descending
+        // all nodes of layer 1 need to be parent of at least one node in layer 2
+        let n1 = self.layer_1.len();
+        let mut is_parent = vec![false; n1];
+        for (_, parent_idx) in &self.layer_2 {
+            is_parent[*parent_idx] = true;
+        }
+        if !is_parent.iter().all(|x| *x) {
+            // a node on layer 1 is a leaf !
+            return false;
+        }
 
         true
     }
@@ -79,7 +91,7 @@ impl<T0, T1, T2> UniformDepth3Tree<T0, T1, T2> {
     pub fn replace_range(
         mut self,
         leaf_range: Range<usize>,
-        mut replace_with: UniformDepth3Tree<T0, T1, T2>,
+        mut replace_with: Depth3Tree<T0, T1, T2>,
     ) -> Result<Self, String> {
         if leaf_range.start >= self.layer_2.len() {
             return Err("Invalid range".to_string());

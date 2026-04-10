@@ -1,22 +1,23 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
+    d3tree,
     phonology::{
+        rule::{PatternMatch, PhonoStringPattern},
         segment::SegmentFeatures,
         string::PhonoString,
         syllable::SyllableFeatures,
-        tree::UniformDepth3Tree,
+        tree::Depth3Tree,
     },
-    ud3tree,
 };
 
-pub type RuleTree = UniformDepth3Tree<(), SyllableInfo, SegmentInfo>;
+pub type RuleTree = Depth3Tree<(), SyllableInfo, SegmentInfo>;
 
 /// A pattern to match in phonological strings
 pub struct PhonoRule {
     // use a tree to represent the string, like phonological strings
     pub pattern: PhonoStringPattern,
-    pub replace_tree: UniformDepth3Tree<(), SyllableInfo, SegmentInfo>,
+    pub replace_tree: Depth3Tree<(), SyllableInfo, SegmentInfo>,
 }
 
 #[derive(Debug)]
@@ -54,48 +55,32 @@ impl PhonoRule {
     pub fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
         let mut matches_vec = vec![];
 
-        let hay_l0 = hay.tree.layer_0;
-        let hay_l1 = hay.tree.layer_1;
-        let hay_l2 = hay.tree.layer_2;
-        let pattern_l0 = self.pattern.tree.layer_0;
-        let pattern_l1 = self.pattern.tree.layer_1;
-        let pattern_l2 = self.pattern.tree.layer_2;
+        let hay_syllables = hay.tree.layer_1;
+        let hay_segments = hay.tree.layer_2;
+        let pattern_words = &self.pattern.tree.layer_0;
+        let pattern_syllables = &self.pattern.tree.layer_1;
+        let pattern_segments = &self.pattern.tree.layer_2;
 
-        let hay_seg_n = hay_l2.len();
-        let match_seg_n = pattern_l2
-            .iter()
-            .filter(|(node, _)| matches!(node, SegmentPatternNode::Segment(_)))
-            .count();
-        let match_syl_n = pattern_l1
-            .iter()
-            .filter(|(node, _)| matches!(node, SyllablePatternNode::Syllable(_)))
-            .count();
-        let match_word_n = pattern_l0.len();
+        let hay_seg_n = hay_segments.len();
+        let hay_syl_n = hay_syllables.len();
+        let match_seg_n = pattern_segments.len();
+        let match_syl_n = pattern_syllables.len();
+        let match_word_n = pattern_words.len();
         for seg_offset in 0..(hay_seg_n - match_seg_n + 1) {
             // iterate on segments
             let mut segments_match = true;
-            let syl_offset = hay.tree.layer_2[seg_offset].1;
-            let mut seg_idx = 0;
-            for (pattern_node, syl_idx) in pattern_l2 {
-                match pattern_node {
-                    SegmentPatternNode::Segment(pattern_seg) => {
-                        let (hay_seg, hay_syl_idx) = &hay_l2[seg_offset + seg_idx];
+            let syl_offset = hay_segments[seg_offset].1;
+            for (seg_idx, (pattern_seg, syl_idx)) in pattern_segments.iter().enumerate() {
+                let (hay_seg, hay_syl_idx) = &hay_segments[seg_offset + seg_idx];
 
-                        if syl_idx != hay_syl_idx - syl_offset {
-                            segments_match = false; // segment's parent isn't the same
-                            break;
-                        }
+                if *syl_idx != hay_syl_idx - syl_offset {
+                    segments_match = false; // segment's parent isn't the same
+                    break;
+                }
 
-                        if !hay_seg.matches(&pattern_seg.features) {
-                            segments_match = false;
-                            break;
-                        }
-                        seg_idx += 1;
-                    },
-                    SegmentPatternNode::Unknown => {
-                        // assume right boundary
-
-                    },
+                if !hay_seg.matches(&pattern_seg.features) {
+                    segments_match = false;
+                    break;
                 }
             }
             if !segments_match {
@@ -104,10 +89,10 @@ impl PhonoRule {
 
             // iterate on syllables
             let mut syllables_match = true;
-            let word_offset = hay.tree.layer_1[syl_offset].1;
+            let word_offset = hay_syllables[syl_offset].1;
             for syl_idx in 0..match_syl_n {
-                let (match_syl, word_idx) = &self.match_tree.layer_1[syl_idx];
-                let (hay_syl, hay_word_idx) = &hay.tree.layer_1[syl_offset + syl_idx];
+                let (match_syl, word_idx) = &pattern_syllables[syl_idx];
+                let (hay_syl, hay_word_idx) = &hay_syllables[syl_offset + syl_idx];
 
                 if *word_idx != hay_word_idx - word_offset {
                     syllables_match = false; // segment's parent isn't the same
@@ -125,8 +110,8 @@ impl PhonoRule {
             // iterate on words
             let words_match = true;
             for word_idx in 0..match_word_n {
-                let _match_word = &self.match_tree.layer_1[word_idx];
-                let _hay_word = &hay.tree.layer_1[word_offset + word_idx];
+                let _match_word = &pattern_syllables[word_idx];
+                let _hay_word = &hay_syllables[word_offset + word_idx];
 
                 // This will be implemented if words have features
                 // if !match_word.features.matches(hay_word) {
@@ -137,6 +122,59 @@ impl PhonoRule {
                 continue;
             }
 
+            // check borders
+            let left_segment_on_border = if seg_offset == 0 {
+                // syllable border if it's the first segment
+                true
+            } else {
+                // syllable border if segments have different parents
+                hay_segments[seg_offset - 1].1 != hay_segments[seg_offset].1
+            };
+            let left_syllable_on_border = if syl_offset == 0 {
+                // syllable border if it's the first segment
+                true
+            } else {
+                // syllable border if segments have different parents
+                hay_syllables[syl_offset - 1].1 != hay_syllables[syl_offset].1
+            };
+            let right_segment_on_border = if seg_offset + match_seg_n == hay_seg_n {
+                // syllable border if it's the first segment
+                true
+            } else {
+                // syllable border if segments have different parents
+                hay_segments[seg_offset + 1].1 != hay_segments[seg_offset].1
+            };
+            let right_syllable_on_border = if syl_offset + match_syl_n == hay_syl_n {
+                // syllable border if it's the first segment
+                true
+            } else {
+                // syllable border if segments have different parents
+                hay_syllables[syl_offset + 1].1 != hay_syllables[syl_offset].1
+            };
+
+            let left_bound_respected = self
+                .pattern
+                .left_bound
+                .respects(left_segment_on_border, left_syllable_on_border);
+            if !left_bound_respected {
+                println!(
+                    "left bound not respected: {seg_offset}, {syl_offset}, {right_segment_on_border}{right_syllable_on_border}"
+                );
+                continue;
+            }
+
+            let right_bound_respected = self
+                .pattern
+                .right_bound
+                .respects(right_segment_on_border, right_syllable_on_border);
+
+            if !right_bound_respected {
+                println!(
+                    "right bound not respected: {seg_offset}, {syl_offset}, {right_segment_on_border}{right_syllable_on_border}"
+                );
+                continue;
+            }
+
             // Pattern matches from here !
 
             // Record captured features in hash maps :
@@ -144,21 +182,21 @@ impl PhonoRule {
             let mut syl_captures = HashMap::<u32, SyllableFeatures>::new();
             let mut seg_captures = HashMap::<u32, SegmentFeatures>::new();
             // for x in self.match_tree.layer_0 {}
-            for (idx, (syl_info, _)) in self.match_tree.layer_1.iter().enumerate() {
+            for (idx, (syl_info, _)) in pattern_syllables.iter().enumerate() {
                 if let Some(id) = syl_info.id {
-                    let (syl, _) = &hay.tree.layer_1[syl_offset + idx];
+                    let (syl, _) = &hay_syllables[syl_offset + idx];
                     syl_captures.insert(id, syl.clone());
                 }
             }
-            for (idx, (seg_info, _)) in self.match_tree.layer_2.iter().enumerate() {
+            for (idx, (seg_info, _)) in pattern_segments.iter().enumerate() {
                 if let Some(id) = seg_info.id {
-                    let (seg, _) = &hay.tree.layer_2[seg_offset + idx];
+                    let (seg, _) = &hay_segments[seg_offset + idx];
                     seg_captures.insert(id, seg.clone());
                 }
             }
 
             // build replacement
-            let mut replace_with = PhonoString { tree: ud3tree![] };
+            let mut replace_with = PhonoString { tree: d3tree![] };
             for _word in &self.replace_tree.layer_0 {
                 replace_with.tree.layer_0.push(());
             }
@@ -186,7 +224,7 @@ impl PhonoRule {
                 replace_with.tree.layer_2.push((new_segment, *parent_idx));
             }
 
-            matches_vec.push(RuleMatch {
+            matches_vec.push(PatternMatch {
                 range: seg_offset..(seg_offset + match_seg_n),
                 replace_with,
             });
@@ -202,13 +240,13 @@ impl PhonoRule {
         let mut syl_captures = HashSet::new();
         let mut seg_captures = HashSet::new();
         // verify match tree
-        for (info, _) in &self.match_tree.layer_1 {
+        for (info, _) in &self.pattern.tree.layer_1 {
             if !syl_captures.insert(info.id) {
                 // syllable capture id already exists !
                 return false;
             }
         }
-        for (info, _) in &self.match_tree.layer_2 {
+        for (info, _) in &self.pattern.tree.layer_2 {
             if !seg_captures.insert(info.id) {
                 // segment capture id already exists !
                 return false;
