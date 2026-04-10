@@ -3,7 +3,7 @@ use indextree::{Arena, NodeId};
 
 /// Phonological Rule Parse Node
 /// Nodes that make the rule parse tree
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ParsedRuleNode {
     Sequence,
     Leaf(ParsedRuleElem),
@@ -11,7 +11,7 @@ pub enum ParsedRuleNode {
 }
 
 /// a boundary or a feature set for a segment
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ParsedRuleElem {
     Features(SyllableInfo, SegmentInfo),
     WordBoundary,

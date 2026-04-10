@@ -13,8 +13,8 @@
 /// would be :
 ///
 /// ```
-/// use getheode::ud3tree;
-/// let x = ud3tree![
+/// use getheode::d3tree;
+/// let x = d3tree![
 ///     'a' => [
 ///         'c' => ['f'],
 ///         'd' => ['g'],

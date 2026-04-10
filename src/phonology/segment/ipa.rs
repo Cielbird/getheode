@@ -292,6 +292,10 @@ pub const IPA_BASES: &[(&str, SegmentFeatures)] = &[
 	("t̠͡ɬ̠", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,NEG,POS,NEG,POS,NEG,NA,NA,NA,NA,NA])
 	),
+	// IDENTICAL TO t͡s ! most people drop the link
+	("ts", SegmentFeatures::from_features(
+		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
+	),
 	("t͡s", SegmentFeatures::from_features(
 		[NEG,NEG,POS,NEG,NEG,POS,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,NEG,POS,POS,NEG,POS,NEG,NEG,NA,NA,NA,NA,NA])
 	),

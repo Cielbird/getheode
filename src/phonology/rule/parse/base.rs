@@ -11,7 +11,7 @@ use nom::IResult;
 use nom::Parser;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{digit1, one_of, space0};
+use nom::character::complete::{digit1, one_of, space0, space1};
 use nom::combinator::{map, map_res, opt, verify};
 use nom::multi::{many1, separated_list1};
 use nom::sequence::{delimited, preceded, separated_pair};
@@ -63,17 +63,17 @@ fn parse_null_elem(input: &str) -> IResult<&str, ParsedRuleElem> {
 }
 
 /// Parse a elem which may be tagged segment, or boundary.
-fn parse_rule_elem(input: &str) -> IResult<&str, ParsedRuleElem> {
+pub fn parse_rule_elem(input: &str) -> IResult<&str, ParsedRuleElem> {
     println!("elem: {input}");
     let mut parser = alt((parse_segment_elem, parse_bound_elem, parse_null_elem));
 
     parser.parse(input)
 }
 
-fn parse_rule_elem_branch(input: &str) -> IResult<&str, ParsedRulePattern> {
+pub fn parse_rule_elem_branch(input: &str) -> IResult<&str, ParsedRulePattern> {
     let parser = delimited(
         tag("{"),
-        separated_list1(tag(","), parse_rule_tree),
+        separated_list1(tag(","), delimited(space0, parse_rule_tree, space0)),
         tag("}"),
     );
     let mut parser = map(parser, |trees| ParsedRulePattern::branch(trees));
@@ -99,16 +99,22 @@ fn parse_rule_tree(input: &str) -> IResult<&str, ParsedRulePattern> {
             parse_rule_elem_branch,
             parse_rule_elem_opt,
         ))),
-        |x| ParsedRulePattern::sequence(x),
+        |mut x| {
+            if x.len() == 1 {
+                x.remove(0)
+            } else {
+                ParsedRulePattern::sequence(x)
+            }
+        },
     );
 
     parser.parse(input)
 }
 
 pub fn parse_rule(rule: &str, opts: PhonoRuleParseOpts) -> IResult<&str, ParsedRule> {
-    let input = separated_list1(tag(" "), parse_rule_tree);
+    let input = separated_list1(space1, parse_rule_tree);
     // output has no branching
-    let output = separated_list1(tag(" "), many1(parse_rule_elem));
+    let output = separated_list1(space1, many1(parse_rule_elem));
     let inner_rule = separated_pair(input, delimited(space0, tag("->"), space0), output);
     let context = preceded(
         tag("/"),

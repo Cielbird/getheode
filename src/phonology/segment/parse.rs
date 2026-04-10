@@ -1,9 +1,9 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::multispace0;
-use nom::combinator::{map_res, opt};
+use nom::character::complete::{multispace0, space0};
+use nom::combinator::{map, map_res, opt};
 use nom::error::{Error, ErrorKind};
-use nom::multi::{many0, many1};
+use nom::multi::{many0, many1, separated_list1};
 use nom::sequence::{delimited, preceded};
 use nom::{Err, IResult, Parser as _};
 use unicode_normalization::UnicodeNormalization;
@@ -15,23 +15,19 @@ use crate::phonology::segment::{
 
 /// return a segment from either an ipa character, or a phonological class. this may be
 /// followed by a feature set within brackets.
-/// input string is trimmed of whitespace
+/// no whitespace allowed
 pub fn parse_segment(input: &str) -> IResult<&str, SegmentFeatures> {
-    let mut parser = map_res(
-        preceded(
-            multispace0,
-            (
-                alt((parse_segment_ipa, parse_natural_class)),
-                multispace0,
-                opt(delimited(tag("["), parse_segment_feature_set, tag("]"))),
-            ),
+    let mut parser = map(
+        (
+            alt((parse_segment_ipa, parse_natural_class)),
+            opt(delimited(tag("["), parse_segment_feature_set, tag("]"))),
         ),
         // apply feature set in brackets to the ipa symbol or class symbol
-        |(mut base, _, features)| {
+        |(mut base, features)| {
             if let Some(features) = features {
                 base = base + features;
             }
-            Ok::<_, ()>(base)
+            base
         },
     );
 
@@ -87,13 +83,13 @@ fn parse_ipa_diacritic(input: &str) -> IResult<&str, SegmentFeatures> {
 /// ex : "t̪"
 /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
 pub(crate) fn parse_segment_ipa(input: &str) -> IResult<&str, SegmentFeatures> {
-    let mut parser = map_res(
+    let mut parser = map(
         (parse_ipa_base, many0(parse_ipa_diacritic)),
         |(mut base, diacritics)| {
             for d in diacritics {
                 base = base + d;
             }
-            Ok::<_, ()>(base)
+            base
         },
     );
 
@@ -123,7 +119,7 @@ pub fn parse_natural_class(class_symbol: &str) -> IResult<&str, SegmentFeatures>
 /// ex. "+voi-delrel"
 /// may be preceded by whitespace
 pub fn parse_segment_feature_set(s: &str) -> IResult<&str, SegmentFeatures> {
-    let mut parser = preceded(multispace0, many1(parse_segment_feature));
+    let mut parser = separated_list1(space0, parse_segment_feature);
 
     let features = parser.parse(s);
 
@@ -139,9 +135,8 @@ pub fn parse_segment_feature_set(s: &str) -> IResult<&str, SegmentFeatures> {
 
 /// parse a feature name with plus or minus sign before
 /// ex: "+delrel"
-/// may be preceded by whitespace
 fn parse_segment_feature(s: &str) -> IResult<&str, SegmentFeatures> {
-    let mut parser = preceded(multispace0, (alt((tag("+"), tag("-"))), parse_feature_tag));
+    let mut parser = (alt((tag("+"), tag("-"))), parse_feature_tag);
 
     let (remainder, (sign, feature)) = parser.parse(s)?;
 
