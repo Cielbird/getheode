@@ -53,4 +53,12 @@ pub const DIACRITICS: &[(char, SegmentFeatures)] = &[
 		 UNDEF,UNDEF,UNDEF,POS  ,POS  ,POS  ,UNDEF,
 		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF])
 	),
+	// ejective: ʼ
+	// features: -spgl, -son, -voi, +cons
+	('\u{02BC}', SegmentFeatures::from_features(
+		[UNDEF,UNDEF,POS  ,NEG  ,UNDEF,UNDEF,
+		 UNDEF,UNDEF,UNDEF,UNDEF,NEG  ,NEG  ,UNDEF,
+		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,
+		 UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF,UNDEF]
+	))
 ];

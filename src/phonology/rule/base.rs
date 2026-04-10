@@ -20,7 +20,7 @@ pub struct PhonoRule {
     pub replace_tree: Depth3Tree<(), SyllableInfo, SegmentInfo>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SyllableInfo {
     pub id: Option<u32>,
     pub features: SyllableFeatures,
@@ -32,7 +32,7 @@ impl SyllableInfo {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SegmentInfo {
     pub id: Option<u32>,
     pub features: SegmentFeatures,

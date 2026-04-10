@@ -25,14 +25,18 @@ Elements can be either:
 Context is tagged at this point. Each non-defined segment is tagged in order.
 Tags written in text are parsed too.
 
-1) Branch enumeration
+At this point, we have a [ParsedRule].
+
+2) Branch enumeration
 
 Each leaf of each tree (input, output, prectx, postctx) is enumerated, and all combinations are 
 listed. 
 
 > Should context be appended to input and output here ? result would be only input->output ?
 
-2) Input/Output Tagging
+At this point, we have a list of [ParsedRule]s.
+
+3) Input/Output Tagging
 
 The non-defined and still untagged segments are tagged.
 
@@ -40,7 +44,9 @@ The following simple algo is used:
 
 The number of segments to tag should be the same on left and right. They are tagged in order.
 
-3) Rule tree synthesis
+At this point, we have a list of [ParsedRule]s.
+
+4) Rule tree synthesis
 
 A tree can now be built. Using the boundary and segment elements.
 
@@ -58,6 +64,8 @@ o  o   o   <-- syllable level
 |  |   | \
 a  b   c  d
 ```
+
+At this point, we have a list of [PhonoRule]s.
 
 ## Improvements
 
