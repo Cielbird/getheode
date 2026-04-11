@@ -6,16 +6,15 @@ use crate::phonology::rule::parse::pattern::Pattern;
 use crate::phonology::rule::{PhonoRuleParseOpts, SegmentInfo, SyllableInfo};
 use crate::phonology::segment::{
     parse_ipa_base, parse_ipa_diacritic, parse_natural_class, parse_segment,
-    parse_segment_feature_set, parse_segment_ipa,
+    parse_segment_feature_set,
 };
 use crate::phonology::syllable::SyllableFeatures;
 use nom::IResult;
 use nom::Parser;
 use nom::branch::alt;
-use nom::bytes::complete::{is_not, tag};
+use nom::bytes::complete::tag;
 use nom::character::complete::{digit1, one_of, space0, space1};
 use nom::combinator::{map, map_res, opt, recognize, verify};
-use nom::error::dbg_dmp;
 use nom::multi::{many1, separated_list1};
 use nom::sequence::{delimited, preceded, separated_pair};
 
@@ -46,14 +45,14 @@ fn parse_segment_elem(input: &str) -> IResult<&str, Element> {
 
 fn parse_bound_elem(input: &str) -> IResult<&str, Element> {
     const SYL_BOUNDARIES: &[char] = &['$', '.'];
-    const WORD_BOUNDARIES: &[char] = &['#'];
+    const _WORD_BOUNDARIES: &[char] = &['#'];
     let parser = one_of("#$.");
 
     let mut parser = map(parser, |x| {
         if SYL_BOUNDARIES.contains(&x) {
-            return Element::SyllableBoundary;
+            Element::SyllableBoundary
         } else {
-            return Element::WordBoundary;
+            Element::WordBoundary
         }
     });
 
@@ -72,18 +71,18 @@ pub fn parse_rule_elem(input: &str) -> IResult<&str, Element> {
     parser.parse(input)
 }
 
-pub fn parse_rule_elem_branch(input: &str) -> IResult<&str, Pattern> {
+pub fn parse_rule_elem_branch(input: &str) -> IResult<&str, Pattern<'_>> {
     let parser = delimited(
         tag("{"),
         separated_list1(tag(","), delimited(space0, parse_rule_pattern, space0)),
         tag("}"),
     );
-    let mut parser = map(parser, |trees| Pattern::branch(trees));
+    let mut parser = map(parser, Pattern::branch);
 
     parser.parse(input)
 }
 
-fn parse_rule_elem_opt(input: &str) -> IResult<&str, Pattern> {
+fn parse_rule_elem_opt(input: &str) -> IResult<&str, Pattern<'_>> {
     let parser = delimited(tag("("), parse_rule_pattern, tag(")"));
     let mut parser = map(parser, |tree| {
         // optional is just a branch between `tree` and `null`
@@ -94,7 +93,7 @@ fn parse_rule_elem_opt(input: &str) -> IResult<&str, Pattern> {
 }
 
 // parse a segment, part of a segment, or boundary.
-fn parse_rule_elem_part(input: &str) -> IResult<&str, Pattern> {
+fn parse_rule_elem_part(input: &str) -> IResult<&str, Pattern<'_>> {
     let part = alt((
         recognize(parse_ipa_base),
         recognize(parse_ipa_diacritic),
@@ -103,12 +102,12 @@ fn parse_rule_elem_part(input: &str) -> IResult<&str, Pattern> {
         recognize(parse_bound_elem),
         delimited(tag("["), recognize(parse_segment_feature_set), tag("]")),
     ));
-    let mut parser = map(recognize(many1(part)), |e| Pattern::leaf(e));
+    let mut parser = map(recognize(many1(part)), Pattern::leaf);
 
     parser.parse(input)
 }
 
-pub fn parse_rule_pattern(input: &str) -> IResult<&str, Pattern> {
+pub fn parse_rule_pattern(input: &str) -> IResult<&str, Pattern<'_>> {
     let mut parser = map(
         many1(alt((
             parse_rule_elem_part,
@@ -134,8 +133,8 @@ fn parse_output(input: &str) -> IResult<&str, Vec<&str>> {
 
 pub fn parse_rule_patterns(
     rule: &str,
-    opts: PhonoRuleParseOpts,
-) -> IResult<&str, RulePatternsParsed> {
+    _opts: PhonoRuleParseOpts,
+) -> IResult<&str, RulePatternsParsed<'_>> {
     let input = separated_list1(space1, parse_rule_pattern);
     // output has no branching
     let output = separated_list1(space1, parse_output);
@@ -161,8 +160,8 @@ pub fn parse_rule_patterns(
     let mut rule = RulePatternsParsed {
         input: vec![],
         output: vec![],
-        pre_context,
-        post_context,
+        _pre_context: pre_context,
+        _post_context: post_context,
     };
     for (input, output) in zip(input, output) {
         rule.input.push(input);

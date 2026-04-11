@@ -1,10 +1,10 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{multispace0, space0};
-use nom::combinator::{map, map_res, opt};
+use nom::character::complete::space0;
+use nom::combinator::{map, opt};
 use nom::error::{Error, ErrorKind};
-use nom::multi::{many0, many1, separated_list1};
-use nom::sequence::{delimited, preceded};
+use nom::multi::{many0, separated_list1};
+use nom::sequence::delimited;
 use nom::{Err, IResult, Parser as _};
 use unicode_normalization::UnicodeNormalization;
 
@@ -159,6 +159,6 @@ pub fn parse_feature_tag(string: &str) -> IResult<&str, Feature> {
             let end = SEG_FEATURE_NAMES[i].len();
             Ok((&string[end..], i as u8))
         }
-        None => Err(Err::Error(Error::new(string, ErrorKind::Tag)))
+        None => Err(Err::Error(Error::new(string, ErrorKind::Tag))),
     }
 }

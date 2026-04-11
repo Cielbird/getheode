@@ -8,7 +8,3 @@ pub enum Element {
     SyllableBoundary,
     Null,
 }
-
-pub struct ElemSequence {
-    pub elems: Vec<Element>
-}

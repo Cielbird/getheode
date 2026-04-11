@@ -1,8 +1,8 @@
 mod base;
-mod opts;
 mod elem;
-mod pattern;
+mod opts;
 mod parsed;
+mod pattern;
 
 pub use base::*;
 pub use opts::*;

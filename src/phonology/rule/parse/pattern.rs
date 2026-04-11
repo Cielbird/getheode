@@ -16,7 +16,6 @@ pub enum Node<'a> {
     Null,
 }
 
-
 impl<'a> Pattern<'a> {
     /// Single Null node
     pub fn null() -> Self {
@@ -135,7 +134,7 @@ impl<'a> Pattern<'a> {
             }
             Node::Null => {
                 // do nothing
-            },
+            }
         }
     }
 }
