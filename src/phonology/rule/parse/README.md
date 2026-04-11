@@ -46,34 +46,18 @@ Elements can be either:
 - Boundaries (Syllable, Word, Segment...)
   (ambiguous boundaries like syllable/word are treated like a branch leading to other boundaries)
 
-4) Input/Output Tagging
+5) Tagging
 
-Context, input and output are tagged at this point. Each non-defined segment is tagged in order.
-Tags written in text are parsed too.
+Once syllables features are determined, we can fill in missing tags in the input/output as well
+as give tags to the context trees.
 
-The non-defined and still untagged segments are tagged.
+4) Tree synthesis
 
-The following simple algo is used:
+Context is merged, so we have just input and output element sequences.
 
-The number of segments to tag should be the same on left and right. They are tagged in order.
+The element sequences are synthesized as trees. Syllables infos are merge.. etc.
 
-5) Rule tree synthesis
-
-A tree can now be built. Using the boundary and segment elements.
-
-This element sequence :
-
-`a$b#cd`
-
-Becomes :
-```
-x
-| \
-o  o  <-- word level
-| \  \
-o  o   o   <-- syllable level
-|  |   | \
-a  b   c  d
-```
-
-At this point, we have a list of [PhonoRule]s.
+- Be carefull here !
+  when merging two nodes in the input for example, 
+  we need to make sure to re-tag the same nodes on the output, so a tagged output node always 
+  points to an exiting input node

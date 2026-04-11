@@ -2,9 +2,7 @@
 use paste::paste;
 
 use crate::phonology::rule::parse::{
-    node::Node,
-    parse_patterns::{parse_rule_elem_branch, parse_rule_pattern, parse_rule_patterns},
-    pattern::{Pattern, RulePatterns},
+    elem::{ElementSequence, RuleElements}, node::Node, parse_patterns::{parse_rule_elem_branch, parse_rule_pattern, parse_rule_patterns}, pattern::{Pattern, RulePatterns, RuleStrings}
 };
 
 /// Macro for generating tests for phonlogical rule syntax parsing
@@ -108,16 +106,51 @@ fn test_enumerate_branches() {
 
 #[test]
 fn test_enumerate_rule() {
-    let rule = "ʃ {θ,t} m k -> s ts tʲ bʲ / _{i(ː),j,#}";
+    let rule = "{θ,t} -> bʲ / _{i(ː),#}";
     let (remainder, rule) = parse_rule_patterns(rule, Default::default()).unwrap();
     assert_eq!(remainder, "");
+    println!("{:?}", rule.input);
 
     let rule = rule.enumerate();
     assert_eq!(
-        rule.input,
-        vec![vec!["ʃ"], vec!["θ", "t"], vec!["m"], vec!["k"]]
+        rule,
+        vec![
+            RuleStrings {
+                input: "θ".to_string(),
+                output: "bʲ".to_string(),
+                pre_context: "".to_string(),
+                post_context: "iː".to_string()
+            },
+            RuleStrings {
+                input: "θ".to_string(),
+                output: "bʲ".to_string(),
+                pre_context: "".to_string(),
+                post_context: "i".to_string()
+            },
+            RuleStrings {
+                input: "θ".to_string(),
+                output: "bʲ".to_string(),
+                pre_context: "".to_string(),
+                post_context: "#".to_string()
+            },
+            RuleStrings {
+                input: "t".to_string(),
+                output: "bʲ".to_string(),
+                pre_context: "".to_string(),
+                post_context: "iː".to_string()
+            },
+            RuleStrings {
+                input: "t".to_string(),
+                output: "bʲ".to_string(),
+                pre_context: "".to_string(),
+                post_context: "i".to_string()
+            },
+            RuleStrings {
+                input: "t".to_string(),
+                output: "bʲ".to_string(),
+                pre_context: "".to_string(),
+                post_context: "#".to_string()
+            }
+        ]
     );
-    assert_eq!(rule.output, vec!["s", "ts", "tʲ", "bʲ"]);
-    assert_eq!(rule.pre_context.len(), 0);
-    assert_eq!(rule.post_context, vec!["iː", "i", "j", "#"],);
 }

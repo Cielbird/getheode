@@ -38,6 +38,17 @@ impl SyllableFeatures {
 
         true
     }
+    
+    /// Returns true if all features are defined
+    pub(crate) fn is_complete(&self) -> bool {
+        for i in 0..(SYL_FEATURE_COUNT as usize) {
+            if self.features[i] == UNDEF {
+                return false;
+            }
+        }
+
+        true
+    }
 }
 
 impl From<[FeatureState; SYL_FEATURE_COUNT as usize]> for SyllableFeatures {

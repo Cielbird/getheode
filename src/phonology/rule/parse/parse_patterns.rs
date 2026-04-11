@@ -1,10 +1,27 @@
 use std::iter::zip;
 
 use nom::{
-    IResult, Parser as _, branch::alt, bytes::complete::tag, character::complete::{space0, space1}, combinator::{map, opt, recognize, verify}, multi::{many1, separated_list1}, sequence::{delimited, preceded, separated_pair}
+    IResult, Parser as _,
+    branch::alt,
+    bytes::complete::tag,
+    character::complete::{space0, space1},
+    combinator::{map, opt, recognize, verify},
+    multi::{many1, separated_list1},
+    sequence::{delimited, preceded, separated_pair},
 };
 
-use crate::phonology::{rule::{PhonoRuleParseOpts, parse::{elem::{parse_bound_elem, parse_rule_elem}, pattern::{Pattern, RulePatterns}}}, segment::{parse_ipa_base, parse_ipa_diacritic, parse_natural_class, parse_segment_feature_set}};
+use crate::phonology::{
+    rule::{
+        PhonoRuleParseOpts,
+        parse::{
+            parse_elem::{parse_bound_elem, parse_rule_elem},
+            pattern::{Pattern, RulePatterns},
+        },
+    },
+    segment::{
+        parse_ipa_base, parse_ipa_diacritic, parse_natural_class, parse_segment_feature_set,
+    },
+};
 
 pub fn parse_rule_patterns(
     rule: &str,
