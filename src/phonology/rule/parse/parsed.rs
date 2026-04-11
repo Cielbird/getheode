@@ -1,25 +1,28 @@
-use crate::phonology::rule::{PhonoRule, parse::tree::{ParsedRuleElem, ParsedRulePattern}};
+use std::iter::zip;
+
+use crate::phonology::rule::{PhonoRule, parse::{pattern::Pattern, elem::{Element}}};
 
 pub struct PhonoRuleSet {
     pub(crate) text: String,
     pub(crate) rules: Vec<PhonoRule>,
 }
 
-/// Represents a written rule, in element sequence form, with branching
-pub struct ParsedRule {
-    pub(crate) input: Vec<ParsedRulePattern>,
-    pub(crate) output: Vec<Vec<ParsedRuleElem>>, // no branching in the output
-    pub(crate) pre_context: Option<ParsedRulePattern>,
-    pub(crate) post_context: Option<ParsedRulePattern>,
+/// rule, with branching parsed
+pub struct RulePatternsParsed<'a> {
+    pub(crate) input: Vec<Pattern<'a>>,
+    pub(crate) output: Vec<Vec<&'a str>>, // no branching in the output : deterministic
+    pub(crate) pre_context: Option<Pattern<'a>>,
+    pub(crate) post_context: Option<Pattern<'a>>,
 }
+
 
 
 /// Represents a written rule, void of all branches
 pub struct StrictParsedRule {
-    input: Vec<ParsedRuleElem>,
-    output: Vec<ParsedRuleElem>,
-    pre_ctx: Vec<ParsedRuleElem>,
-    post_ctx: Vec<ParsedRuleElem>,
+    input: Vec<Element>,
+    output: Vec<Element>,
+    pre_ctx: Vec<Element>,
+    post_ctx: Vec<Element>,
 }
 
 

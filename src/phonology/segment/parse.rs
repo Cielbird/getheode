@@ -37,7 +37,7 @@ pub fn parse_segment(input: &str) -> IResult<&str, SegmentFeatures> {
 /// Parse an ipa symbol, no diacritics, no extra features
 /// ex: "b"
 /// should parse a bilabial voiced plosive
-fn parse_ipa_base(input: &str) -> IResult<&str, SegmentFeatures> {
+pub(crate) fn parse_ipa_base(input: &str) -> IResult<&str, SegmentFeatures> {
     let index = IPA_BASES.iter().position(|(symbol, _)| {
         // normalize unicode to NFD form !
         let input_norm = input.nfd().to_string();
@@ -59,7 +59,7 @@ fn parse_ipa_base(input: &str) -> IResult<&str, SegmentFeatures> {
 
 /// Parse a diacritic at the beginning of `input`,
 /// returning the diacritic's features with remaining input
-fn parse_ipa_diacritic(input: &str) -> IResult<&str, SegmentFeatures> {
+pub(crate) fn parse_ipa_diacritic(input: &str) -> IResult<&str, SegmentFeatures> {
     let index = DIACRITICS.iter().position(|(symbol, _)| {
         // normalize unicode to NFD form !
         let input_norm = input.nfd().to_string();
@@ -159,6 +159,6 @@ pub fn parse_feature_tag(string: &str) -> IResult<&str, Feature> {
             let end = SEG_FEATURE_NAMES[i].len();
             Ok((&string[end..], i as u8))
         }
-        None => todo!("Handle error better"), //Err(Error::UnknownFeatureName(string.to_string())),
+        None => Err(Err::Error(Error::new(string, ErrorKind::Tag)))
     }
 }

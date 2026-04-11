@@ -1,6 +1,7 @@
 # todo
 
 Future goals:
+- "dental" should be a valid feature
 - A CLI
 - Representation of phonotactic grammar
 - Design a "phonological optimisation". after a set of sound changes, the definitions 
@@ -9,6 +10,7 @@ Future goals:
 - Including machine learning
   - audio rendition of a language's words
   - training an LM on phonological strings
+
 
 ## eventually
 - fn to assert feature set validity (NA could be replaced by UNDEF, when a feature is no longer 
