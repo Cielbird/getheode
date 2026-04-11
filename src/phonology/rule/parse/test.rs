@@ -1,7 +1,11 @@
 // TODO make parser for these rule sets
 use paste::paste;
 
-use crate::phonology::rule::{parse::pattern::Node, parse_rule_elem_branch, parse_rule_pattern};
+use crate::phonology::rule::parse::{
+    node::Node,
+    parse_patterns::{parse_rule_elem_branch, parse_rule_pattern, parse_rule_patterns},
+    pattern::{Pattern, RulePatterns},
+};
 
 /// Macro for generating tests for phonlogical rule syntax parsing
 macro_rules! test_phono_rule_syntax {
@@ -11,7 +15,7 @@ macro_rules! test_phono_rule_syntax {
             fn [<test_rule_ $name>]() {
                 // println!("Testing phonological rule : {}", stringify!($name));
                 let opts = $crate::phonology::rule::parse::PhonoRuleParseOpts::default();
-                let (rem, _pat) = $crate::phonology::rule::parse::parse_rule_patterns($rule, opts).unwrap();
+                let (rem, _pat) = $crate::phonology::rule::parse::parse_patterns::parse_rule_patterns($rule, opts).unwrap();
                 assert_eq!("", rem);
             }
         }
@@ -21,36 +25,23 @@ macro_rules! test_phono_rule_syntax {
 #[test]
 fn test_rule_simple_multi_pattern() {
     let opts = crate::phonology::rule::parse::PhonoRuleParseOpts::default();
-    let (rem, rule) =
-        crate::phonology::rule::parse::parse_rule_patterns("z ʃ tʃ -> ʒ s s", opts).unwrap();
+    let (rem, rule) = parse_rule_patterns("z ʃ tʃ -> ʒ s s", opts).unwrap();
     assert_eq!(rem, "");
-
-    // let pat = &rule.input[0];
-    // let a = pat.tree.get(pat.root).unwrap().first_child().unwrap();
-    // let node = pat.tree.get(a).unwrap().get();
-    // if let Leaf(ParsedRuleElem::Features(_, seg)) = node {
-    //     println!("First Segment is {}", seg.features);
-    // }
-    // let b = pat.tree.get(a).unwrap().next_sibling().unwrap();
-    // let node = pat.tree.get(b).unwrap().get();
-    // if let Leaf(ParsedRuleElem::Features(_, seg)) = node {
-    //     println!("2nd Segment is {}", seg.features);
-    // }
-    // let c = pat.tree.get(b).unwrap().next_sibling().unwrap();
-    // let node = pat.tree.get(c).unwrap().get();
-    // if let Leaf(ParsedRuleElem::Features(_, seg)) = node {
-    //     println!("3rd Segment is {}", seg.features);
-    // }
-    // let d = pat.tree.get(c).unwrap().next_sibling().unwrap();
-    // let node = pat.tree.get(d).unwrap().get();
-    // if let Leaf(ParsedRuleElem::Features(_, seg)) = node {
-    //     println!("4th Segment is {}", seg.features);
-    // }
-
-    // assert_eq!(rule.input.len(), 3);
-    // assert_eq!(rule.output.len(), 3);
-
-    // TODO
+    assert_eq!(
+        rule.input,
+        vec![
+            Pattern {
+                root: Node::Leaf("z")
+            },
+            Pattern {
+                root: Node::Leaf("ʃ"),
+            },
+            Pattern {
+                root: Node::Leaf("tʃ")
+            }
+        ]
+    );
+    assert_eq!(rule.output, vec!["ʒ", "s", "s"]);
 }
 
 test_phono_rule_syntax!(simple_context_and_alt_g, "ɡ(w) -> dʒ / #_Vd");
@@ -80,52 +71,53 @@ test_phono_rule_syntax!(
 fn test_parse_branch() {
     let (remaining, pat) = parse_rule_elem_branch("{C, V,C } ").unwrap();
     assert_eq!(remaining, " ");
-
-    let branch = pat.tree.get(pat.root).unwrap().get();
-    assert_eq!(*branch, Node::Branch);
-
-    let mut children = pat.root.children(&pat.tree);
-    let a = children.next().unwrap();
-    let b = children.next().unwrap();
-    let c = children.next().unwrap();
-    assert_eq!(children.next(), None);
-
-    let a = pat.tree.get(a).unwrap().get();
-    assert!(matches!(*a, Node::Leaf(_)));
-    let b = pat.tree.get(b).unwrap().get();
-    assert!(matches!(*b, Node::Leaf(_)));
-    let c = pat.tree.get(c).unwrap().get();
-    assert!(matches!(*c, Node::Leaf(_)));
+    assert_eq!(
+        pat.root,
+        Node::Branch(vec![Node::Leaf("C"), Node::Leaf("V"), Node::Leaf("C")])
+    );
 }
 
 #[test]
 fn test_parse_pattern() {
     let (remaining, pat) = parse_rule_pattern("{V[+ant-dist+cor], a}S ").unwrap();
-    let pretty = pat.root.debug_pretty_print(&pat.tree);
-    println!("{pretty:?}");
-
+    println!("{:?}", pat);
     assert_eq!(remaining, " ");
+    assert_eq!(
+        pat.root,
+        Node::Sequence(vec![
+            Node::Branch(vec![Node::Leaf("V[+ant-dist+cor]"), Node::Leaf("a")]),
+            Node::Leaf("S")
+        ])
+    );
+}
 
-    let branch = pat.tree.get(pat.root).unwrap().get();
-    assert_eq!(*branch, Node::Sequence);
+#[test]
+fn test_enumerate_branches() {
+    let rule = "{θ,t}a{i(t),Ø}";
+    let (remainder, rule) = parse_rule_pattern(rule).unwrap();
+    assert_eq!(remainder, "");
 
-    let mut children = pat.root.children(&pat.tree);
-    let a = children.next().unwrap();
-    let b = children.next().unwrap();
-    assert_eq!(children.next(), None);
+    let possibilities = rule.enumerate_branches();
+    let mut expected = vec!["θait", "θai", "θa", "tait", "tai", "ta"];
+    // test ignoring order
+    for expected in expected.drain(..) {
+        let match_n = possibilities.iter().filter(|x| *x == expected).count();
+        assert_eq!(match_n, 1);
+    }
+}
 
-    let a_node = pat.tree.get(a).unwrap().get();
-    assert!(matches!(*a_node, Node::Branch));
-    let b_node = pat.tree.get(b).unwrap().get();
-    assert!(matches!(*b_node, Node::Leaf(_)));
+#[test]
+fn test_enumerate_rule() {
+    let rule = "ʃ {θ,t} m k -> s ts tʲ bʲ / _{i(ː),j,#}";
+    let (remainder, rule) = parse_rule_patterns(rule, Default::default()).unwrap();
+    assert_eq!(remainder, "");
 
-    let mut children = a.children(&pat.tree);
-    let a = children.next().unwrap();
-    let b = children.next().unwrap();
-    assert_eq!(children.next(), None);
-
-    let a_node = pat.tree.get(a).unwrap().get();
-    assert!(matches!(*a_node, Node::Leaf(_)));
-    let b_node = pat.tree.get(b).unwrap().get();
-    assert!(matches!(*b_node, Node::Leaf(_)));
+    let rule = rule.enumerate();
+    assert_eq!(
+        rule.input,
+        vec![vec!["ʃ"], vec!["θ", "t"], vec!["m"], vec!["k"]]
+    );
+    assert_eq!(rule.output, vec!["s", "ts", "tʲ", "bʲ"]);
+    assert_eq!(rule.pre_context.len(), 0);
+    assert_eq!(rule.post_context, vec!["iː", "i", "j", "#"],);
 }

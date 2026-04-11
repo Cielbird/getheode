@@ -16,14 +16,16 @@ Example : `a{t, b}(i)`
 The pattern tree is composed of the following nodes:
 
 - Branches (in brackets for example : {a, b, c})
-- Optionals (in parentheses for example: (a:) )
+- Leaf : containing raw string
 - Nulls (usually written with this symbol in text: Ø)
 - Sequences, containing sequences of elements (example: abc)
+
+The tree still represents raw text, leaf nodes contain strings. 
 
 We should have parsed the input as a `Vec<Pattern>`, the output as a set of `Vec<String>`, 
 and the contexts as `Vec<Pattern>`.
 
-2) Enumerate patterns
+1) Enumerate patterns
 
 The possibilities of patterns need to be enumerated. This produces a list of rules. We still have 
 raw strings.

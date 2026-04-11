@@ -1,10 +1,9 @@
-mod base;
 mod elem;
 mod opts;
-mod parsed;
+mod parse_patterns;
+mod node;
 mod pattern;
 
-pub use base::*;
 pub use opts::*;
 
 #[cfg(test)]
