@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, iter::zip};
 
 use crate::phonology::rule::{
     SegmentInfo, SyllableInfo,
@@ -14,11 +14,13 @@ pub enum Element {
     Null, // TODO remove this ?
 }
 
+#[derive(Debug, Clone)]
 pub struct ElementSequence {
     pub elems: Vec<Element>,
 }
 
-/// a rule, no branching: input, output and context. unparsed elements.
+/// Represents a rule with a sequence of elements : either segments or boundaries
+/// no branching: input, output and context.
 pub struct RuleElements {
     pub(crate) input: ElementSequence,
     pub(crate) output: ElementSequence,
@@ -27,8 +29,103 @@ pub struct RuleElements {
 }
 
 impl RuleElements {
+    fn new(input: ElementSequence, output: ElementSequence, pre_context: ElementSequence, post_context: ElementSequence) -> Result<Self, ()> {
+        let mut rule = Self { input, output, pre_context, post_context };
+
+        if !rule.check_invariants() {
+            return Err(());
+        }
+
+        // Tag inputs and outputs
+        if !rule.tag_all() {
+            // tagging failed
+            return Err(());
+        }
+
+        Ok(rule)
+    }
+    
+    fn check_invariants(&self) -> bool {
+        let input_and_ctx_syl_tags: Vec<u32> = self
+            .input
+            .elems
+            .iter()
+            .chain(self.pre_context.elems.iter())
+            .chain(self.post_context.elems.iter())
+            .filter_map(|e| {
+                if let Element::Features(syl, _) = e {
+                    syl.tag
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        let input_and_ctx_seg_tags: Vec<u32> = self
+            .input
+            .elems
+            .iter()
+            .chain(self.pre_context.elems.iter())
+            .chain(self.post_context.elems.iter())
+            .filter_map(|e| {
+                if let Element::Features(_, seg) = e {
+                    seg.tag
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        for elem in &self.output.elems {
+            if let Element::Features(syl, seg) = elem {
+                if let Some(id) = syl.tag {
+                    if !input_and_ctx_syl_tags.contains(&id) {
+                        return false;
+                    }
+                }
+                if let Some(id) = seg.tag {
+                    if !input_and_ctx_seg_tags.contains(&id) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        let input_syl_tags: Vec<u32> = self
+            .input
+            .elems
+            .iter()
+            .filter_map(|e| {
+                if let Element::Features(syl, _) = e {
+                    syl.tag
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let input_seg_tags: Vec<u32> = self
+            .input
+            .elems
+            .iter()
+            .filter_map(|e| {
+                if let Element::Features(_, seg) = e {
+                    seg.tag
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        let syl_unique =
+            input_syl_tags.iter().collect::<HashSet<_>>().len() == input_syl_tags.len();
+        let seg_unique =
+            input_seg_tags.iter().collect::<HashSet<_>>().len() == input_seg_tags.len();
+
+        syl_unique && seg_unique
+    }
+
     /// Apply the element parsing algo to each possible input, output and context.
-    pub fn parse_elements(strings: RuleStrings) -> Result<Self, ()> {
+    pub fn from_strings(strings: RuleStrings) -> Result<Vec<Self>, ()> {
         // manage the parsing error and remainder
         fn parse(input: String) -> Result<ElementSequence, ()> {
             let (rem, elems) = parse_rule_elems(&input).map_err(|x| ())?;
@@ -38,20 +135,44 @@ impl RuleElements {
             Ok(elems)
         }
 
-        let mut rule = Self {
-            input: parse(strings.input)?,
-            output: parse(strings.output)?,
-            pre_context: parse(strings.pre_context)?,
-            post_context: parse(strings.post_context)?,
-        };
-
-        // Tag inputs and outputs
-        if !rule.tag_all() {
-            // tagging failed
-            return Err(());
+        let mut inputs = vec![];
+        let mut outputs = vec![];
+        let mut pre_context = vec![];
+        let mut post_context = vec![];
+        for input_opts in strings.input {
+            let mut parsed_input_opts = vec![];
+            for opt in input_opts {
+                parsed_input_opts.push(parse(opt)?);
+            }
+            inputs.push(parsed_input_opts);
+        }
+        for output in strings.output {
+            outputs.push(parse(output)?);
+        }
+        for pre_context_opt in strings.pre_context {
+            pre_context.push(parse(pre_context_opt)?);
+        }
+        for post_context_opt in strings.post_context {
+            post_context.push(parse(post_context_opt)?);
         }
 
-        Ok(rule)
+        let mut rules = vec![];
+        for (input, output) in zip(inputs, outputs) {
+            for input_opt in &input {
+                for pre_context_opt in &pre_context {
+                    for post_context_opt in &post_context {
+                        rules.push(RuleElements::new(
+                            input_opt.clone(),
+                            output.clone(),
+                            pre_context_opt.clone(),
+                            post_context_opt.clone(),
+                        )?);
+                    }
+                }
+            }
+        }
+
+        Ok(rules)
     }
 
     // TODO Write tests for this
@@ -70,11 +191,7 @@ impl RuleElements {
         self.check_invariants()
     }
 
-    fn collect_existing_tags(
-        &self,
-        syl_tags: &mut Vec<u32>,
-        seg_tags: &mut Vec<u32>,
-    ) {
+    fn collect_existing_tags(&self, syl_tags: &mut Vec<u32>, seg_tags: &mut Vec<u32>) {
         for elem in self
             .input
             .elems
@@ -84,92 +201,14 @@ impl RuleElements {
             .chain(self.post_context.elems.iter())
         {
             if let Element::Features(syl, seg) = elem {
-                if let Some(id) = syl.id {
+                if let Some(id) = syl.tag {
                     syl_tags.push(id);
                 }
-                if let Some(id) = seg.id {
+                if let Some(id) = seg.tag {
                     seg_tags.push(id);
                 }
             }
         }
-    }
-    fn check_invariants(&self) -> bool {
-        let input_and_ctx_syl_tags: Vec<u32> = self
-            .input
-            .elems
-            .iter()
-            .chain(self.pre_context.elems.iter())
-            .chain(self.post_context.elems.iter())
-            .filter_map(|e| {
-                if let Element::Features(syl, _) = e {
-                    syl.id
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        let input_and_ctx_seg_tags: Vec<u32> = self
-            .input
-            .elems
-            .iter()
-            .chain(self.pre_context.elems.iter())
-            .chain(self.post_context.elems.iter())
-            .filter_map(|e| {
-                if let Element::Features(_, seg) = e {
-                    seg.id
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        for elem in &self.output.elems {
-            if let Element::Features(syl, seg) = elem {
-                if let Some(id) = syl.id {
-                    if !input_and_ctx_syl_tags.contains(&id) {
-                        return false;
-                    }
-                }
-                if let Some(id) = seg.id {
-                    if !input_and_ctx_seg_tags.contains(&id) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        let input_syl_tags: Vec<u32> = self
-            .input
-            .elems
-            .iter()
-            .filter_map(|e| {
-                if let Element::Features(syl, _) = e {
-                    syl.id
-                } else {
-                    None
-                }
-            })
-            .collect();
-        let input_seg_tags: Vec<u32> = self
-            .input
-            .elems
-            .iter()
-            .filter_map(|e| {
-                if let Element::Features(_, seg) = e {
-                    seg.id
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        let syl_unique =
-            input_syl_tags.iter().collect::<HashSet<_>>().len() == input_syl_tags.len();
-        let seg_unique =
-            input_seg_tags.iter().collect::<HashSet<_>>().len() == input_seg_tags.len();
-
-        syl_unique && seg_unique
     }
 }
 
@@ -181,7 +220,7 @@ fn next_tag(existing: &mut Vec<u32>) -> u32 {
 
 fn needs_syl_tag(elem: &Element) -> bool {
     if let Element::Features(syl, _) = elem {
-        syl.id.is_none() && !syl.features.is_complete()
+        syl.tag.is_none() && !syl.features.is_complete()
     } else {
         false
     }
@@ -189,7 +228,7 @@ fn needs_syl_tag(elem: &Element) -> bool {
 
 fn needs_seg_tag(elem: &Element) -> bool {
     if let Element::Features(_, seg) = elem {
-        seg.id.is_none() && !seg.features.is_complete()
+        seg.tag.is_none() && !seg.features.is_complete()
     } else {
         false
     }
@@ -211,10 +250,10 @@ fn tag_paired_syl(input: &mut [Element], output: &mut [Element], existing: &mut 
 
         let tag = next_tag(existing);
         if let Element::Features(syl, _) = &mut input[ii] {
-            syl.id = Some(tag);
+            syl.tag = Some(tag);
         }
         if let Element::Features(syl, _) = &mut output[oi] {
-            syl.id = Some(tag);
+            syl.tag = Some(tag);
         }
         ii += 1;
         oi += 1;
@@ -237,10 +276,10 @@ fn tag_paired_seg(input: &mut [Element], output: &mut [Element], existing: &mut 
 
         let tag = next_tag(existing);
         if let Element::Features(_, seg) = &mut input[ii] {
-            seg.id = Some(tag);
+            seg.tag = Some(tag);
         }
         if let Element::Features(_, seg) = &mut output[oi] {
-            seg.id = Some(tag);
+            seg.tag = Some(tag);
         }
         ii += 1;
         oi += 1;
@@ -250,11 +289,11 @@ fn tag_paired_seg(input: &mut [Element], output: &mut [Element], existing: &mut 
 fn tag_context(elems: &mut [Element], syl_tags: &mut Vec<u32>, seg_tags: &mut Vec<u32>) {
     for elem in elems {
         if let Element::Features(syl, seg) = elem {
-            if syl.id.is_none() {
-                syl.id = Some(next_tag(syl_tags));
+            if syl.tag.is_none() {
+                syl.tag = Some(next_tag(syl_tags));
             }
-            if seg.id.is_none() {
-                seg.id = Some(next_tag(seg_tags));
+            if seg.tag.is_none() {
+                seg.tag = Some(next_tag(seg_tags));
             }
         }
     }

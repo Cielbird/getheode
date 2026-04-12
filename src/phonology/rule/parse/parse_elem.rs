@@ -26,11 +26,11 @@ fn parse_segment_elem(input: &str) -> IResult<&str, Element> {
     let mut parser = map(parser, |(seg_features, tag)| {
         Element::Features(
             SyllableInfo {
-                id: None,
+                tag: None,
                 features: SyllableFeatures::new_undef(),
             },
             SegmentInfo {
-                id: tag,
+                tag,
                 features: seg_features,
             },
         )

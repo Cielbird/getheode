@@ -49,18 +49,18 @@ fn test_rule_simple() {
     // VtV => VV / (all in same syllable and word)
     let match_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
-                SegmentInfo {id: None, features: T_SEG},
-                SegmentInfo {id: Some(2), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
+                SegmentInfo {tag: Some(2), features: VOWEL_SEG},
             ]
         ]
     ];
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: UNDEF_SEG},
-                SegmentInfo {id: Some(2), features: UNDEF_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: UNDEF_SEG},
+                SegmentInfo {tag: Some(2), features: UNDEF_SEG},
             ]
         ]
     ];
@@ -96,19 +96,19 @@ fn test_rule_modify_vowel() {
     // for example, [ati] becomes [adi]
     let match_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
-                SegmentInfo {id: Some(2), features: CONS_SEG},
-                SegmentInfo {id: Some(3), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
+                SegmentInfo {tag: Some(2), features: CONS_SEG},
+                SegmentInfo {tag: Some(3), features: VOWEL_SEG},
             ]
         ]
     ];
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
-                SegmentInfo {id: Some(2), features: VOI_SEG},
-                SegmentInfo {id: Some(3), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
+                SegmentInfo {tag: Some(2), features: VOI_SEG},
+                SegmentInfo {tag: Some(3), features: VOWEL_SEG},
             ]
         ]
     ];
@@ -143,20 +143,20 @@ fn test_rule_new_syllable() {
     // VtV => V.V / (in same syllable and word, creates new syllable boundary)
     let match_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
-                SegmentInfo {id: None, features: T_SEG},
-                SegmentInfo {id: Some(2), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
+                SegmentInfo {tag: Some(2), features: VOWEL_SEG},
             ]
         ]
     ];
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: UNDEF_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: UNDEF_SEG},
             ],
-            SyllableInfo {id: None, features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(2), features: UNDEF_SEG},
+            SyllableInfo {tag: None, features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(2), features: UNDEF_SEG},
             ]
         ]
     ];
@@ -192,20 +192,20 @@ fn test_rule_across_syllable() {
     // V.V => VtV / (across syllable bound, removes it)
     let match_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: VOWEL_SEG},
             ],
-            SyllableInfo {id: Some(1), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(1), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
             ]
         ]
     ];
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: UNDEF_SEG},
-                SegmentInfo {id: None, features: T_SEG},
-                SegmentInfo {id: Some(1), features: UNDEF_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: UNDEF_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
+                SegmentInfo {tag: Some(1), features: UNDEF_SEG},
             ]
         ]
     ];
@@ -240,22 +240,22 @@ fn test_rule_new_word() {
     // VtV => V.V / (in same syllable and word, creates new syllable boundary)
     let match_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
-                SegmentInfo {id: None, features: T_SEG},
-                SegmentInfo {id: Some(2), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
+                SegmentInfo {tag: Some(2), features: VOWEL_SEG},
             ]
         ]
     ];
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: UNDEF_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: UNDEF_SEG},
             ]
         ],
         () => [
-            SyllableInfo {id: None, features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(2), features: UNDEF_SEG},
+            SyllableInfo {tag: None, features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(2), features: UNDEF_SEG},
             ]
         ]
     ];
@@ -293,22 +293,22 @@ fn test_rule_across_word() {
     // V.V => VtV / (across syllable bound, removes it)
     let match_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: VOWEL_SEG},
             ],
         ],
         () => [
-            SyllableInfo {id: Some(1), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(1), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
             ]
         ]
     ];
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: UNDEF_SEG},
-                SegmentInfo {id: None, features: T_SEG},
-                SegmentInfo {id: Some(1), features: UNDEF_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: UNDEF_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
+                SegmentInfo {tag: Some(1), features: UNDEF_SEG},
             ]
         ]
     ];
@@ -346,8 +346,8 @@ fn test_rule_syllable_border_1() {
     let pattern = PhonoStringPattern {
         tree: d3tree![
             () => [
-                SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                    SegmentInfo {id: Some(0), features: VOWEL_SEG},
+                SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                    SegmentInfo {tag: Some(0), features: VOWEL_SEG},
                 ],
             ],
         ],
@@ -356,9 +356,9 @@ fn test_rule_syllable_border_1() {
     };
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: UNDEF_SEG},
-                SegmentInfo {id: None, features: T_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: UNDEF_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
             ]
         ]
     ];
@@ -401,8 +401,8 @@ fn test_rule_syllable_border_2() {
     let pattern = PhonoStringPattern {
         tree: d3tree![
             () => [
-                SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                    SegmentInfo {id: Some(0), features: VOWEL_SEG},
+                SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                    SegmentInfo {tag: Some(0), features: VOWEL_SEG},
                 ],
             ],
         ],
@@ -411,9 +411,9 @@ fn test_rule_syllable_border_2() {
     };
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: UNDEF_SEG},
-                SegmentInfo {id: None, features: T_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: UNDEF_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
             ]
         ]
     ];
@@ -451,22 +451,22 @@ fn test_invalid_rule_double_id() {
     // V.V => VtV
     let match_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: VOWEL_SEG},
             ],
         ],
         () => [
-            SyllableInfo {id: Some(1), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(1), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
             ]
         ]
     ];
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: UNDEF_SEG},
-                SegmentInfo {id: None, features: T_SEG},
-                SegmentInfo {id: Some(0), features: UNDEF_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: UNDEF_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
+                SegmentInfo {tag: Some(0), features: UNDEF_SEG},
             ]
         ]
     ];
@@ -481,22 +481,22 @@ fn test_invalid_rule_undef_id() {
     // V.V => VtV
     let match_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(0), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(0), features: VOWEL_SEG},
             ],
         ],
         () => [
-            SyllableInfo {id: Some(1), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: VOWEL_SEG},
+            SyllableInfo {tag: Some(1), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: VOWEL_SEG},
             ]
         ]
     ];
     let replace_tree = d3tree![
         () => [
-            SyllableInfo {id: Some(0), features: UNDEF_SYL} => [
-                SegmentInfo {id: Some(1), features: UNDEF_SEG},
-                SegmentInfo {id: None, features: T_SEG},
-                SegmentInfo {id: Some(2), features: UNDEF_SEG},
+            SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
+                SegmentInfo {tag: Some(1), features: UNDEF_SEG},
+                SegmentInfo {tag: None, features: T_SEG},
+                SegmentInfo {tag: Some(2), features: UNDEF_SEG},
             ]
         ]
     ];

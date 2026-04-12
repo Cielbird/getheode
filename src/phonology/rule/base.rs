@@ -22,25 +22,25 @@ pub struct PhonoRule {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SyllableInfo {
-    pub id: Option<u32>,
+    pub tag: Option<u32>,
     pub features: SyllableFeatures,
 }
 
 impl SyllableInfo {
     pub fn new(id: Option<u32>, features: SyllableFeatures) -> Self {
-        Self { id, features }
+        Self { tag: id, features }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SegmentInfo {
-    pub id: Option<u32>,
+    pub tag: Option<u32>,
     pub features: SegmentFeatures,
 }
 
 impl SegmentInfo {
     pub fn new(id: Option<u32>, features: SegmentFeatures) -> Self {
-        Self { id, features }
+        Self { tag: id, features }
     }
 }
 
@@ -183,13 +183,13 @@ impl PhonoRule {
             let mut seg_captures = HashMap::<u32, SegmentFeatures>::new();
             // for x in self.match_tree.layer_0 {}
             for (idx, (syl_info, _)) in pattern_syllables.iter().enumerate() {
-                if let Some(id) = syl_info.id {
+                if let Some(id) = syl_info.tag {
                     let (syl, _) = &hay_syllables[syl_offset + idx];
                     syl_captures.insert(id, syl.clone());
                 }
             }
             for (idx, (seg_info, _)) in pattern_segments.iter().enumerate() {
-                if let Some(id) = seg_info.id {
+                if let Some(id) = seg_info.tag {
                     let (seg, _) = &hay_segments[seg_offset + idx];
                     seg_captures.insert(id, seg.clone());
                 }
@@ -202,7 +202,7 @@ impl PhonoRule {
             }
             for (syllable_info, parent_idx) in &self.replace_tree.layer_1 {
                 let mut new_syllable = SyllableFeatures::new_undef();
-                if let Some(id) = syllable_info.id {
+                if let Some(id) = syllable_info.tag {
                     let syllable = syl_captures
                         .get(&id)
                         .expect("Invalid rule : syllable capture id not found");
@@ -214,7 +214,7 @@ impl PhonoRule {
 
             for (segment_info, parent_idx) in &self.replace_tree.layer_2 {
                 let mut new_segment = SegmentFeatures::new_undef();
-                if let Some(id) = segment_info.id {
+                if let Some(id) = segment_info.tag {
                     let segment = seg_captures
                         .get(&id)
                         .expect("Invalid rule : segment capture id not found");
@@ -241,13 +241,13 @@ impl PhonoRule {
         let mut seg_captures = HashSet::new();
         // verify match tree
         for (info, _) in &self.pattern.tree.layer_1 {
-            if !syl_captures.insert(info.id) {
+            if !syl_captures.insert(info.tag) {
                 // syllable capture id already exists !
                 return false;
             }
         }
         for (info, _) in &self.pattern.tree.layer_2 {
-            if !seg_captures.insert(info.id) {
+            if !seg_captures.insert(info.tag) {
                 // segment capture id already exists !
                 return false;
             }
@@ -255,13 +255,13 @@ impl PhonoRule {
 
         // verify replace_tree
         for (info, _) in &self.replace_tree.layer_1 {
-            if !syl_captures.remove(&info.id) {
+            if !syl_captures.remove(&info.tag) {
                 // syllable capture id not defined in match tree !
                 return false;
             }
         }
         for (info, _) in &self.replace_tree.layer_2 {
-            if !seg_captures.remove(&info.id) {
+            if !seg_captures.remove(&info.tag) {
                 // syllable capture id not defined in match tree !
                 return false;
             }

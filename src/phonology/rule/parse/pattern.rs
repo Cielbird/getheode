@@ -1,10 +1,6 @@
-use std::{iter::zip, vec};
+use std::vec;
 
-use crate::phonology::rule::parse::{
-    elem::{ElementSequence, RuleElements},
-    node::Node,
-    parse_elem::parse_rule_elems,
-};
+use crate::phonology::rule::parse::node::Node;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Pattern<'a> {
@@ -68,14 +64,14 @@ pub struct RulePatterns<'a> {
 /// a rule, no branching: input, output and context. unparsed elements.
 #[derive(Debug, PartialEq)]
 pub struct RuleStrings {
-    pub(crate) input: String,
-    pub(crate) output: String,
-    pub(crate) pre_context: String,
-    pub(crate) post_context: String,
+    pub(crate) input: Vec<Vec<String>>,
+    pub(crate) output: Vec<String>,
+    pub(crate) pre_context: Vec<String>,
+    pub(crate) post_context: Vec<String>,
 }
 
 impl RulePatterns<'_> {
-    pub fn enumerate(self) -> Vec<RuleStrings> {
+    pub fn enumerate(self) -> RuleStrings {
         let mut input_vec = vec![];
         let mut output_vec = vec![];
         let mut pre_context_opts = vec!["".to_string()];
@@ -94,22 +90,11 @@ impl RulePatterns<'_> {
             post_context_opts = post.enumerate_branches();
         }
 
-        let mut strings = vec![];
-        for (input_ops, output) in zip(input_vec, output_vec) {
-            for input in input_ops {
-                for pre_context in &pre_context_opts {
-                    for post_context in &post_context_opts {
-                        strings.push(RuleStrings {
-                            input: input.clone(),
-                            output: output.clone(),
-                            pre_context: pre_context.clone(),
-                            post_context: post_context.clone(),
-                        });
-                    }
-                }
-            }
+        RuleStrings {
+            input: input_vec,
+            output: output_vec,
+            pre_context: pre_context_opts,
+            post_context: post_context_opts,
         }
-
-        strings
     }
 }
