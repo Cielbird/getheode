@@ -128,6 +128,7 @@ fn test_enumerate_rule() {
 }
 
 // test conversion from RuleStrings to RuleElements
+#[test]
 fn test_parse_rule_strings() {
     let rule = RuleStrings {
         input: vec![vec!["Vʃ".to_string()]],
@@ -161,7 +162,7 @@ fn test_parse_rule_strings() {
     if let (
         Element::Features(
             SyllableInfo {
-                tag: Some(tag_syl_in),
+                tag: Some(tag_syl0_in),
                 features: _,
             },
             SegmentInfo {
@@ -171,7 +172,17 @@ fn test_parse_rule_strings() {
         ),
         Element::Features(
             SyllableInfo {
-                tag: Some(tag_syl_out),
+                tag: Some(tag_syl1_in),
+                features: _,
+            },
+            SegmentInfo {
+                tag: None,
+                features: _,
+            },
+        ),
+        Element::Features(
+            SyllableInfo {
+                tag: Some(tag_syl0_out),
                 features: _,
             },
             SegmentInfo {
@@ -181,32 +192,61 @@ fn test_parse_rule_strings() {
         ),
         Element::Features(
             SyllableInfo {
-                tag: Some(tag_syl_ctx),
+                tag: Some(tag_syl1_out),
                 features: _,
             },
             SegmentInfo {
-                tag: Some(tag_seg_ctx),
+                tag: None,
                 features: _,
             },
         ),
-    ) = (input_0, output_0, pre_0)
+        Element::Features(
+            SyllableInfo {
+                tag: Some(tag_syl_prectx),
+                features: _,
+            },
+            SegmentInfo {
+                tag: Some(tag_seg_prectx),
+                features: _,
+            },
+        ),
+        Element::Features(
+            SyllableInfo {
+                tag: Some(tag_syl_postctx),
+                features: _,
+            },
+            SegmentInfo {
+                tag: None,
+                features: _,
+            },
+        ),
+    ) = (input_0, input_1, output_0, output_1, pre_0, post_0)
     {
-        assert_eq!(tag_syl_in, tag_syl_out);
+        // in/out tags should match
+        assert_eq!(tag_syl0_in, tag_syl0_out);
+        assert_eq!(tag_syl1_in, tag_syl1_out);
         assert_eq!(tag_seg_in, tag_seg_out);
 
-        assert_ne!(tag_syl_ctx, tag_syl_in);
-        assert_ne!(tag_seg_ctx, tag_seg_in);
+        // tags for pre-context should be different from in/out tags
+        assert_ne!(tag_syl_prectx, tag_syl0_in);
+        assert_ne!(tag_syl_prectx, tag_syl1_in);
+        assert_ne!(tag_seg_prectx, tag_seg_in);
+
+        // tags for post-context should be different from in/out tags
+        assert_ne!(tag_syl_postctx, tag_syl0_in);
+        assert_ne!(tag_syl_postctx, tag_syl1_in);
     } else {
         panic!("rule doesn't have the right input !");
     }
 
     // assert no tags
     // ʃ
-    assert!(matches!(input_1, Element::Features(SyllableInfo { tag: None, features: _ }, _)));
+    println!("{:?}", input_1);
+    assert!(matches!(input_1, Element::Features(SyllableInfo { tag: Some(_), features: _ }, SegmentInfo { tag: None, features: _ })));
     // bʲ
-    assert!(matches!(output_1, Element::Features(SyllableInfo { tag: None, features: _ }, _)));
+    assert!(matches!(output_1, Element::Features(SyllableInfo { tag: Some(_), features: _ }, SegmentInfo { tag: None, features: _ })));
     // iː
-    assert!(matches!(post_0, Element::Features(SyllableInfo { tag: None, features: _ }, _)));
+    assert!(matches!(post_0, Element::Features(SyllableInfo { tag: Some(_), features: _ }, SegmentInfo { tag: None, features: _ })));
 
     // assert boundary
     // $

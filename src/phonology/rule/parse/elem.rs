@@ -289,10 +289,10 @@ fn tag_paired_seg(input: &mut [Element], output: &mut [Element], existing: &mut 
 fn tag_context(elems: &mut [Element], syl_tags: &mut Vec<u32>, seg_tags: &mut Vec<u32>) {
     for elem in elems {
         if let Element::Features(syl, seg) = elem {
-            if syl.tag.is_none() {
+            if syl.tag.is_none() && !syl.features.is_complete() {
                 syl.tag = Some(next_tag(syl_tags));
             }
-            if seg.tag.is_none() {
+            if seg.tag.is_none() && !seg.features.is_complete() {
                 seg.tag = Some(next_tag(seg_tags));
             }
         }
