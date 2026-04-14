@@ -21,7 +21,7 @@ use crate::phonology::tree::iter::IterDepth0;
 /// that layer of the hierarchy.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Depth3Tree<T0, T1, T2> {
-    pub(super) layer_0: Vec<T0>,          // parent is always root for these nodes
+    pub(super) layer_0: Vec<T0>, // parent is always root for these nodes
     pub(super) layer_1: Vec<(T1, usize)>, // data with index of parent in `layer0`
     pub(super) layer_2: Vec<(T2, usize)>, // data with index of parent in `layer1`
 }
@@ -202,7 +202,7 @@ impl<T0, T1, T2> Depth3Tree<T0, T1, T2> {
 
         Ok(self)
     }
-    
+
     pub fn layer_0(&self) -> &[T0] {
         self.layer_0.as_slice()
     }
