@@ -4,7 +4,7 @@ use crate::phonology::{segment::SegmentFeatures, syllable::SyllableFeatures, tre
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PhonoString {
-    pub(crate) tree: Depth3Tree<(), SyllableFeatures, SegmentFeatures>,
+    pub tree: Depth3Tree<(), SyllableFeatures, SegmentFeatures>,
 }
 
 impl PhonoString {

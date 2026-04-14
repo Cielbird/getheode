@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+use crate::phonology::tree::iter::IterDepth0;
+
 /// A uniform 3-depth tree, where each "layer" has it's own node data type. Node order relative to
 /// other nodes at the same depth is important.
 ///
@@ -19,12 +21,63 @@ use std::ops::Range;
 /// that layer of the hierarchy.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Depth3Tree<T0, T1, T2> {
-    pub layer_0: Vec<T0>,          // parent is always root for these nodes
-    pub layer_1: Vec<(T1, usize)>, // data with index of parent in `layer0`
-    pub layer_2: Vec<(T2, usize)>, // data with index of parent in `layer1`
+    pub(super) layer_0: Vec<T0>,          // parent is always root for these nodes
+    pub(super) layer_1: Vec<(T1, usize)>, // data with index of parent in `layer0`
+    pub(super) layer_2: Vec<(T2, usize)>, // data with index of parent in `layer1`
 }
 
 impl<T0, T1, T2> Depth3Tree<T0, T1, T2> {
+    pub fn new() -> Self {
+        Self {
+            layer_0: vec![],
+            layer_1: vec![],
+            layer_2: vec![],
+        }
+    }
+
+    pub fn push_depth_0(&mut self, element: T0) {
+        self.layer_0.push(element);
+    }
+
+    pub fn push_depth_1(&mut self, element: T1) {
+        let last_idx = self.layer_0.len() - 1;
+        self.layer_1.push((element, last_idx));
+    }
+
+    pub fn push_depth_2(&mut self, element: T2) {
+        let last_idx = self.layer_1.len() - 1;
+        self.layer_2.push((element, last_idx));
+    }
+
+    /// Insert a node at layer 0 at `index` relative to other nodes at layer 0
+    pub fn insert_depth_0(&mut self, index: usize, element: T0) {
+        self.layer_0.insert(index, element);
+        for (_, parent_idx) in &mut self.layer_2 {
+            if *parent_idx >= index {
+                *parent_idx += 1;
+            }
+        }
+    }
+
+    /// Insert a node at layer 1 at `index` relative to other nodes at layer 1
+    pub fn insert_depth_1(&mut self, idx: usize, parent_idx: usize, element: T1) {
+        self.layer_1.insert(idx, (element, parent_idx));
+        for (_, parent_idx) in &mut self.layer_2 {
+            if *parent_idx >= idx {
+                *parent_idx += 1;
+            }
+        }
+    }
+
+    /// Insert a node at layer 2 at `index` relative to other nodes at layer 2
+    pub fn insert_depth_2(&mut self, idx: usize, parent_idx: usize, element: T2) {
+        self.layer_2.insert(idx, (element, parent_idx));
+    }
+
+    pub fn iter<'a>(&'a self) -> IterDepth0<'a, T0, T1, T2> {
+        IterDepth0::new(self)
+    }
+
     /// Tests if all leaf nodes of the tree are depth 3, in other words, is the tree "uniform"
     pub fn test_invariants(&self) -> bool {
         let mut last_idx = 0;
@@ -148,5 +201,17 @@ impl<T0, T1, T2> Depth3Tree<T0, T1, T2> {
         self.layer_2.splice(range_2, replace_with.layer_2);
 
         Ok(self)
+    }
+    
+    pub fn layer_0(&self) -> &[T0] {
+        self.layer_0.as_slice()
+    }
+
+    pub fn layer_1(&self) -> &[(T1, usize)] {
+        self.layer_1.as_slice()
+    }
+
+    pub fn layer_2(&self) -> &[(T2, usize)] {
+        self.layer_2.as_slice()
     }
 }

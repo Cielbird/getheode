@@ -20,17 +20,17 @@ impl TaggedPhonoString {
 
     // get slice of words
     pub fn words(&self) -> &[()] {
-        &self.0.layer_0
+        self.0.layer_0()
     }
 
     // iterate on words
     pub fn syls(&self) -> &[(SyllableInfo, usize)] {
-        &self.0.layer_1
+        self.0.layer_1()
     }
 
     // iterate on words
     pub fn segs(&self) -> &[(SegmentInfo, usize)] {
-        &self.0.layer_2
+        self.0.layer_2()
     }
 }
 
@@ -76,8 +76,8 @@ impl PhonoRule {
     pub fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
         let mut matches_vec = vec![];
 
-        let hay_syllables = hay.tree.layer_1;
-        let hay_segments = hay.tree.layer_2;
+        let hay_syllables = hay.tree.layer_1();
+        let hay_segments = hay.tree.layer_2();
         let pattern_words = self.pattern.tree.words();
         let pattern_syllables = self.pattern.tree.syls();
         let pattern_segments = self.pattern.tree.segs();
@@ -217,33 +217,38 @@ impl PhonoRule {
             }
 
             // build replacement
-            let mut replace_with = PhonoString { tree: d3tree![] };
-            for _word in &self.replace_tree.0.layer_0 {
-                replace_with.tree.layer_0.push(());
-            }
-            for (syllable_info, parent_idx) in &self.replace_tree.0.layer_1 {
-                let mut new_syllable = SyllableFeatures::new_undef();
-                if let Some(id) = syllable_info.tag {
-                    let syllable = syl_captures
-                        .get(&id)
-                        .expect("Invalid rule : syllable capture id not found");
-                    new_syllable = new_syllable + syllable.clone();
+            let mut replace_with = d3tree![];
+            for (_, syl_iter) in self.replace_tree.0.iter() {
+                replace_with.push_depth_0(());
+
+                for (syl, seg_iter) in syl_iter {
+                    let mut new_syllable = SyllableFeatures::new_undef();
+                    if let Some(id) = syl.tag {
+                        let syllable = syl_captures
+                            .get(&id)
+                            .expect("Invalid rule : syllable capture id not found");
+                        new_syllable = new_syllable + syllable.clone();
+                    }
+                    new_syllable = new_syllable + syl.features.clone();
+
+                    replace_with.push_depth_1(new_syllable);
+
+                    for seg in seg_iter {
+                        let mut new_segment = SegmentFeatures::new_undef();
+                        if let Some(id) = seg.tag {
+                            let segment = seg_captures
+                                .get(&id)
+                                .expect("Invalid rule : segment capture id not found");
+                            new_segment = new_segment.clone() + segment.clone();
+                        }
+                        new_segment = new_segment.clone() + seg.features.clone();
+
+                        replace_with.push_depth_2(new_segment);
+                    }
                 }
-                new_syllable = new_syllable + syllable_info.features.clone();
-                replace_with.tree.layer_1.push((new_syllable, *parent_idx));
             }
 
-            for (segment_info, parent_idx) in &self.replace_tree.0.layer_2 {
-                let mut new_segment = SegmentFeatures::new_undef();
-                if let Some(id) = segment_info.tag {
-                    let segment = seg_captures
-                        .get(&id)
-                        .expect("Invalid rule : segment capture id not found");
-                    new_segment = new_segment.clone() + segment.clone();
-                }
-                new_segment = new_segment.clone() + segment_info.features.clone();
-                replace_with.tree.layer_2.push((new_segment, *parent_idx));
-            }
+            let replace_with = PhonoString { tree: replace_with };
 
             matches_vec.push(PatternMatch {
                 range: seg_offset..(seg_offset + match_seg_n),
@@ -260,31 +265,45 @@ impl PhonoRule {
     pub fn test_invariants(&self) -> bool {
         let mut syl_captures = HashSet::new();
         let mut seg_captures = HashSet::new();
-        // verify match tree
-        for (info, _) in &self.pattern.tree.0.layer_1 {
-            if !syl_captures.insert(info.tag) {
-                // syllable capture id already exists !
-                return false;
-            }
-        }
-        for (info, _) in &self.pattern.tree.0.layer_2 {
-            if !seg_captures.insert(info.tag) {
-                // segment capture id already exists !
-                return false;
+        // gather tags of match tree
+        for (_, syllables) in self.pattern.tree.0.iter() {
+            for (SyllableInfo { tag, features: _ }, segments) in syllables {
+                if let Some(tag) = tag {
+                    if !syl_captures.insert(tag) {
+                        // syllable capture id already exists !
+                        return false;
+                    }
+                }
+
+                for SegmentInfo { tag, features: _ } in segments {
+                    if let Some(tag) = tag {
+                        if !seg_captures.insert(tag) {
+                            // segment capture id already exists !
+                            return false;
+                        }
+                    }
+                }
             }
         }
 
-        // verify replace_tree
-        for (info, _) in &self.replace_tree.0.layer_1 {
-            if !syl_captures.remove(&info.tag) {
-                // syllable capture id not defined in match tree !
-                return false;
-            }
-        }
-        for (info, _) in &self.replace_tree.0.layer_2 {
-            if !seg_captures.remove(&info.tag) {
-                // syllable capture id not defined in match tree !
-                return false;
+        // verify tags of replacement tree
+        for (_, syllables) in self.replace_tree.0.iter() {
+            for (SyllableInfo { tag, features: _ }, segments) in syllables {
+                if let Some(tag) = tag {
+                    if !syl_captures.remove(tag) {
+                        // syllable capture id not defined in match tree !
+                        return false;
+                    }
+                }
+
+                for SegmentInfo { tag, features: _ } in segments {
+                    if let Some(tag) = tag {
+                        if !seg_captures.remove(tag) {
+                            // syllable capture id not defined in match tree !
+                            return false;
+                        }
+                    }
+                }
             }
         }
 

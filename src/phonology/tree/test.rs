@@ -1,46 +1,7 @@
+use crate::{d3tree, phonology::tree::Depth3Tree};
+
 mod depth3 {
     use crate::{d3tree, phonology::tree::Depth3Tree};
-
-    #[test]
-    fn test_macro() {
-        let tree = d3tree![
-            0 => [
-                3 => [7, 8],
-                4 => [9],
-            ],
-            1 => [
-                5 => [10, 11],
-            ],
-            2 => [
-                6 => [12],
-            ],
-        ];
-
-        assert_eq!(tree.layer_0, vec![0, 1, 2]);
-        assert_eq!(tree.layer_1, vec![(3, 0), (4, 0), (5, 1), (6, 2)]);
-        assert_eq!(
-            tree.layer_2,
-            vec![(7, 0), (8, 0), (9, 1), (10, 2), (11, 2), (12, 3)]
-        );
-    }
-
-    #[test]
-    fn test_nonuniform_macro() {
-        let tree = d3tree![
-            0 => [
-                3 => [7, 8],
-                4 => [9],
-            ],
-            1 => [],
-            2 => [
-                6 => [12],
-            ],
-        ];
-
-        assert_eq!(tree.layer_0, vec![0, 1, 2]);
-        assert_eq!(tree.layer_1, vec![(3, 0), (4, 0), (6, 2)]);
-        assert_eq!(tree.layer_2, vec![(7, 0), (8, 0), (9, 1), (12, 2)]);
-    }
 
     #[test]
     fn test_leaves_depth_3() {
@@ -75,26 +36,6 @@ mod depth3 {
             1 => [],
         ];
         assert!(!tree.are_leaves_depth_3());
-    }
-
-    #[test]
-    fn test_invalid_invariants_3() {
-        let tree = Depth3Tree {
-            layer_0: vec![0, 1],
-            layer_1: vec![(0, 1), (1, 0), (2, 1)], // out of order ! invalid
-            layer_2: vec![(0, 0), (1, 1), (2, 2)],
-        };
-        assert!(!tree.test_invariants());
-    }
-
-    #[test]
-    fn test_invalid_invariants_4() {
-        let tree = Depth3Tree {
-            layer_0: vec![0, 1],
-            layer_1: vec![(0, 0), (1, 1)],
-            layer_2: vec![(0, 1), (1, 0), (2, 1)], // out of order ! invalid
-        };
-        assert!(!tree.test_invariants());
     }
 
     #[test]
@@ -202,4 +143,65 @@ mod depth3 {
 
         assert_eq!(res, expected);
     }
+}
+
+#[test]
+fn test_macro() {
+    let tree = d3tree![
+        0 => [
+            3 => [7, 8],
+            4 => [9],
+        ],
+        1 => [
+            5 => [10, 11],
+        ],
+        2 => [
+            6 => [12],
+        ],
+    ];
+
+    assert_eq!(tree.layer_0, vec![0, 1, 2]);
+    assert_eq!(tree.layer_1, vec![(3, 0), (4, 0), (5, 1), (6, 2)]);
+    assert_eq!(
+        tree.layer_2,
+        vec![(7, 0), (8, 0), (9, 1), (10, 2), (11, 2), (12, 3)]
+    );
+}
+
+#[test]
+fn test_nonuniform_macro() {
+    let tree = d3tree![
+        0 => [
+            3 => [7, 8],
+            4 => [9],
+        ],
+        1 => [],
+        2 => [
+            6 => [12],
+        ],
+    ];
+
+    assert_eq!(tree.layer_0, vec![0, 1, 2]);
+    assert_eq!(tree.layer_1, vec![(3, 0), (4, 0), (6, 2)]);
+    assert_eq!(tree.layer_2, vec![(7, 0), (8, 0), (9, 1), (12, 2)]);
+}
+
+#[test]
+fn test_invalid_invariants_1() {
+    let tree = Depth3Tree {
+        layer_0: vec![0, 1],
+        layer_1: vec![(0, 1), (1, 0), (2, 1)], // out of order ! invalid
+        layer_2: vec![(0, 0), (1, 1), (2, 2)],
+    };
+    assert!(!tree.test_invariants());
+}
+
+#[test]
+fn test_invalid_invariants_2() {
+    let tree = Depth3Tree {
+        layer_0: vec![0, 1],
+        layer_1: vec![(0, 0), (1, 1)],
+        layer_2: vec![(0, 1), (1, 0), (2, 1)], // out of order ! invalid
+    };
+    assert!(!tree.test_invariants());
 }

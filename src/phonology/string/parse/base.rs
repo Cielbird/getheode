@@ -18,7 +18,7 @@ pub fn parse_phono_string(input: &str) -> IResult<&str, PhonoString> {
 
     let mut string = PhonoString::new(d3tree![() => [SyllableFeatures::new_undef() => []]]);
     for seg in segments {
-        string.tree.layer_2.push((seg, 0));
+        string.tree.push_depth_2(seg);
     }
 
     Ok((remainder, string))
