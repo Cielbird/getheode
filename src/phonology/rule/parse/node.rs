@@ -1,5 +1,3 @@
-
-
 /// Phonological Rule Parse Node
 /// Nodes that make the rule parse tree
 #[derive(Debug, Clone, PartialEq)]
@@ -18,12 +16,12 @@ impl Node<'_> {
                 for child in nodes {
                     child.collect_element_sequences(paths);
                 }
-            },
+            }
             Node::Leaf(s) => {
                 for path in paths {
                     path.push_str(s);
                 }
-            },
+            }
             Node::Branch(nodes) => {
                 let mut sub_paths = vec![];
                 for choice in nodes {
@@ -31,7 +29,7 @@ impl Node<'_> {
                     choice.collect_element_sequences(&mut sub);
                     sub_paths.append(&mut sub);
                 }
-                
+
                 let mut new_paths = vec![];
                 for path in paths.drain(..) {
                     for sub in &sub_paths {
@@ -41,11 +39,10 @@ impl Node<'_> {
                     }
                 }
                 *paths = new_paths;
-            },
+            }
             Node::Null => {
                 // do nothing
-            },
+            }
         }
     }
 }
-

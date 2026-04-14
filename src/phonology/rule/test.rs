@@ -2,7 +2,10 @@ use crate::{
     d3tree,
     phonology::{
         feature::FeatureState::*,
-        rule::{PatternBorder, PhonoRule, PhonoStringPattern, SegmentInfo, SyllableInfo},
+        rule::{
+            PatternBorder, PhonoRule, PhonoStringPattern, SegmentInfo, SyllableInfo,
+            TaggedPhonoString,
+        },
         segment::{SEG_FEATURE_COUNT, SegmentFeatures},
         string::PhonoString,
         syllable::SyllableFeatures,
@@ -64,7 +67,10 @@ fn test_rule_simple() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
+    let rule = PhonoRule::new(
+        PhonoStringPattern::new(match_tree),
+        TaggedPhonoString::new(replace_tree),
+    );
 
     // [ta.ati]
     let hay = PhonoString::new(d3tree![
@@ -112,7 +118,10 @@ fn test_rule_modify_vowel() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
+    let rule = PhonoRule::new(
+        PhonoStringPattern::new(match_tree),
+        TaggedPhonoString::new(replace_tree),
+    );
 
     // [ta.ati]
     let hay = PhonoString::new(d3tree![
@@ -160,7 +169,10 @@ fn test_rule_new_syllable() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
+    let rule = PhonoRule::new(
+        PhonoStringPattern::new(match_tree),
+        TaggedPhonoString::new(replace_tree),
+    );
 
     // [ta.ati]
     let hay = PhonoString::new(d3tree![
@@ -209,7 +221,10 @@ fn test_rule_across_syllable() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
+    let rule = PhonoRule::new(
+        PhonoStringPattern::new(match_tree),
+        TaggedPhonoString::new(replace_tree),
+    );
 
     // [ta.ati]
     let hay = PhonoString::new(d3tree![
@@ -259,7 +274,10 @@ fn test_rule_new_word() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
+    let rule = PhonoRule::new(
+        PhonoStringPattern::new(match_tree),
+        TaggedPhonoString::new(replace_tree),
+    );
 
     // [ta.ati]
     let hay = PhonoString::new(d3tree![
@@ -312,7 +330,10 @@ fn test_rule_across_word() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
+    let rule = PhonoRule::new(
+        PhonoStringPattern::new(match_tree),
+        TaggedPhonoString::new(replace_tree),
+    );
 
     // [ta.ati]
     let hay = PhonoString::new(d3tree![
@@ -344,13 +365,13 @@ fn test_rule_syllable_border_1() {
     // rule follows this rule:
     // V => Vt / _$
     let pattern = PhonoStringPattern {
-        tree: d3tree![
+        tree: TaggedPhonoString::new(d3tree![
             () => [
                 SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
                     SegmentInfo {tag: Some(0), features: VOWEL_SEG},
                 ],
             ],
-        ],
+        ]),
         left_bound: PatternBorder::StrictSegment,
         right_bound: PatternBorder::SyllableOrWord,
     };
@@ -362,7 +383,7 @@ fn test_rule_syllable_border_1() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(pattern, replace_tree);
+    let rule = PhonoRule::new(pattern, TaggedPhonoString::new(replace_tree));
 
     // [ta.ati]
     let hay = PhonoString::new(d3tree![
@@ -399,13 +420,13 @@ fn test_rule_syllable_border_2() {
     // rule follows this rule:
     // V => Vt / #_
     let pattern = PhonoStringPattern {
-        tree: d3tree![
+        tree: TaggedPhonoString::new(d3tree![
             () => [
                 SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
                     SegmentInfo {tag: Some(0), features: VOWEL_SEG},
                 ],
             ],
-        ],
+        ]),
         left_bound: PatternBorder::Word,
         right_bound: PatternBorder::Any,
     };
@@ -417,7 +438,7 @@ fn test_rule_syllable_border_2() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(pattern, replace_tree);
+    let rule = PhonoRule::new(pattern, TaggedPhonoString::new(replace_tree));
 
     // [a#a.ti]
     let hay = PhonoString::new(d3tree![
@@ -470,7 +491,10 @@ fn test_invalid_rule_double_id() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
+    let rule = PhonoRule::new(
+        PhonoStringPattern::new(match_tree),
+        TaggedPhonoString::new(replace_tree),
+    );
 
     assert!(!rule.test_invariants());
 }
@@ -500,7 +524,10 @@ fn test_invalid_rule_undef_id() {
             ]
         ]
     ];
-    let rule = PhonoRule::new(PhonoStringPattern::new(match_tree), replace_tree);
+    let rule = PhonoRule::new(
+        PhonoStringPattern::new(match_tree),
+        TaggedPhonoString::new(replace_tree),
+    );
 
     assert!(!rule.test_invariants());
 }

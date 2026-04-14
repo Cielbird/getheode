@@ -4,7 +4,10 @@ use nom::{
     IResult, Parser as _,
     branch::alt,
     bytes::complete::tag,
-    character::complete::{space0, space1},
+    character::{
+        complete::one_of,
+        complete::{space0, space1},
+    },
     combinator::{map, opt, recognize, verify},
     multi::{many1, separated_list1},
     sequence::{delimited, preceded, separated_pair},
@@ -98,8 +101,9 @@ fn parse_rule_elem_part(input: &str) -> IResult<&str, Pattern<'_>> {
     parser.parse(input)
 }
 
-fn parse_rule_elem_null(input: &str) -> IResult<&str, Pattern<'_>> {
-    let mut parser = map(tag("Ø"), |_| Pattern::null());
+/// parse a null symbol (Ø or ∅)
+pub fn parse_elem_null(input: &str) -> IResult<&str, Pattern<'_>> {
+    let mut parser = map(one_of("∅Ø"), |_| Pattern::null());
     parser.parse(input)
 }
 
@@ -109,7 +113,7 @@ pub fn parse_rule_pattern(input: &str) -> IResult<&str, Pattern<'_>> {
             parse_rule_elem_part,
             parse_rule_elem_branch,
             parse_rule_elem_opt,
-            parse_rule_elem_null,
+            parse_elem_null,
         ))),
         |mut x| {
             if x.len() == 1 {
@@ -124,6 +128,10 @@ pub fn parse_rule_pattern(input: &str) -> IResult<&str, Pattern<'_>> {
 }
 
 fn parse_output(input: &str) -> IResult<&str, &str> {
-    let mut parser = recognize(many1(parse_rule_elem));
+    // either a sequence of elements, or a null symbol
+    let mut parser = alt((
+        recognize(many1(parse_rule_elem)),
+        recognize(parse_elem_null),
+    ));
     parser.parse(input)
 }

@@ -1,9 +1,10 @@
 mod elem;
-mod parse_elem;
-mod opts;
-mod parse_patterns;
 mod node;
+mod opts;
+mod parse_elem;
+mod parse_patterns;
 mod pattern;
+mod synth;
 
 pub use opts::*;
 

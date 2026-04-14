@@ -149,7 +149,7 @@ fn test_parse_rule_strings() {
     assert_eq!(output.elems.len(), 2);
     assert_eq!(pre_ctx.elems.len(), 2);
     assert_eq!(post_ctx.elems.len(), 1);
-    
+
     let input_0 = &input.elems[0];
     let input_1 = &input.elems[1];
     let output_0 = &output.elems[0];
@@ -242,11 +242,47 @@ fn test_parse_rule_strings() {
     // assert no tags
     // ʃ
     println!("{:?}", input_1);
-    assert!(matches!(input_1, Element::Features(SyllableInfo { tag: Some(_), features: _ }, SegmentInfo { tag: None, features: _ })));
+    assert!(matches!(
+        input_1,
+        Element::Features(
+            SyllableInfo {
+                tag: Some(_),
+                features: _
+            },
+            SegmentInfo {
+                tag: None,
+                features: _
+            }
+        )
+    ));
     // bʲ
-    assert!(matches!(output_1, Element::Features(SyllableInfo { tag: Some(_), features: _ }, SegmentInfo { tag: None, features: _ })));
+    assert!(matches!(
+        output_1,
+        Element::Features(
+            SyllableInfo {
+                tag: Some(_),
+                features: _
+            },
+            SegmentInfo {
+                tag: None,
+                features: _
+            }
+        )
+    ));
     // iː
-    assert!(matches!(post_0, Element::Features(SyllableInfo { tag: Some(_), features: _ }, SegmentInfo { tag: None, features: _ })));
+    assert!(matches!(
+        post_0,
+        Element::Features(
+            SyllableInfo {
+                tag: Some(_),
+                features: _
+            },
+            SegmentInfo {
+                tag: None,
+                features: _
+            }
+        )
+    ));
 
     // assert boundary
     // $

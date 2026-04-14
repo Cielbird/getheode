@@ -1,9 +1,7 @@
-
-use crate::phonology::rule::{SegmentInfo, SyllableInfo};
 use crate::phonology::rule::parse::elem::{Element, ElementSequence};
-use crate::phonology::segment::{
-    parse_segment,
-};
+use crate::phonology::rule::parse::parse_patterns::parse_elem_null;
+use crate::phonology::rule::{SegmentInfo, SyllableInfo};
+use crate::phonology::segment::parse_segment;
 use crate::phonology::syllable::SyllableFeatures;
 use nom::IResult;
 use nom::Parser;
@@ -56,26 +54,14 @@ pub fn parse_bound_elem(input: &str) -> IResult<&str, Element> {
 }
 
 /// Parse a elem which may be tagged segment, or boundary.
-fn parse_null_elem(input: &str) -> IResult<&str, Element> {
-    map(tag("∅"), |_| Element::Null).parse(input)
-}
-
-/// Parse a elem which may be tagged segment, or boundary.
 pub fn parse_rule_elem(input: &str) -> IResult<&str, Element> {
-    let mut parser = alt((parse_segment_elem, parse_bound_elem, parse_null_elem));
+    let mut parser = alt((parse_segment_elem, parse_bound_elem));
 
     parser.parse(input)
 }
 
 pub fn parse_rule_elems(input: &str) -> IResult<&str, ElementSequence> {
-    let mut parser = map(many1(parse_rule_elem), 
-        |elems| {
-            ElementSequence {
-                elems
-            }
-        }
-    );
+    let mut parser = map(many1(parse_rule_elem), |elems| ElementSequence { elems });
 
     parser.parse(input)
 }
-

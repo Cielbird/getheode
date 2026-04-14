@@ -11,7 +11,6 @@ pub enum Element {
     Features(SyllableInfo, SegmentInfo),
     WordBoundary,
     SyllableBoundary,
-    Null, // TODO remove this ?
 }
 
 #[derive(Debug, Clone)]
@@ -29,8 +28,18 @@ pub struct RuleElements {
 }
 
 impl RuleElements {
-    fn new(input: ElementSequence, output: ElementSequence, pre_context: ElementSequence, post_context: ElementSequence) -> Result<Self, ()> {
-        let mut rule = Self { input, output, pre_context, post_context };
+    fn new(
+        input: ElementSequence,
+        output: ElementSequence,
+        pre_context: ElementSequence,
+        post_context: ElementSequence,
+    ) -> Result<Self, ()> {
+        let mut rule = Self {
+            input,
+            output,
+            pre_context,
+            post_context,
+        };
 
         if !rule.check_invariants() {
             return Err(());
@@ -44,7 +53,7 @@ impl RuleElements {
 
         Ok(rule)
     }
-    
+
     fn check_invariants(&self) -> bool {
         let input_and_ctx_syl_tags: Vec<u32> = self
             .input
@@ -187,6 +196,8 @@ impl RuleElements {
 
         tag_context(&mut self.pre_context.elems, &mut syl_tags, &mut seg_tags);
         tag_context(&mut self.post_context.elems, &mut syl_tags, &mut seg_tags);
+
+        // todo!("Tag untagged border elements in input and output");
 
         self.check_invariants()
     }

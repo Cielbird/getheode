@@ -1,13 +1,13 @@
 use std::ops::Range;
 
 use crate::phonology::{
-    rule::{SegmentInfo, SyllableInfo},
+    rule::{SegmentInfo, SyllableInfo, TaggedPhonoString},
     string::PhonoString,
     tree::Depth3Tree,
 };
 
 pub struct PhonoStringPattern {
-    pub(crate) tree: Depth3Tree<(), SyllableInfo, SegmentInfo>,
+    pub(crate) tree: TaggedPhonoString,
 
     pub(crate) left_bound: PatternBorder,
     pub(crate) right_bound: PatternBorder,
@@ -16,7 +16,7 @@ pub struct PhonoStringPattern {
 impl PhonoStringPattern {
     pub fn new(tree: Depth3Tree<(), SyllableInfo, SegmentInfo>) -> Self {
         Self {
-            tree,
+            tree: TaggedPhonoString::new(tree),
             left_bound: PatternBorder::Any,
             right_bound: PatternBorder::Any,
         }

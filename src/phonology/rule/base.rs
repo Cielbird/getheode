@@ -11,13 +11,34 @@ use crate::{
     },
 };
 
-pub type RuleTree = Depth3Tree<(), SyllableInfo, SegmentInfo>;
+/// A phonological string, where syllable or segment nodes may be tagged
+pub struct TaggedPhonoString(Depth3Tree<(), SyllableInfo, SegmentInfo>);
+impl TaggedPhonoString {
+    pub(crate) fn new(tree: Depth3Tree<(), SyllableInfo, SegmentInfo>) -> Self {
+        Self(tree)
+    }
+
+    // get slice of words
+    pub fn words(&self) -> &[()] {
+        &self.0.layer_0
+    }
+
+    // iterate on words
+    pub fn syls(&self) -> &[(SyllableInfo, usize)] {
+        &self.0.layer_1
+    }
+
+    // iterate on words
+    pub fn segs(&self) -> &[(SegmentInfo, usize)] {
+        &self.0.layer_2
+    }
+}
 
 /// A pattern to match in phonological strings
 pub struct PhonoRule {
     // use a tree to represent the string, like phonological strings
     pub pattern: PhonoStringPattern,
-    pub replace_tree: Depth3Tree<(), SyllableInfo, SegmentInfo>,
+    pub replace_tree: TaggedPhonoString,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -45,7 +66,7 @@ impl SegmentInfo {
 }
 
 impl PhonoRule {
-    pub fn new(pattern: PhonoStringPattern, replace_tree: RuleTree) -> Self {
+    pub fn new(pattern: PhonoStringPattern, replace_tree: TaggedPhonoString) -> Self {
         Self {
             pattern,
             replace_tree,
@@ -57,9 +78,9 @@ impl PhonoRule {
 
         let hay_syllables = hay.tree.layer_1;
         let hay_segments = hay.tree.layer_2;
-        let pattern_words = &self.pattern.tree.layer_0;
-        let pattern_syllables = &self.pattern.tree.layer_1;
-        let pattern_segments = &self.pattern.tree.layer_2;
+        let pattern_words = self.pattern.tree.words();
+        let pattern_syllables = self.pattern.tree.syls();
+        let pattern_segments = self.pattern.tree.segs();
 
         let hay_seg_n = hay_segments.len();
         let hay_syl_n = hay_syllables.len();
@@ -197,10 +218,10 @@ impl PhonoRule {
 
             // build replacement
             let mut replace_with = PhonoString { tree: d3tree![] };
-            for _word in &self.replace_tree.layer_0 {
+            for _word in &self.replace_tree.0.layer_0 {
                 replace_with.tree.layer_0.push(());
             }
-            for (syllable_info, parent_idx) in &self.replace_tree.layer_1 {
+            for (syllable_info, parent_idx) in &self.replace_tree.0.layer_1 {
                 let mut new_syllable = SyllableFeatures::new_undef();
                 if let Some(id) = syllable_info.tag {
                     let syllable = syl_captures
@@ -212,7 +233,7 @@ impl PhonoRule {
                 replace_with.tree.layer_1.push((new_syllable, *parent_idx));
             }
 
-            for (segment_info, parent_idx) in &self.replace_tree.layer_2 {
+            for (segment_info, parent_idx) in &self.replace_tree.0.layer_2 {
                 let mut new_segment = SegmentFeatures::new_undef();
                 if let Some(id) = segment_info.tag {
                     let segment = seg_captures
@@ -240,13 +261,13 @@ impl PhonoRule {
         let mut syl_captures = HashSet::new();
         let mut seg_captures = HashSet::new();
         // verify match tree
-        for (info, _) in &self.pattern.tree.layer_1 {
+        for (info, _) in &self.pattern.tree.0.layer_1 {
             if !syl_captures.insert(info.tag) {
                 // syllable capture id already exists !
                 return false;
             }
         }
-        for (info, _) in &self.pattern.tree.layer_2 {
+        for (info, _) in &self.pattern.tree.0.layer_2 {
             if !seg_captures.insert(info.tag) {
                 // segment capture id already exists !
                 return false;
@@ -254,13 +275,13 @@ impl PhonoRule {
         }
 
         // verify replace_tree
-        for (info, _) in &self.replace_tree.layer_1 {
+        for (info, _) in &self.replace_tree.0.layer_1 {
             if !syl_captures.remove(&info.tag) {
                 // syllable capture id not defined in match tree !
                 return false;
             }
         }
-        for (info, _) in &self.replace_tree.layer_2 {
+        for (info, _) in &self.replace_tree.0.layer_2 {
             if !seg_captures.remove(&info.tag) {
                 // syllable capture id not defined in match tree !
                 return false;
