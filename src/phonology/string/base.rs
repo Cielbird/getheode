@@ -3,6 +3,7 @@ use std::{fmt, ops::Range};
 use nom::{IResult, Parser};
 
 use crate::phonology::{
+    feature::FeatureState,
     rule::{compile_untagged_elements, parse_rule_elems},
     segment::{SegmentFeatures, format_segment},
     syllable::SyllableFeatures,
@@ -42,19 +43,40 @@ impl PhonoString {
     }
 
     pub fn format(&self) -> String {
-        self.tree
-            .layer_2()
-            .iter()
-            .map(|(s, _)| format_segment(s))
-            .collect()
+        // TODO add format config options
+        let mut output = "".to_string();
+        let mut is_first_word = true;
+        for (_, syls) in self.tree.iter() {
+            if is_first_word {
+                is_first_word = false;
+            } else {
+                output.push('#');
+            }
+
+            let mut is_first_syl = true;
+            for (syl, segs) in syls {
+                if is_first_syl {
+                    is_first_syl = false;
+                } else {
+                    if syl.features[0] == FeatureState::POS {
+                        output.push('\'');
+                    } else {
+                        output.push('.');
+                    }
+                }
+
+                for seg in segs {
+                    output.push_str(&format_segment(seg));
+                }
+            }
+        }
+
+        output
     }
 }
 
 impl fmt::Display for PhonoString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (seg, _) in self.tree.layer_2() {
-            write!(f, "{}", format_segment(seg))?;
-        }
-        Ok(())
+        write!(f, "{}", self.format())
     }
 }

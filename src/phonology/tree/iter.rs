@@ -8,13 +8,13 @@ pub struct IterDepth0<'a, T0, T1, T2> {
 pub struct IterDepth1<'a, T0, T1, T2> {
     tree: &'a Depth3Tree<T0, T1, T2>,
     parent_idx: usize,
-    idx: usize,
+    idx: Option<usize>, // if null, there's nothing to iterate on
 }
 
 pub struct IterDepth2<'a, T0, T1, T2> {
     tree: &'a Depth3Tree<T0, T1, T2>,
     parent_idx: usize,
-    idx: usize,
+    idx: Option<usize>, // if null, there's nothing to iterate on
 }
 
 impl<'a, T0, T1, T2> Iterator for IterDepth0<'a, T0, T1, T2> {
@@ -37,12 +37,17 @@ impl<'a, T0, T1, T2> Iterator for IterDepth1<'a, T0, T1, T2> {
     type Item = (&'a T1, IterDepth2<'a, T0, T1, T2>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.idx < self.tree.layer_1.len() {
-            let (item, parent) = &self.tree.layer_1[self.idx];
-            if *parent == self.parent_idx {
-                let sub_iter = IterDepth2::new(self.tree, self.idx);
+        let Some(idx) = &mut self.idx else {
+            // nothing to iterate on
+            return None;
+        };
 
-                self.idx += 1;
+        if *idx < self.tree.layer_1.len() {
+            let (item, parent) = &self.tree.layer_1[*idx];
+            if *parent == self.parent_idx {
+                let sub_iter = IterDepth2::new(self.tree, *idx);
+
+                *idx += 1;
                 return Some((item, sub_iter));
             }
         }
@@ -54,10 +59,15 @@ impl<'a, T0, T1, T2> Iterator for IterDepth2<'a, T0, T1, T2> {
     type Item = &'a T2;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.idx < self.tree.layer_2.len() {
-            let (item, parent) = &self.tree.layer_2[self.idx];
+        let Some(idx) = &mut self.idx else {
+            // nothing to iterate on
+            return None;
+        };
+
+        if *idx < self.tree.layer_2.len() {
+            let (item, parent) = &self.tree.layer_2[*idx];
             if *parent == self.parent_idx {
-                self.idx += 1;
+                *idx += 1;
                 return Some(item);
             }
         }
@@ -87,7 +97,6 @@ impl<'a, T0, T1, T2> IterDepth1<'a, T0, T1, T2> {
                     None
                 }
             });
-        let idx = idx.expect("No node found with correct parent !");
 
         Self {
             tree,
@@ -110,7 +119,6 @@ impl<'a, T0, T1, T2> IterDepth2<'a, T0, T1, T2> {
                     None
                 }
             });
-        let idx = idx.expect("No node found with correct parent !");
 
         Self {
             tree,

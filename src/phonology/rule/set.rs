@@ -27,7 +27,7 @@ impl PhonoRuleSet {
     pub fn parse(input: &str, opts: PhonoRuleParseOpts) -> Result<Self, String> {
         let (rem, patterns) = parse_rule_patterns(input, opts).map_err(|e| e.to_string())?;
         let elements = RuleElements::from_strings(patterns.enumerate())?;
-        if rem != "" {
+        if !rem.is_empty() {
             return Err(format!(
                 "Couldn't parse rule set \"{input}\", remainder was {rem}"
             ));

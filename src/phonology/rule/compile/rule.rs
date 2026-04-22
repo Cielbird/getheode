@@ -2,10 +2,11 @@ use crate::{
     d3tree,
     phonology::{
         rule::{
-            ElementSequence, PhonoRule,
+            ElementSequence, PhonoRule, SyllableInfo, TaggedPhonoString,
             parse::{Element, RuleElements},
         },
         string::PhonoString,
+        syllable::SyllableFeatures,
     },
 };
 
@@ -32,11 +33,17 @@ pub fn compile_rule(rule_elements: RuleElements) -> PhonoRule {
     })
     .unwrap();
 
-    let output = compile_tree(&output_elems, |_, _| {}).unwrap();
+    let replace_tree = if output_elems.is_empty() {
+        // output is deletion edge case :
+        let first_syl = SyllableInfo::new(None, SyllableFeatures::new_undef());
+        TaggedPhonoString::new(d3tree![() => [first_syl => []]])
+    } else {
+        compile_tree(&output_elems, |_, _| {}).unwrap().tree
+    };
 
     PhonoRule {
         pattern,
-        replace_tree: output.tree,
+        replace_tree,
     }
 }
 
@@ -44,11 +51,11 @@ pub fn compile_rule(rule_elements: RuleElements) -> PhonoRule {
 pub fn compile_untagged_elements(elements: ElementSequence) -> Result<PhonoString, String> {
     let tree = compile_tree(&elements.elems, |_, _| {})?.tree;
     let mut untagged = d3tree![];
-    for (_, iter) in tree.iter() {
+    for (_, syls) in tree.iter() {
         untagged.push_depth_0(());
-        for (syl, iter_1) in iter {
+        for (syl, segs) in syls {
             untagged.push_depth_1(syl.features.clone());
-            for seg in iter_1 {
+            for seg in segs {
                 untagged.push_depth_2(seg.features.clone());
             }
         }

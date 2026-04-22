@@ -33,7 +33,8 @@ pub fn parse_rule_patterns(
     let input = separated_list1(space1, parse_rule_pattern);
     // output has no branching
     let output = separated_list1(space1, parse_output);
-    let inner_rule = separated_pair(input, delimited(space0, tag("->"), space0), output);
+    let arrow = alt((tag("->"), tag("→")));
+    let inner_rule = separated_pair(input, delimited(space0, arrow, space0), output);
     let context = preceded(
         delimited(space0, tag("/"), space0),
         separated_pair(opt(parse_rule_pattern), tag("_"), opt(parse_rule_pattern)),
