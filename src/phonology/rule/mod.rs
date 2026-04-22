@@ -1,4 +1,5 @@
 mod base;
+mod compile;
 mod parse;
 mod pattern;
 mod set;

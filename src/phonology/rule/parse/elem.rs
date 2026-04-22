@@ -17,18 +17,23 @@ pub enum Element {
 pub struct ElementSequence {
     pub elems: Vec<Element>,
 }
+impl ElementSequence {
+    pub fn new(elems: Vec<Element>) -> Self {
+        Self { elems }
+    }
+}
 
 /// Represents a rule with a sequence of elements : either segments or boundaries
 /// no branching: input, output and context.
 pub struct RuleElements {
-    pub(crate) input: ElementSequence,
-    pub(crate) output: ElementSequence,
-    pub(crate) pre_context: ElementSequence,
-    pub(crate) post_context: ElementSequence,
+    input: ElementSequence,
+    output: ElementSequence,
+    pre_context: ElementSequence,
+    post_context: ElementSequence,
 }
 
 impl RuleElements {
-    fn new(
+    pub fn new(
         input: ElementSequence,
         output: ElementSequence,
         pre_context: ElementSequence,
@@ -87,15 +92,15 @@ impl RuleElements {
 
         for elem in &self.output.elems {
             if let Element::Features(syl, seg) = elem {
-                if let Some(id) = syl.tag {
-                    if !input_and_ctx_syl_tags.contains(&id) {
-                        return false;
-                    }
+                if let Some(id) = syl.tag
+                    && !input_and_ctx_syl_tags.contains(&id)
+                {
+                    return false;
                 }
-                if let Some(id) = seg.tag {
-                    if !input_and_ctx_seg_tags.contains(&id) {
-                        return false;
-                    }
+                if let Some(id) = seg.tag
+                    && !input_and_ctx_seg_tags.contains(&id)
+                {
+                    return false;
                 }
             }
         }
@@ -137,8 +142,8 @@ impl RuleElements {
     pub fn from_strings(strings: RuleStrings) -> Result<Vec<Self>, ()> {
         // manage the parsing error and remainder
         fn parse(input: String) -> Result<ElementSequence, ()> {
-            let (rem, elems) = parse_rule_elems(&input).map_err(|x| ())?;
-            if rem != "" {
+            let (rem, elems) = parse_rule_elems(&input).map_err(|_x| ())?;
+            if !rem.is_empty() {
                 return Err(());
             }
             Ok(elems)
@@ -200,6 +205,42 @@ impl RuleElements {
         // todo!("Tag untagged border elements in input and output");
 
         self.check_invariants()
+    }
+
+    #[cfg(test)]
+    pub fn input(&self) -> &ElementSequence {
+        &self.input
+    }
+
+    pub fn input_clone(&self) -> ElementSequence {
+        self.input.clone()
+    }
+
+    #[cfg(test)]
+    pub fn output(&self) -> &ElementSequence {
+        &self.output
+    }
+
+    pub fn output_clone(&self) -> ElementSequence {
+        self.output.clone()
+    }
+
+    #[cfg(test)]
+    pub fn pre_context(&self) -> &ElementSequence {
+        &self.pre_context
+    }
+
+    pub fn pre_context_clone(&self) -> ElementSequence {
+        self.pre_context.clone()
+    }
+
+    #[cfg(test)]
+    pub fn post_context(&self) -> &ElementSequence {
+        &self.post_context
+    }
+
+    pub fn post_context_clone(&self) -> ElementSequence {
+        self.post_context.clone()
     }
 
     fn collect_existing_tags(&self, syl_tags: &mut Vec<u32>, seg_tags: &mut Vec<u32>) {

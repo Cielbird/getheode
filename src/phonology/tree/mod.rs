@@ -1,7 +1,7 @@
 mod base;
 mod constructor;
 
-mod iter;
+pub mod iter;
 
 pub use base::*;
 

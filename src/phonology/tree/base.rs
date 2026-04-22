@@ -1,4 +1,7 @@
-use std::ops::Range;
+use std::{
+    fmt::{Debug, Write as _},
+    ops::Range,
+};
 
 use crate::phonology::tree::iter::IterDepth0;
 
@@ -213,5 +216,61 @@ impl<T0, T1, T2> Depth3Tree<T0, T1, T2> {
 
     pub fn layer_2(&self) -> &[(T2, usize)] {
         self.layer_2.as_slice()
+    }
+
+    pub fn get_depth_0_mut(&mut self, idx: usize) -> &mut T0 {
+        &mut self.layer_0[idx]
+    }
+
+    pub fn get_depth_1_mut(&mut self, idx: usize) -> &mut T1 {
+        &mut self.layer_1[idx].0
+    }
+
+    pub fn get_depth_2_mut(&mut self, idx: usize) -> &mut T2 {
+        &mut self.layer_2[idx].0
+    }
+
+    /// Get number of nodes with depth 0
+    pub fn len_0(&self) -> usize {
+        self.layer_0.len()
+    }
+
+    /// Get number of nodes with depth 1
+    pub fn len_1(&self) -> usize {
+        self.layer_1.len()
+    }
+
+    /// Get number of nodes with depth 2
+    pub fn len_2(&self) -> usize {
+        self.layer_2.len()
+    }
+
+    pub fn pretty_format(&self) -> String
+    where
+        T0: Debug,
+        T1: Debug,
+        T2: Debug,
+    {
+        let mut result = String::new();
+
+        for (l0, sub) in self.iter() {
+            write!(&mut result, "{:#?}", l0).unwrap();
+
+            for (l1, sub) in sub {
+                write!(&mut result, "+ {:#?}", l1).unwrap();
+
+                for l2 in sub {
+                    write!(&mut result, "+-- {:#?}", l2).unwrap();
+                }
+            }
+        }
+
+        result
+    }
+}
+
+impl<T0, T1, T2> Default for Depth3Tree<T0, T1, T2> {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -6,23 +6,29 @@ use crate::phonology::{
     tree::Depth3Tree,
 };
 
+#[derive(Debug)]
 pub struct PhonoStringPattern {
-    pub(crate) tree: TaggedPhonoString,
+    pub tree: TaggedPhonoString,
 
-    pub(crate) left_bound: PatternBorder,
-    pub(crate) right_bound: PatternBorder,
+    pub left_bound: PatternBorder,
+    pub right_bound: PatternBorder,
 }
 
 impl PhonoStringPattern {
-    pub fn new(tree: Depth3Tree<(), SyllableInfo, SegmentInfo>) -> Self {
+    pub fn new(
+        tree: Depth3Tree<(), SyllableInfo, SegmentInfo>,
+        left_bound: PatternBorder,
+        right_bound: PatternBorder,
+    ) -> Self {
         Self {
             tree: TaggedPhonoString::new(tree),
-            left_bound: PatternBorder::Any,
-            right_bound: PatternBorder::Any,
+            left_bound,
+            right_bound,
         }
     }
 }
 
+#[derive(Debug)]
 pub enum PatternBorder {
     Word,
     StrictSyllable, // may only be a syllable boundary, not more or less

@@ -1,5 +1,4 @@
 use crate::phonology::rule::parse::elem::{Element, ElementSequence};
-use crate::phonology::rule::parse::parse_patterns::parse_elem_null;
 use crate::phonology::rule::{SegmentInfo, SyllableInfo};
 use crate::phonology::segment::parse_segment;
 use crate::phonology::syllable::SyllableFeatures;
@@ -8,9 +7,9 @@ use nom::Parser;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{digit1, one_of};
-use nom::combinator::{map, map_res, opt, recognize, verify};
-use nom::multi::{many1, separated_list1};
-use nom::sequence::{delimited, preceded, separated_pair};
+use nom::combinator::{map, map_res, opt};
+use nom::multi::many1;
+use nom::sequence::preceded;
 
 /// Parse a segment element in a phonological rule
 /// like parse_segment, but tags can be added: C_1 means a consonant, with segment tagged "1"
@@ -61,7 +60,7 @@ pub fn parse_rule_elem(input: &str) -> IResult<&str, Element> {
 }
 
 pub fn parse_rule_elems(input: &str) -> IResult<&str, ElementSequence> {
-    let mut parser = map(many1(parse_rule_elem), |elems| ElementSequence { elems });
+    let mut parser = map(many1(parse_rule_elem), ElementSequence::new);
 
     parser.parse(input)
 }

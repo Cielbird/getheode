@@ -5,6 +5,7 @@ use std::ops::Add;
 /// set of features a syllable can have
 #[derive(Debug, Clone, PartialEq)]
 pub struct SyllableFeatures {
+    // TODO see if this can be private
     pub features: [FeatureState; SYL_FEATURE_COUNT as usize],
 }
 
@@ -40,7 +41,7 @@ impl SyllableFeatures {
     }
 
     /// Returns true if all features are defined
-    pub(crate) fn is_complete(&self) -> bool {
+    pub fn is_complete(&self) -> bool {
         for i in 0..(SYL_FEATURE_COUNT as usize) {
             if self.features[i] == UNDEF {
                 return false;
@@ -48,6 +49,10 @@ impl SyllableFeatures {
         }
 
         true
+    }
+
+    pub const fn from_features(features: [FeatureState; 1]) -> SyllableFeatures {
+        Self { features }
     }
 }
 

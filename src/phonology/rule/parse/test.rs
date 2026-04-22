@@ -1,15 +1,20 @@
 // TODO make parser for these rule sets
 use paste::paste;
 
-use crate::phonology::rule::{
-    SegmentInfo, SyllableInfo,
-    parse::{
-        elem::{Element, ElementSequence, RuleElements},
-        node::Node,
-        parse_elem::parse_rule_elems,
-        parse_patterns::{parse_rule_elem_branch, parse_rule_pattern, parse_rule_patterns},
-        pattern::{Pattern, RulePatterns, RuleStrings},
+use crate::phonology::feature::FeatureState::*;
+use crate::phonology::{
+    rule::{
+        SegmentInfo, SyllableInfo,
+        compile::compile_rule,
+        parse::{
+            elem::{Element, ElementSequence, RuleElements},
+            node::Node,
+            parse_patterns::{parse_rule_elem_branch, parse_rule_pattern, parse_rule_patterns},
+            pattern::{Pattern, RuleStrings},
+        },
     },
+    segment::SegmentFeatures,
+    syllable::SyllableFeatures,
 };
 
 /// Macro for generating tests for phonlogical rule syntax parsing
@@ -26,6 +31,25 @@ macro_rules! test_phono_rule_syntax {
         }
     };
 }
+
+const VOWEL_SEG: SegmentFeatures = SegmentFeatures::from_features([
+    POS, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF,
+    UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF,
+]);
+const CONS_SEG: SegmentFeatures = SegmentFeatures::from_features([
+    NEG, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF,
+    UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF, UNDEF,
+]);
+const T_SEG: SegmentFeatures = SegmentFeatures::from_features([
+    NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG, NEG, POS, POS, NEG,
+    NEG, NEG, NEG, NA, NA, NA, NA, NA,
+]);
+const D_SEG: SegmentFeatures = SegmentFeatures::from_features([
+    NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, POS, POS, NEG,
+    NEG, NEG, NEG, NA, NA, NA, NA, NA,
+]);
+
+const UNDEF_SYL: SyllableFeatures = SyllableFeatures::from_features([UNDEF]);
 
 #[test]
 fn test_rule_simple_multi_pattern() {
@@ -141,10 +165,10 @@ fn test_parse_rule_strings() {
     assert_eq!(rules.len(), 1);
 
     let rule = &rules[0];
-    let input = &rule.input;
-    let output = &rule.output;
-    let pre_ctx = &rule.pre_context;
-    let post_ctx = &rule.post_context;
+    let input = rule.input();
+    let output = rule.output();
+    let pre_ctx = rule.pre_context();
+    let post_ctx = rule.post_context();
     assert_eq!(input.elems.len(), 2);
     assert_eq!(output.elems.len(), 2);
     assert_eq!(pre_ctx.elems.len(), 2);
@@ -287,4 +311,117 @@ fn test_parse_rule_strings() {
     // assert boundary
     // $
     assert!(matches!(pre_1, Element::SyllableBoundary));
+}
+
+#[test]
+fn test_compile_rule() {
+    // VtV_1 -> VdV_1 / $C_$d
+    let input_elems = vec![
+        Element::Features(
+            SyllableInfo::new_untagged(UNDEF_SYL),
+            SegmentInfo::new_untagged(VOWEL_SEG),
+        ),
+        Element::Features(
+            SyllableInfo::new_untagged(UNDEF_SYL),
+            SegmentInfo::new_untagged(T_SEG),
+        ),
+        Element::Features(
+            SyllableInfo::new_untagged(UNDEF_SYL),
+            SegmentInfo::new_tagged(1, VOWEL_SEG),
+        ),
+    ];
+    let output_elems = vec![
+        Element::Features(
+            SyllableInfo::new_untagged(UNDEF_SYL),
+            SegmentInfo::new_untagged(VOWEL_SEG),
+        ),
+        Element::Features(
+            SyllableInfo::new_untagged(UNDEF_SYL),
+            SegmentInfo::new_untagged(D_SEG),
+        ),
+        Element::Features(
+            SyllableInfo::new_untagged(UNDEF_SYL),
+            SegmentInfo::new_tagged(1, VOWEL_SEG),
+        ),
+    ];
+    let pre_context_elems = vec![
+        Element::SyllableBoundary,
+        Element::Features(
+            SyllableInfo::new_untagged(UNDEF_SYL),
+            SegmentInfo::new_untagged(CONS_SEG),
+        ),
+    ];
+    let post_context_elems = vec![
+        Element::SyllableBoundary,
+        Element::Features(
+            SyllableInfo::new_untagged(UNDEF_SYL),
+            SegmentInfo::new_untagged(D_SEG),
+        ),
+    ];
+
+    let rule = RuleElements::new(
+        ElementSequence::new(input_elems),
+        ElementSequence::new(output_elems),
+        ElementSequence::new(pre_context_elems),
+        ElementSequence::new(post_context_elems),
+    )
+    .unwrap();
+    let result = compile_rule(rule);
+
+    let pat_segs = result.pattern.tree.segs();
+    let rep_segs = result.replace_tree.segs();
+
+    // context C (non-complete): tagged in pattern and replace, same tag
+    assert!(
+        pat_segs[0].0.tag.is_some(),
+        "pattern context C should have a seg tag"
+    );
+    assert!(
+        rep_segs[0].0.tag.is_some(),
+        "replace context C should have a seg tag"
+    );
+    assert_eq!(
+        pat_segs[0].0.tag, rep_segs[0].0.tag,
+        "context C should share tag across pattern and replace"
+    );
+
+    // input/output V (non-complete): tagged, and pattern/replace share the same tag
+    assert!(
+        pat_segs[1].0.tag.is_some(),
+        "pattern V should have a seg tag"
+    );
+    assert_eq!(
+        pat_segs[1].0.tag, rep_segs[1].0.tag,
+        "input and output V should share seg tag"
+    );
+
+    // t in pattern and d in replace are complete: no seg tag
+    assert!(
+        pat_segs[2].0.tag.is_none(),
+        "complete t should not be tagged"
+    );
+    assert!(
+        rep_segs[2].0.tag.is_none(),
+        "complete d should not be tagged"
+    );
+
+    // V pre-assigned tag 1: preserved in both
+    assert_eq!(pat_segs[3].0.tag, Some(1), "input V_1 should keep tag 1");
+    assert_eq!(rep_segs[3].0.tag, Some(1), "output V_1 should keep tag 1");
+
+    // post-context d (complete): no tag
+    assert!(
+        pat_segs[4].0.tag.is_none(),
+        "post-context d in pattern should not be tagged"
+    );
+    assert!(
+        rep_segs[4].0.tag.is_none(),
+        "post-context d in replace should not be tagged"
+    );
+
+    assert!(result.test_invariants());
+
+    dbg!(result.pattern.left_bound);
+    dbg!(result.pattern.right_bound);
+    println!("{}", result.pattern.tree.pretty_format());
 }

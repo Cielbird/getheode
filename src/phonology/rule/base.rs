@@ -7,14 +7,16 @@ use crate::{
         segment::SegmentFeatures,
         string::PhonoString,
         syllable::SyllableFeatures,
-        tree::Depth3Tree,
+        tree::{Depth3Tree, iter::IterDepth0},
     },
 };
 
 /// A phonological string, where syllable or segment nodes may be tagged
+#[derive(Debug)]
 pub struct TaggedPhonoString(Depth3Tree<(), SyllableInfo, SegmentInfo>);
 impl TaggedPhonoString {
     pub(crate) fn new(tree: Depth3Tree<(), SyllableInfo, SegmentInfo>) -> Self {
+        // TODO assert invariants
         Self(tree)
     }
 
@@ -32,9 +34,18 @@ impl TaggedPhonoString {
     pub fn segs(&self) -> &[(SegmentInfo, usize)] {
         self.0.layer_2()
     }
+
+    pub fn iter<'a>(&'a self) -> IterDepth0<'a, (), SyllableInfo, SegmentInfo> {
+        self.0.iter()
+    }
+
+    pub fn pretty_format(&self) -> String {
+        self.0.pretty_format()
+    }
 }
 
 /// A pattern to match in phonological strings
+#[derive(Debug)]
 pub struct PhonoRule {
     // use a tree to represent the string, like phonological strings
     pub pattern: PhonoStringPattern,
@@ -48,8 +59,22 @@ pub struct SyllableInfo {
 }
 
 impl SyllableInfo {
-    pub fn new(id: Option<u32>, features: SyllableFeatures) -> Self {
+    pub const fn new(id: Option<u32>, features: SyllableFeatures) -> Self {
         Self { tag: id, features }
+    }
+
+    pub const fn new_tagged(id: u32, features: SyllableFeatures) -> Self {
+        Self {
+            tag: Some(id),
+            features,
+        }
+    }
+
+    pub const fn new_untagged(features: SyllableFeatures) -> Self {
+        Self {
+            tag: None,
+            features,
+        }
     }
 }
 
@@ -60,8 +85,20 @@ pub struct SegmentInfo {
 }
 
 impl SegmentInfo {
-    pub fn new(id: Option<u32>, features: SegmentFeatures) -> Self {
+    pub const fn new(id: Option<u32>, features: SegmentFeatures) -> Self {
         Self { tag: id, features }
+    }
+    pub const fn new_tagged(id: u32, features: SegmentFeatures) -> Self {
+        Self {
+            tag: Some(id),
+            features,
+        }
+    }
+    pub const fn new_untagged(features: SegmentFeatures) -> Self {
+        Self {
+            tag: None,
+            features,
+        }
     }
 }
 
@@ -268,19 +305,19 @@ impl PhonoRule {
         // gather tags of match tree
         for (_, syllables) in self.pattern.tree.0.iter() {
             for (SyllableInfo { tag, features: _ }, segments) in syllables {
-                if let Some(tag) = tag {
-                    if !syl_captures.insert(tag) {
-                        // syllable capture id already exists !
-                        return false;
-                    }
+                if let Some(tag) = tag
+                    && !syl_captures.insert(tag)
+                {
+                    // syllable capture id already exists !
+                    return false;
                 }
 
                 for SegmentInfo { tag, features: _ } in segments {
-                    if let Some(tag) = tag {
-                        if !seg_captures.insert(tag) {
-                            // segment capture id already exists !
-                            return false;
-                        }
+                    if let Some(tag) = tag
+                        && !seg_captures.insert(tag)
+                    {
+                        // segment capture id already exists !
+                        return false;
                     }
                 }
             }
@@ -289,19 +326,19 @@ impl PhonoRule {
         // verify tags of replacement tree
         for (_, syllables) in self.replace_tree.0.iter() {
             for (SyllableInfo { tag, features: _ }, segments) in syllables {
-                if let Some(tag) = tag {
-                    if !syl_captures.remove(tag) {
-                        // syllable capture id not defined in match tree !
-                        return false;
-                    }
+                if let Some(tag) = tag
+                    && !syl_captures.remove(tag)
+                {
+                    // syllable capture id not defined in match tree !
+                    return false;
                 }
 
                 for SegmentInfo { tag, features: _ } in segments {
-                    if let Some(tag) = tag {
-                        if !seg_captures.remove(tag) {
-                            // syllable capture id not defined in match tree !
-                            return false;
-                        }
+                    if let Some(tag) = tag
+                        && !seg_captures.remove(tag)
+                    {
+                        // syllable capture id not defined in match tree !
+                        return false;
                     }
                 }
             }

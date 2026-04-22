@@ -1,7 +1,7 @@
 use crate::{d3tree, phonology::tree::Depth3Tree};
 
 mod depth3 {
-    use crate::{d3tree, phonology::tree::Depth3Tree};
+    use crate::d3tree;
 
     #[test]
     fn test_leaves_depth_3() {

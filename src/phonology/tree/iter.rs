@@ -1,5 +1,3 @@
-use std::iter::Map;
-
 use crate::phonology::tree::Depth3Tree;
 
 pub struct IterDepth0<'a, T0, T1, T2> {
@@ -77,6 +75,7 @@ impl<'a, T0, T1, T2> IterDepth0<'a, T0, T1, T2> {
 
 impl<'a, T0, T1, T2> IterDepth1<'a, T0, T1, T2> {
     fn new(tree: &'a Depth3Tree<T0, T1, T2>, parent_idx: usize) -> Self {
+        // TODO eliminate this; redundant
         let idx = tree
             .layer_1
             .iter()

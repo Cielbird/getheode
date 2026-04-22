@@ -68,7 +68,7 @@ fn test_rule_simple() {
         ]
     ];
     let rule = PhonoRule::new(
-        PhonoStringPattern::new(match_tree),
+        PhonoStringPattern::new(match_tree, PatternBorder::Any, PatternBorder::Any),
         TaggedPhonoString::new(replace_tree),
     );
 
@@ -119,7 +119,7 @@ fn test_rule_modify_vowel() {
         ]
     ];
     let rule = PhonoRule::new(
-        PhonoStringPattern::new(match_tree),
+        PhonoStringPattern::new(match_tree, PatternBorder::Any, PatternBorder::Any),
         TaggedPhonoString::new(replace_tree),
     );
 
@@ -170,7 +170,7 @@ fn test_rule_new_syllable() {
         ]
     ];
     let rule = PhonoRule::new(
-        PhonoStringPattern::new(match_tree),
+        PhonoStringPattern::new(match_tree, PatternBorder::Any, PatternBorder::Any),
         TaggedPhonoString::new(replace_tree),
     );
 
@@ -222,7 +222,7 @@ fn test_rule_across_syllable() {
         ]
     ];
     let rule = PhonoRule::new(
-        PhonoStringPattern::new(match_tree),
+        PhonoStringPattern::new(match_tree, PatternBorder::Any, PatternBorder::Any),
         TaggedPhonoString::new(replace_tree),
     );
 
@@ -275,7 +275,7 @@ fn test_rule_new_word() {
         ]
     ];
     let rule = PhonoRule::new(
-        PhonoStringPattern::new(match_tree),
+        PhonoStringPattern::new(match_tree, PatternBorder::Any, PatternBorder::Any),
         TaggedPhonoString::new(replace_tree),
     );
 
@@ -331,7 +331,7 @@ fn test_rule_across_word() {
         ]
     ];
     let rule = PhonoRule::new(
-        PhonoStringPattern::new(match_tree),
+        PhonoStringPattern::new(match_tree, PatternBorder::Any, PatternBorder::Any),
         TaggedPhonoString::new(replace_tree),
     );
 
@@ -364,17 +364,17 @@ fn test_rule_across_word() {
 fn test_rule_syllable_border_1() {
     // rule follows this rule:
     // V => Vt / _$
-    let pattern = PhonoStringPattern {
-        tree: TaggedPhonoString::new(d3tree![
+    let pattern = PhonoStringPattern::new(
+        d3tree![
             () => [
                 SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
                     SegmentInfo {tag: Some(0), features: VOWEL_SEG},
                 ],
             ],
-        ]),
-        left_bound: PatternBorder::StrictSegment,
-        right_bound: PatternBorder::SyllableOrWord,
-    };
+        ],
+        PatternBorder::StrictSegment,
+        PatternBorder::SyllableOrWord,
+    );
     let replace_tree = d3tree![
         () => [
             SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
@@ -419,17 +419,17 @@ fn test_rule_syllable_border_1() {
 fn test_rule_syllable_border_2() {
     // rule follows this rule:
     // V => Vt / #_
-    let pattern = PhonoStringPattern {
-        tree: TaggedPhonoString::new(d3tree![
+    let pattern = PhonoStringPattern::new(
+        d3tree![
             () => [
                 SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
                     SegmentInfo {tag: Some(0), features: VOWEL_SEG},
                 ],
             ],
-        ]),
-        left_bound: PatternBorder::Word,
-        right_bound: PatternBorder::Any,
-    };
+        ],
+        PatternBorder::Word,
+        PatternBorder::Any,
+    );
     let replace_tree = d3tree![
         () => [
             SyllableInfo {tag: Some(0), features: UNDEF_SYL} => [
@@ -492,7 +492,7 @@ fn test_invalid_rule_double_id() {
         ]
     ];
     let rule = PhonoRule::new(
-        PhonoStringPattern::new(match_tree),
+        PhonoStringPattern::new(match_tree, PatternBorder::Any, PatternBorder::Any),
         TaggedPhonoString::new(replace_tree),
     );
 
@@ -525,7 +525,7 @@ fn test_invalid_rule_undef_id() {
         ]
     ];
     let rule = PhonoRule::new(
-        PhonoStringPattern::new(match_tree),
+        PhonoStringPattern::new(match_tree, PatternBorder::Any, PatternBorder::Any),
         TaggedPhonoString::new(replace_tree),
     );
 
