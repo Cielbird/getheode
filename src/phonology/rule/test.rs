@@ -532,100 +532,64 @@ fn test_invalid_rule_undef_id() {
     assert!(!rule.test_invariants());
 }
 
-#[test]
-fn test_apply_intervocalic() {
-    // t -> d / V_V : intervocalic voicing, no boundary constraints
-    let opts = PhonoRuleParseOpts::default();
-    let rule_set = PhonoRuleSet::parse("t -> d / V_V", opts).unwrap();
-    let (_, string) = PhonoString::parse("ata").unwrap();
-    let (_, expected) = PhonoString::parse("ada").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
+/// Macro for generating tests for phonlogical rule syntax parsing
+use paste::paste;
+macro_rules! gen_test_rule_apply {
+    ($name:ident, $rule:expr, $input:expr, $expected:expr) => {
+        paste! {
+            #[test]
+            fn [<test_rule_apply_ $name>]() {
+                let opts = PhonoRuleParseOpts::default();
+                let rule_set = PhonoRuleSet::parse($rule, opts).unwrap();
+
+                let (_, string) = PhonoString::parse($input).unwrap();
+                let (_, expected) = PhonoString::parse($expected).unwrap();
+                assert_eq!(rule_set.apply(string), expected);
+            }
+        }
+    };
 }
 
-#[test]
-fn test_apply_word_bounded() {
-    // t -> d / #V_V# : only matches when the t is surrounded by vowels at word boundaries
-    let opts = PhonoRuleParseOpts::default();
-    let rule_set = PhonoRuleSet::parse("t -> d / #V_V#", opts).unwrap();
-    let (_, string) = PhonoString::parse("ata").unwrap();
-    let (_, expected) = PhonoString::parse("ada").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-
-    // "tata" starts with t, not V, so the word-boundary pattern can't match
-    let (_, string) = PhonoString::parse("tata").unwrap();
-    let (_, expected) = PhonoString::parse("tata").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-}
-
-#[test]
-fn test_apply_across_syllables() {
-    // t -> d / #V_V# : only matches when the t is surrounded by vowels at word boundaries
-    let opts = PhonoRuleParseOpts::default();
-    let rule_set = PhonoRuleSet::parse("t -> d / V$_V", opts).unwrap();
-    let (_, string) = PhonoString::parse("mi$tan").unwrap();
-    let (_, expected) = PhonoString::parse("mi$dan").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-
-    // syllable boundary is in the wrong place here
-    let (_, string) = PhonoString::parse("nat$ip").unwrap();
-    let (_, expected) = PhonoString::parse("nat$ip").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-}
-
-#[test]
-fn test_apply_many_options() {
-    let opts = PhonoRuleParseOpts::default();
-    let rule_set = PhonoRuleSet::parse("n -> l / #_(V){s,ʃ,h}V{m,b}#", opts).unwrap();
-
-    let (_, string) = PhonoString::parse("niham").unwrap();
-    let (_, expected) = PhonoString::parse("liham").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-    let (_, string) = PhonoString::parse("nhab").unwrap();
-    let (_, expected) = PhonoString::parse("lhab").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-    let (_, string) = PhonoString::parse("nosim").unwrap();
-    let (_, expected) = PhonoString::parse("losim").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-}
-
-#[test]
-fn test_apply_right_border() {
-    let opts = PhonoRuleParseOpts::default();
-    let rule_set = PhonoRuleSet::parse("j -> ∅ / Ck_$", opts).unwrap();
-
-    let (_, string) = PhonoString::parse("eskj.mo").unwrap();
-    let (_, expected) = PhonoString::parse("esk.mo").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-}
-
-#[test]
-fn test_apply_right_optional() {
-    let opts = PhonoRuleParseOpts::default();
-    let rule_set = PhonoRuleSet::parse("{n,q,h} -> Ø / _(s)", opts).unwrap();
-
-    let (_, string) = PhonoString::parse("oqs.in.ihso").unwrap();
-    let (_, expected) = PhonoString::parse("os.i.iso").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-}
-
-#[test]
-fn test_apply_multiple_and_arrow() {
-    let opts = PhonoRuleParseOpts::default();
-    // the arrow here is a single character
-    let rule_set = PhonoRuleSet::parse("θ ð → t d", opts).unwrap();
-
-    let (_, string) = PhonoString::parse("ði.θo").unwrap();
-    let (_, expected) = PhonoString::parse("di.to").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-}
-
-#[test]
-fn test_apply_shwa_removal() {
-    let opts = PhonoRuleParseOpts::default();
-    // the arrow here is a single character
-    let rule_set = PhonoRuleSet::parse("ə → ∅ / _#", opts).unwrap();
-
-    let (_, string) = PhonoString::parse("taɪmə").unwrap();
-    let (_, expected) = PhonoString::parse("taɪm").unwrap();
-    assert_eq!(rule_set.apply(string), expected);
-}
+gen_test_rule_apply!(intervocalic, "t -> d / V_V", "ata", "ada");
+gen_test_rule_apply!(word_bounded_matches, "t -> d / #V_V#", "ata", "ada");
+gen_test_rule_apply!(word_bounded_no_match, "t -> d / #V_V#", "tata", "tata");
+gen_test_rule_apply!(
+    across_syllables_matches,
+    "t -> d / V$_V",
+    "mi$tan",
+    "mi$dan"
+);
+gen_test_rule_apply!(
+    across_syllables_no_match,
+    "t -> d / V$_V",
+    "nat$ip",
+    "nat$ip"
+);
+gen_test_rule_apply!(
+    many_options_niham,
+    "n -> l / #_(V){s,ʃ,h}V{m,b}#",
+    "niham",
+    "liham"
+);
+gen_test_rule_apply!(
+    many_options_nhab,
+    "n -> l / #_(V){s,ʃ,h}V{m,b}#",
+    "nhab",
+    "lhab"
+);
+gen_test_rule_apply!(
+    many_options_nosim,
+    "n -> l / #_(V){s,ʃ,h}V{m,b}#",
+    "nosim",
+    "losim"
+);
+gen_test_rule_apply!(right_border, "j -> ∅ / Ck_$", "eskj.mo", "esk.mo");
+gen_test_rule_apply!(
+    right_optional,
+    "{n,q,h} -> Ø / _(s)",
+    "oqs.in.ihso",
+    "os.i.iso"
+);
+gen_test_rule_apply!(across_word, "t -> d / V#_V", "a#ta", "a#da");
+gen_test_rule_apply!(shwa_removal_and_arrow, "ə → ∅ / _#", "taɪmə", "taɪm");
+gen_test_rule_apply!(multiple, "θ ð → t d", "ði.θo", "di.to");
