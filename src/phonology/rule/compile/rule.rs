@@ -1,3 +1,4 @@
+use crate::error::*;
 use crate::{
     d3tree,
     phonology::{
@@ -41,7 +42,7 @@ pub fn compile_rule(rule_elements: RuleElements) -> PhonoRule {
 }
 
 /// Compile elements without tags into a phonological string
-pub fn compile_untagged_elements(elements: ElementSequence) -> Result<PhonoString, String> {
+pub fn compile_untagged_elements(elements: ElementSequence) -> Result<PhonoString> {
     let tree = compile_tree(&elements.elems, |_, _| {})?.tree;
     let mut untagged = d3tree![];
     for (_, syls) in tree.iter() {

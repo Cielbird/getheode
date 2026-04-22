@@ -1,5 +1,6 @@
 use std::{collections::HashSet, iter::zip};
 
+use crate::error::*;
 use crate::phonology::rule::{
     SegmentInfo, SyllableInfo,
     parse::{parse_elem::parse_rule_elems, pattern::RuleStrings},
@@ -39,7 +40,7 @@ impl RuleElements {
         output: ElementSequence,
         pre_context: ElementSequence,
         post_context: ElementSequence,
-    ) -> Result<Self, String> {
+    ) -> Result<Self> {
         let mut rule = Self {
             input,
             output,
@@ -48,13 +49,13 @@ impl RuleElements {
         };
 
         if !rule.check_invariants() {
-            return Err("RuleElements invariants not respected".to_string());
+            return Err(Error::other("RuleElements invariants not respected"));
         }
 
         // Tag inputs and outputs
         if !rule.tag_all() {
             // tagging failed
-            return Err("RuleElements : couldn't tag all !".to_string());
+            return Err(Error::other("RuleElements : couldn't tag all !"));
         }
 
         Ok(rule)
@@ -140,17 +141,17 @@ impl RuleElements {
     }
 
     /// Apply the element parsing algo to each possible input, output and context.
-    pub fn from_strings(strings: RuleStrings) -> Result<Vec<Self>, String> {
+    pub fn from_strings(strings: RuleStrings) -> Result<Vec<Self>> {
         // manage the parsing error and remainder
-        fn parse(input: String) -> Result<ElementSequence, String> {
+        fn parse(input: String) -> Result<ElementSequence> {
             if input.is_empty() {
                 return Ok(ElementSequence::new(vec![]));
             }
-            let (rem, elems) = parse_rule_elems(&input).map_err(|x| x.to_string())?;
+            let (rem, elems) = parse_rule_elems(&input).map_err(Error::other)?;
             if !rem.is_empty() {
-                return Err(format!(
+                return Err(Error::other(format!(
                     "Cound't completely parse element sequence, remainder=\"{rem}\""
-                ));
+                )));
             }
             Ok(elems)
         }

@@ -6,12 +6,14 @@ use clap::{Arg, Command};
 
 use getheode::{
     GETHEODE_VERSION,
+    error::*,
     phonology::{rule::PhonoRuleSet, string::PhonoString},
 };
 
-fn file_or_raw(input: &str) -> Result<String, String> {
+fn file_or_raw(input: &str) -> Result<String> {
     if Path::new(input).exists() {
-        fs::read_to_string(input).map_err(|e| format!("Failed to read file '{}': {}", input, e))
+        fs::read_to_string(input)
+            .map_err(|e| Error::other(format!("Failed to read file '{}': {}", input, e)))
     } else {
         Ok(input.to_string())
     }

@@ -3,6 +3,8 @@ use std::{
     ops::Range,
 };
 
+use crate::error::*;
+
 use crate::phonology::tree::iter::IterDepth0;
 
 /// A uniform 3-depth tree, where each "layer" has it's own node data type. Node order relative to
@@ -152,12 +154,12 @@ impl<T0, T1, T2> Depth3Tree<T0, T1, T2> {
         mut self,
         leaf_range: Range<usize>,
         mut replace_with: Depth3Tree<T0, T1, T2>,
-    ) -> Result<Self, String> {
+    ) -> Result<Self> {
         if leaf_range.start >= self.layer_2.len() {
-            return Err("Invalid range".to_string());
+            return Err(Error::other("Invalid range"));
         }
         if leaf_range.end > self.layer_2.len() {
-            return Err("Invalid range".to_string());
+            return Err(Error::other("Invalid range"));
         }
 
         // construct left and right spines

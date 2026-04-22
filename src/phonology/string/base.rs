@@ -2,6 +2,7 @@ use std::{fmt, ops::Range};
 
 use nom::{IResult, Parser};
 
+use crate::error::*;
 use crate::phonology::{
     feature::FeatureState,
     rule::{compile_untagged_elements, parse_rule_elems},
@@ -20,11 +21,7 @@ impl PhonoString {
         Self { tree }
     }
 
-    pub fn replace_range(
-        mut self,
-        range: Range<usize>,
-        replace_with: PhonoString,
-    ) -> Result<Self, String> {
+    pub fn replace_range(mut self, range: Range<usize>, replace_with: PhonoString) -> Result<Self> {
         self.tree = self.tree.replace_range(range, replace_with.tree)?;
 
         Ok(self)

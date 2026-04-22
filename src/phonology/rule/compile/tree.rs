@@ -1,3 +1,4 @@
+use crate::error::*;
 use crate::{
     d3tree,
     phonology::{
@@ -11,7 +12,7 @@ use crate::{
 pub(super) fn compile_tree<F>(
     mut elements: &[Element],
     mut syl_tag_squash_callback: F,
-) -> Result<PhonoStringPattern, String>
+) -> Result<PhonoStringPattern>
 where
     F: FnMut(u32, u32),
 {

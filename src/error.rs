@@ -4,41 +4,38 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
-    IPASymbolParsingError(String),
-    UnknownFeatureName(String),
-    SegmentParsingError(String),
-    SegmentStringParsingError(String),
-    PhonologicalRuleParsingError(String),
-    PhonemeSymbolParsingError(String),
-    GBNFParsingError(String),
-    YamlSyntaxError(serde_yml::Error),
-    YamlFormatError(String),
+    Other(String), // most errors in the getheode engine are this
     Io(std::io::Error),
-
-    Other(String),
+}
+impl Error {
+    pub fn other<T>(text: T) -> Error
+    where
+        T: fmt::Display,
+    {
+        Self::Other(text.to_string())
+    }
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
+        match self {
+            Error::Other(text) => write!(f, "Getheode Error: {text}"),
+            Error::Io(error) => error.fmt(f),
+        }
     }
 }
 
 impl std::error::Error for Error {
-    fn cause(&self) -> Option<&dyn std::error::Error> {
-        // TODO change this in the future
-        None
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Error::Other(_) => None,
+            Error::Io(error) => Some(error),
+        }
     }
 }
 
 impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Self {
         Self::Io(e)
-    }
-}
-
-impl From<serde_yml::Error> for Error {
-    fn from(e: serde_yml::Error) -> Self {
-        Self::YamlSyntaxError(e)
     }
 }

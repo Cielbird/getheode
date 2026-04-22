@@ -7,6 +7,7 @@ use crate::phonology::{
 };
 
 use super::compile::compile_rule;
+use crate::error::*;
 
 pub struct PhonoRuleSet {
     pub rule_text: String,
@@ -27,14 +28,14 @@ impl PhonoRuleSet {
     }
 
     #[allow(clippy::result_unit_err)] // TODO make error types
-    pub fn parse(input: &str, opts: PhonoRuleParseOpts) -> Result<Self, String> {
-        let (rem, patterns) = parse_rule_patterns(input, opts).map_err(|e| e.to_string())?;
+    pub fn parse(input: &str, opts: PhonoRuleParseOpts) -> Result<Self> {
+        let (rem, patterns) = parse_rule_patterns(input, opts).map_err(Error::other)?;
         let elements = RuleElements::from_strings(patterns.enumerate())?;
 
         if !rem.is_empty() {
-            return Err(format!(
+            return Err(Error::other(format!(
                 "Couldn't parse rule set \"{input}\", remainder was {rem}"
-            ));
+            )));
         }
         Ok(Self {
             rule_text: input.to_string(),
