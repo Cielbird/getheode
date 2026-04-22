@@ -25,9 +25,20 @@ https://linguistics.ucla.edu/people/hayes/IP/#features
 
 ## Use
 
-> Due to a re-write under way, the CLI is unusable now.
+### `apply` : Apply a phonological rule
 
-Run a set of phonological rules on a set of words :
+Run a phonological rule on a word :
 
-`cargo run surface -b examples/romanization.txt -r examples/rules.txt -i examples/input.txt`
+```getheode apply -r "n -> l / #_(V){s,ʃ,h}V{m,b}#" -i "nham"```
 
+Output :
+
+```lham```
+
+The rule is :
+
+*n -> l / #_(V){s,ʃ,h}V{m,b}#*
+
+Appied on the word : *[nham]*
+
+Which produces : *[lham]*
