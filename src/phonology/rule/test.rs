@@ -1,9 +1,14 @@
 use crate::{
     d3tree,
     phonology::{
-        feature::FeatureState::*, rule::{
-            PatternBorder, PhonoRule, PhonoRuleParseOpts, PhonoRuleSet, PhonoStringPattern, SegmentInfo, SyllableInfo, TaggedPhonoString
-        }, segment::{SEG_FEATURE_COUNT, SegmentFeatures}, string::PhonoString, syllable::SyllableFeatures
+        feature::FeatureState::*,
+        rule::{
+            PatternBorder, PhonoRule, PhonoRuleParseOpts, PhonoRuleSet, PhonoStringPattern,
+            SegmentInfo, SyllableInfo, TaggedPhonoString,
+        },
+        segment::{SEG_FEATURE_COUNT, SegmentFeatures},
+        string::PhonoString,
+        syllable::SyllableFeatures,
     },
 };
 
@@ -568,8 +573,7 @@ fn test_apply_across_syllables() {
 }
 
 #[test]
-fn test_big_fat_rule() {
-    // TODO this should be made a macro and a bunch of rules should be tested.
+fn test_apply_many_options() {
     let opts = PhonoRuleParseOpts::default();
     let rule_set = PhonoRuleSet::parse("n -> l / #_(V){s,ʃ,h}V{m,b}#", opts).unwrap();
 
@@ -585,7 +589,7 @@ fn test_big_fat_rule() {
 }
 
 #[test]
-fn test_right_border() {
+fn test_apply_rule_right_border() {
     let opts = PhonoRuleParseOpts::default();
     let rule_set = PhonoRuleSet::parse("j -> ∅ / Ck_$", opts).unwrap();
 

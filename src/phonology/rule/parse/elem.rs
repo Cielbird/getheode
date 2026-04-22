@@ -147,7 +147,9 @@ impl RuleElements {
             }
             let (rem, elems) = parse_rule_elems(&input).map_err(|x| x.to_string())?;
             if !rem.is_empty() {
-                return Err(format!("Cound't completely parse element sequence, remainder=\"{rem}\""));
+                return Err(format!(
+                    "Cound't completely parse element sequence, remainder=\"{rem}\""
+                ));
             }
             Ok(elems)
         }

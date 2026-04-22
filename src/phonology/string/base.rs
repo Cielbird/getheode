@@ -3,7 +3,10 @@ use std::{fmt, ops::Range};
 use nom::{IResult, Parser};
 
 use crate::phonology::{
-    rule::{compile_untagged_elements, parse_rule_elems}, segment::{SegmentFeatures, format_segment}, syllable::SyllableFeatures, tree::Depth3Tree
+    rule::{compile_untagged_elements, parse_rule_elems},
+    segment::{SegmentFeatures, format_segment},
+    syllable::SyllableFeatures,
+    tree::Depth3Tree,
 };
 
 #[derive(Debug, Clone, PartialEq)]

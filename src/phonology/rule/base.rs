@@ -200,7 +200,7 @@ impl PhonoRule {
                 // word border if segments have different parents
                 hay_syllables[syl_offset - 1].1 != hay_syllables[syl_offset].1
             };
-            
+
             let last_seg_idx = seg_offset + match_seg_n - 1;
             let right_side_syl_border = if last_seg_idx + 1 == hay_seg_n {
                 // syllable border if it's the last syllable
