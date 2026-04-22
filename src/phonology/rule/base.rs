@@ -16,7 +16,6 @@ use crate::{
 pub struct TaggedPhonoString(Depth3Tree<(), SyllableInfo, SegmentInfo>);
 impl TaggedPhonoString {
     pub(crate) fn new(tree: Depth3Tree<(), SyllableInfo, SegmentInfo>) -> Self {
-        // TODO assert invariants
         Self(tree)
     }
 
