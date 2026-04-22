@@ -59,6 +59,7 @@ pub fn parse_rule_elem(input: &str) -> IResult<&str, Element> {
     parser.parse(input)
 }
 
+/// parse a sequence of segments or boundaries ex: "es#ma.tan"
 pub fn parse_rule_elems(input: &str) -> IResult<&str, ElementSequence> {
     let mut parser = map(many1(parse_rule_elem), ElementSequence::new);
 

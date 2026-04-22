@@ -4,7 +4,7 @@ mod segment_tests {
 
     use crate::phonology::feature::FeatureState::*;
     use crate::phonology::segment::{
-        SegmentFeatures, parse_segment, parse_segment_feature_set, parse_segment_ipa,
+        SegmentFeatures, format, parse_segment, parse_segment_feature_set, parse_segment_ipa,
     };
 
     #[test]
@@ -88,5 +88,27 @@ mod segment_tests {
                 POS, POS, POS, NEG, NEG, NEG, NA, NA, NA, NA, NA
             ]),
         );
+    }
+
+    #[test]
+    fn test_format_i() {
+        // this could also be ɤʲ !
+        let segment = SegmentFeatures::from_features([
+            POS, NEG, NEG, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, NEG,
+            NA, NA, NA, NEG, POS, POS, NEG, POS, NEG, POS,
+        ]);
+        let result = format::format_segment(&segment);
+        assert_eq!(result, "i",);
+    }
+
+    #[test]
+    fn test_format_l_diacritic() {
+        // this is lʲ !
+        let segment = SegmentFeatures::from_features([
+            NEG, NEG, POS, POS, POS, NEG, POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, NEG, POS,
+            POS, NEG, NEG, POS, NEG, POS, NEG, POS, NEG, NA,
+        ]);
+        let result = format::format_segment(&segment);
+        assert_eq!(result, "lʲ",);
     }
 }

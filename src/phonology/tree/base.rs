@@ -156,7 +156,7 @@ impl<T0, T1, T2> Depth3Tree<T0, T1, T2> {
         if leaf_range.start >= self.layer_2.len() {
             return Err("Invalid range".to_string());
         }
-        if leaf_range.end >= self.layer_2.len() {
+        if leaf_range.end > self.layer_2.len() {
             return Err("Invalid range".to_string());
         }
 

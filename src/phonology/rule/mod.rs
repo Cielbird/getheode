@@ -4,6 +4,7 @@ mod parse;
 mod pattern;
 mod set;
 
+pub use compile::*;
 pub use base::*;
 pub use parse::*;
 pub use pattern::*;

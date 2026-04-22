@@ -142,6 +142,9 @@ impl RuleElements {
     pub fn from_strings(strings: RuleStrings) -> Result<Vec<Self>, ()> {
         // manage the parsing error and remainder
         fn parse(input: String) -> Result<ElementSequence, ()> {
+            if input.is_empty() {
+                return Ok(ElementSequence::new(vec![]));
+            }
             let (rem, elems) = parse_rule_elems(&input).map_err(|_x| ())?;
             if !rem.is_empty() {
                 return Err(());

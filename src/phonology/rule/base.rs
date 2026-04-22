@@ -113,6 +113,7 @@ impl PhonoRule {
     pub fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
         let mut matches_vec = vec![];
 
+        let hay_words = hay.tree.layer_0();
         let hay_syllables = hay.tree.layer_1();
         let hay_segments = hay.tree.layer_2();
         let pattern_words = self.pattern.tree.words();
@@ -121,9 +122,13 @@ impl PhonoRule {
 
         let hay_seg_n = hay_segments.len();
         let hay_syl_n = hay_syllables.len();
+        let hay_word_n = hay_words.len();
         let match_seg_n = pattern_segments.len();
         let match_syl_n = pattern_syllables.len();
         let match_word_n = pattern_words.len();
+        if hay_seg_n < match_seg_n || hay_syl_n < match_syl_n || hay_word_n < match_word_n {
+            return vec![];
+        }
         for seg_offset in 0..(hay_seg_n - match_seg_n + 1) {
             // iterate on segments
             let mut segments_match = true;

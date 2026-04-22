@@ -1,6 +1,9 @@
-use crate::phonology::rule::{
-    PhonoRule,
-    parse::{PhonoRuleParseOpts, RuleElements, parse_rule_patterns},
+use crate::phonology::{
+    rule::{
+        PhonoRule,
+        parse::{PhonoRuleParseOpts, RuleElements, parse_rule_patterns},
+    },
+    string::PhonoString,
 };
 
 pub struct PhonoRuleSet {
@@ -9,6 +12,17 @@ pub struct PhonoRuleSet {
 }
 
 impl PhonoRuleSet {
+    pub fn apply(&self, mut string: PhonoString) -> PhonoString {
+        for rule in &self.rules {
+            let mut matches = rule.find(string.clone());
+            matches.sort_by(|a, b| b.range.start.cmp(&a.range.start));
+            for m in matches {
+                string = string.replace_range(m.range, m.replace_with).unwrap();
+            }
+        }
+        string
+    }
+
     #[allow(clippy::result_unit_err)] // TODO make error types
     pub fn parse(input: &str) -> Result<Self, ()> {
         let (_, patterns) =
