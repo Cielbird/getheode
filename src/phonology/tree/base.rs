@@ -141,10 +141,6 @@ impl<T0, T1, T2> Depth3Tree<T0, T1, T2> {
         true
     }
 
-    pub fn n_leaves(&self) -> usize {
-        todo!()
-    }
-
     /// Replace a section of the tree delimited by a range on leaf nodes, up to the root.
     /// The leaf node range creates two "spines", which cut out a subtree, from the root.
     /// This zone is replaced with another UniformDepth3Tree.

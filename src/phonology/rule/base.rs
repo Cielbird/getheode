@@ -223,9 +223,6 @@ impl PhonoRule {
                 .left_bound
                 .respects(left_side_syl_border, left_side_word_border);
             if !left_bound_respected {
-                println!(
-                    "left bound not respected: {seg_offset}, {syl_offset}, {right_side_syl_border}{right_side_word_border}"
-                );
                 continue;
             }
 
@@ -235,9 +232,6 @@ impl PhonoRule {
                 .respects(right_side_syl_border, right_side_word_border);
 
             if !right_bound_respected {
-                println!(
-                    "right bound not respected: {seg_offset}, {syl_offset}, {right_side_syl_border}{right_side_word_border}"
-                );
                 continue;
             }
 

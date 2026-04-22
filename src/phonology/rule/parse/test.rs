@@ -23,7 +23,6 @@ macro_rules! test_phono_rule_syntax {
         paste! {
             #[test]
             fn [<test_rule_ $name>]() {
-                // println!("Testing phonological rule : {}", stringify!($name));
                 let opts = $crate::phonology::rule::parse::PhonoRuleParseOpts::default();
                 let (rem, _pat) = $crate::phonology::rule::parse::parse_patterns::parse_rule_patterns($rule, opts).unwrap();
                 assert_eq!("", rem);
@@ -109,7 +108,6 @@ fn test_parse_branch() {
 #[test]
 fn test_parse_pattern() {
     let (remaining, pat) = parse_rule_pattern("{V[+ant-dist+cor], a}S ").unwrap();
-    println!("{:?}", pat);
     assert_eq!(remaining, " ");
     assert_eq!(
         pat.root,
@@ -265,7 +263,6 @@ fn test_parse_rule_strings() {
 
     // assert no tags
     // ʃ
-    println!("{:?}", input_1);
     assert!(matches!(
         input_1,
         Element::Features(
@@ -420,8 +417,4 @@ fn test_compile_rule() {
     );
 
     assert!(result.test_invariants());
-
-    dbg!(result.pattern.left_bound);
-    dbg!(result.pattern.right_bound);
-    println!("{}", result.pattern.tree.pretty_format());
 }

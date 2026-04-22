@@ -209,7 +209,7 @@ impl RuleElements {
         tag_context(&mut self.pre_context.elems, &mut syl_tags, &mut seg_tags);
         tag_context(&mut self.post_context.elems, &mut syl_tags, &mut seg_tags);
 
-        // todo!("Tag untagged border elements in input and output");
+        // todo!("Tag untagged border syllables in input and output..?");
 
         self.check_invariants()
     }
