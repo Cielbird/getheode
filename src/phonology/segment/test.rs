@@ -2,14 +2,17 @@
 #[cfg(test)]
 mod segment_tests {
 
+    use nom::Parser as _;
+
     use crate::phonology::feature::FeatureState::*;
     use crate::phonology::segment::{
-        SegmentFeatures, format, parse_segment, parse_segment_feature_set, parse_segment_ipa,
+        SegmentFeatures, format, parse_ipa_base, parse_segment, parse_segment_feature_set,
+        with_ipa_diacritics,
     };
 
     #[test]
     fn test_segment_from_ipa() {
-        let (remaining, seg) = parse_segment_ipa("a").unwrap();
+        let (remaining, seg) = parse_ipa_base("a").unwrap();
         assert_eq!(remaining, "");
         assert_eq!(
             seg,
@@ -36,7 +39,8 @@ mod segment_tests {
 
     #[test]
     fn test_parse_ipa_with_diacritic() {
-        let (remaining, seg) = parse_segment_ipa("ɣ˕").unwrap();
+        let mut parser = with_ipa_diacritics(parse_ipa_base);
+        let (remaining, seg) = parser.parse("ɣ˕").unwrap();
         assert_eq!(remaining, "");
         assert_eq!(
             seg,

@@ -66,17 +66,13 @@ impl SegmentFeatures {
         true
     }
 
-    /// returns the number of features that would have to change
-    /// to make the lhs segment equal to the rhs one
-    fn _dist(&self, other: &SegmentFeatures) -> u8 {
-        let mut dist = 0;
-        for i in 0..(SEG_FEATURE_COUNT as usize) {
-            if self.features[i] != other.features[i] {
-                dist += 1;
-            }
-        }
-
-        dist
+    // Number of POS/NEG features in `target` that differ from `base`: the cost of choosing `base`.
+    pub fn diff_count(base: &Self, target: &Self) -> usize {
+        base.features
+            .iter()
+            .zip(target.features.iter())
+            .filter(|(b, t)| matches!(t, FeatureState::POS | FeatureState::NEG) && t != b)
+            .count()
     }
 }
 

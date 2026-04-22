@@ -19,7 +19,7 @@ impl Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::Other(text) => write!(f, "Getheode Error: {text}"),
+            Error::Other(text) => write!(f, "Getheode: {text}"),
             Error::Io(error) => error.fmt(f),
         }
     }

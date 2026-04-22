@@ -29,25 +29,41 @@ fn match_diacritics(
 }
 
 pub fn format_segment(segment: &SegmentFeatures) -> String {
-    // Pass 1: exact base match — prioritised to avoid e.g. ɤʲ when i is correct
+    // exact base match — prioritised to avoid e.g. ɤʲ when i is correct
     for (sym, seg) in IPA_BASES {
         if seg == segment {
             return sym.to_string();
         }
     }
-    // Pass 2: base + diacritics (recursive, up to MAX_DIACRITICS deep)
+    // base + diacritics (recursive, up to MAX_DIACRITICS deep)
     for (sym, seg) in IPA_BASES {
         if let Some(diacritics) = match_diacritics(seg.clone(), segment, MAX_DIACRITICS) {
             return format!("{}{}", sym, diacritics);
         }
     }
-    // natural class fallback
+    // natural class exact match
     for (sym, seg) in NATURAL_CLASSES {
         if seg == segment {
             return sym.to_string();
         }
     }
-    // feature list fallback
+    // ipa base + minimal feature list: pick the base that minimises appended features
+    if let Some((sym, base)) = IPA_BASES
+        .iter()
+        .min_by_key(|(_, seg)| SegmentFeatures::diff_count(seg, segment))
+    {
+        return format!("{}[{}]", sym, diff_feature_list(base, segment));
+    }
+
+    // natural class + minimal feature list: pick the base that minimises appended features
+    if let Some((sym, base)) = NATURAL_CLASSES
+        .iter()
+        .min_by_key(|(_, seg)| SegmentFeatures::diff_count(seg, segment))
+    {
+        return format!("{}[{}]", sym, diff_feature_list(base, segment));
+    }
+
+    // bare feature list (unreachable while IPA_BASES and NATURAL_CLASSES is non-empty)
     let mut result = "[".to_string();
     for (i, feature) in SEG_FEATURE_NAMES.iter().enumerate() {
         if segment.features[i] == FeatureState::NA {
@@ -58,10 +74,27 @@ pub fn format_segment(segment: &SegmentFeatures) -> String {
             result = result + "-" + feature;
         }
     }
-
     result + "]"
 }
 
-pub fn format_segment_ipa(_seg: &SegmentFeatures) -> String {
-    todo!()
+// Feature list string for features where `target` is POS/NEG and differs from `base`.
+fn diff_feature_list(base: &SegmentFeatures, target: &SegmentFeatures) -> String {
+    let mut result = String::new();
+    for (i, (b, t)) in base.features.iter().zip(target.features.iter()).enumerate() {
+        if t == b {
+            continue;
+        }
+        match t {
+            FeatureState::POS => {
+                result.push('+');
+                result.push_str(SEG_FEATURE_NAMES[i]);
+            }
+            FeatureState::NEG => {
+                result.push('-');
+                result.push_str(SEG_FEATURE_NAMES[i]);
+            }
+            _ => {}
+        }
+    }
+    result
 }

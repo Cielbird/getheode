@@ -19,7 +19,10 @@ use crate::phonology::segment::{
 pub fn parse_segment(input: &str) -> IResult<&str, SegmentFeatures> {
     let mut parser = map(
         (
-            alt((parse_segment_ipa, parse_natural_class)),
+            alt((
+                with_ipa_diacritics(parse_ipa_base),
+                with_ipa_diacritics(parse_natural_class),
+            )),
             opt(delimited(tag("["), parse_segment_feature_set, tag("]"))),
         ),
         // apply feature set in brackets to the ipa symbol or class symbol
@@ -79,21 +82,25 @@ pub(crate) fn parse_ipa_diacritic(input: &str) -> IResult<&str, SegmentFeatures>
     }
 }
 
-/// parse an IPA symbol, with diacritics
+/// parse diacritics following any segment parser.
+/// useful for diacritics after ipa characters as well as after natural class labels
 /// ex : "t̪"
 /// see https://www.unicode.org/reports/tr15/#Canon_Compat_Equivalence
-pub(crate) fn parse_segment_ipa(input: &str) -> IResult<&str, SegmentFeatures> {
-    let mut parser = map(
-        (parse_ipa_base, many0(parse_ipa_diacritic)),
+pub(crate) fn with_ipa_diacritics<'a, P>(
+    parser: P,
+) -> impl nom::Parser<&'a str, Output = SegmentFeatures, Error = Error<&'a str>>
+where
+    P: nom::Parser<&'a str, Output = SegmentFeatures, Error = Error<&'a str>>,
+{
+    map(
+        (parser, many0(parse_ipa_diacritic)),
         |(mut base, diacritics)| {
             for d in diacritics {
                 base = base + d;
             }
             base
         },
-    );
-
-    parser.parse(input)
+    )
 }
 
 /// parse a natural class
