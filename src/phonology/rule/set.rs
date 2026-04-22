@@ -24,10 +24,14 @@ impl PhonoRuleSet {
     }
 
     #[allow(clippy::result_unit_err)] // TODO make error types
-    pub fn parse(input: &str) -> Result<Self, ()> {
-        let (_, patterns) =
-            parse_rule_patterns(input, PhonoRuleParseOpts::default()).map_err(|_| ())?;
+    pub fn parse(input: &str, opts: PhonoRuleParseOpts) -> Result<Self, String> {
+        let (rem, patterns) = parse_rule_patterns(input, opts).map_err(|e| e.to_string())?;
         let elements = RuleElements::from_strings(patterns.enumerate())?;
+        if rem != "" {
+            return Err(format!(
+                "Couldn't parse rule set \"{input}\", remainder was {rem}"
+            ));
+        }
         Ok(Self {
             rule_text: input.to_string(),
             rules: elements

@@ -2,8 +2,7 @@ use crate::{
     d3tree,
     phonology::{
         feature::FeatureState::*, rule::{
-            PatternBorder, PhonoRule, PhonoRuleSet, PhonoStringPattern, SegmentInfo, SyllableInfo,
-            TaggedPhonoString,
+            PatternBorder, PhonoRule, PhonoRuleParseOpts, PhonoRuleSet, PhonoStringPattern, SegmentInfo, SyllableInfo, TaggedPhonoString
         }, segment::{SEG_FEATURE_COUNT, SegmentFeatures}, string::PhonoString, syllable::SyllableFeatures
     },
 };
@@ -531,7 +530,8 @@ fn test_invalid_rule_undef_id() {
 #[test]
 fn test_apply_intervocalic() {
     // t -> d / V_V : intervocalic voicing, no boundary constraints
-    let rule_set = PhonoRuleSet::parse("t -> d / V_V").unwrap();
+    let opts = PhonoRuleParseOpts::default();
+    let rule_set = PhonoRuleSet::parse("t -> d / V_V", opts).unwrap();
     let (_, string) = PhonoString::parse("ata").unwrap();
     let (_, expected) = PhonoString::parse("ada").unwrap();
     assert_eq!(rule_set.apply(string), expected);
@@ -540,7 +540,8 @@ fn test_apply_intervocalic() {
 #[test]
 fn test_apply_word_bounded() {
     // t -> d / #V_V# : only matches when the t is surrounded by vowels at word boundaries
-    let rule_set = PhonoRuleSet::parse("t -> d / #V_V#").unwrap();
+    let opts = PhonoRuleParseOpts::default();
+    let rule_set = PhonoRuleSet::parse("t -> d / #V_V#", opts).unwrap();
     let (_, string) = PhonoString::parse("ata").unwrap();
     let (_, expected) = PhonoString::parse("ada").unwrap();
     assert_eq!(rule_set.apply(string), expected);
@@ -554,7 +555,8 @@ fn test_apply_word_bounded() {
 #[test]
 fn test_apply_across_syllables() {
     // t -> d / #V_V# : only matches when the t is surrounded by vowels at word boundaries
-    let rule_set = PhonoRuleSet::parse("t -> d / V$_V").unwrap();
+    let opts = PhonoRuleParseOpts::default();
+    let rule_set = PhonoRuleSet::parse("t -> d / V$_V", opts).unwrap();
     let (_, string) = PhonoString::parse("mi$tan").unwrap();
     let (_, expected) = PhonoString::parse("mi$dan").unwrap();
     assert_eq!(rule_set.apply(string), expected);
@@ -568,7 +570,9 @@ fn test_apply_across_syllables() {
 #[test]
 fn test_big_fat_rule() {
     // TODO this should be made a macro and a bunch of rules should be tested.
-    let rule_set = PhonoRuleSet::parse("n -> l / #_(V){s,ʃ,h}V{m,b}#").unwrap();
+    let opts = PhonoRuleParseOpts::default();
+    let rule_set = PhonoRuleSet::parse("n -> l / #_(V){s,ʃ,h}V{m,b}#", opts).unwrap();
+
     let (_, string) = PhonoString::parse("niham").unwrap();
     let (_, expected) = PhonoString::parse("liham").unwrap();
     assert_eq!(rule_set.apply(string), expected);
@@ -577,5 +581,15 @@ fn test_big_fat_rule() {
     assert_eq!(rule_set.apply(string), expected);
     let (_, string) = PhonoString::parse("nosim").unwrap();
     let (_, expected) = PhonoString::parse("losim").unwrap();
+    assert_eq!(rule_set.apply(string), expected);
+}
+
+#[test]
+fn test_right_border() {
+    let opts = PhonoRuleParseOpts::default();
+    let rule_set = PhonoRuleSet::parse("j -> ∅ / Ck_$", opts).unwrap();
+
+    let (_, string) = PhonoString::parse("eskj.mo").unwrap();
+    let (_, expected) = PhonoString::parse("esk.mo").unwrap();
     assert_eq!(rule_set.apply(string), expected);
 }

@@ -38,12 +38,12 @@ pub enum PatternBorder {
 }
 
 impl PatternBorder {
-    pub fn respects(&self, is_segment_on_border: bool, is_syllable_on_border: bool) -> bool {
+    pub fn respects(&self, on_syllable_border: bool, on_word_border: bool) -> bool {
         match self {
-            PatternBorder::Word => is_segment_on_border && is_syllable_on_border,
-            PatternBorder::SyllableOrWord => is_segment_on_border,
-            PatternBorder::StrictSyllable => is_segment_on_border && !is_syllable_on_border,
-            PatternBorder::StrictSegment => !is_segment_on_border,
+            PatternBorder::Word => on_syllable_border && on_word_border,
+            PatternBorder::SyllableOrWord => on_syllable_border,
+            PatternBorder::StrictSyllable => on_syllable_border && !on_word_border,
+            PatternBorder::StrictSegment => !on_syllable_border,
             PatternBorder::Any => true,
         }
     }

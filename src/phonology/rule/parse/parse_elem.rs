@@ -1,4 +1,5 @@
 use crate::phonology::rule::parse::elem::{Element, ElementSequence};
+use crate::phonology::rule::parse::parse_patterns::parse_elem_null;
 use crate::phonology::rule::{SegmentInfo, SyllableInfo};
 use crate::phonology::segment::parse_segment;
 use crate::phonology::syllable::SyllableFeatures;
@@ -61,7 +62,11 @@ pub fn parse_rule_elem(input: &str) -> IResult<&str, Element> {
 
 /// parse a sequence of segments or boundaries ex: "es#ma.tan"
 pub fn parse_rule_elems(input: &str) -> IResult<&str, ElementSequence> {
-    let mut parser = map(many1(parse_rule_elem), ElementSequence::new);
+    let sequence = map(many1(parse_rule_elem), ElementSequence::new);
+    // an empty sequence is just a ∅ character
+    let empty = map(one_of("∅Ø"), |_| ElementSequence::new(vec![]));
+    
+    let mut parser = alt((sequence, empty));
 
     parser.parse(input)
 }

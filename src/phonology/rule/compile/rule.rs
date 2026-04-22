@@ -6,13 +6,12 @@ use crate::{
             parse::{Element, RuleElements},
         },
         string::PhonoString,
-        tree::iter::IterDepth2
     },
 };
 
 use super::tree::compile_tree;
 
-pub(crate) fn compile_rule(rule_elements: RuleElements) -> PhonoRule {
+pub fn compile_rule(rule_elements: RuleElements) -> PhonoRule {
     let mut input_elems = rule_elements.pre_context_clone().elems;
     input_elems.extend(rule_elements.input_clone().elems);
     input_elems.extend(rule_elements.post_context_clone().elems);

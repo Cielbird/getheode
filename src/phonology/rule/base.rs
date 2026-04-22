@@ -186,42 +186,46 @@ impl PhonoRule {
             }
 
             // check borders
-            let left_segment_on_border = if seg_offset == 0 {
+            let left_side_syl_border = if seg_offset == 0 {
                 // syllable border if it's the first segment
                 true
             } else {
                 // syllable border if segments have different parents
                 hay_segments[seg_offset - 1].1 != hay_segments[seg_offset].1
             };
-            let left_syllable_on_border = if syl_offset == 0 {
-                // syllable border if it's the first segment
+            let left_side_word_border = if syl_offset == 0 {
+                // word border if it's the first segment
                 true
             } else {
-                // syllable border if segments have different parents
+                // word border if segments have different parents
                 hay_syllables[syl_offset - 1].1 != hay_syllables[syl_offset].1
             };
-            let right_segment_on_border = if seg_offset + match_seg_n == hay_seg_n {
-                // syllable border if it's the first segment
+            
+            let last_seg_idx = seg_offset + match_seg_n - 1;
+            let right_side_syl_border = if last_seg_idx + 1 == hay_seg_n {
+                // syllable border if it's the last syllable
                 true
             } else {
-                // syllable border if segments have different parents
-                hay_segments[seg_offset + 1].1 != hay_segments[seg_offset].1
+                // syllable border if syllables have different parents
+                hay_segments[last_seg_idx].1 != hay_segments[last_seg_idx + 1].1
             };
-            let right_syllable_on_border = if syl_offset + match_syl_n == hay_syl_n {
-                // syllable border if it's the first segment
+
+            let last_syl_idx = syl_offset + match_syl_n - 1;
+            let right_side_word_border = if last_syl_idx + 1 == hay_syl_n {
+                // word border if it's the last syllable
                 true
             } else {
-                // syllable border if segments have different parents
-                hay_syllables[syl_offset + 1].1 != hay_syllables[syl_offset].1
+                // word border if syllables have different parents
+                hay_syllables[last_syl_idx].1 != hay_syllables[last_syl_idx + 1].1
             };
 
             let left_bound_respected = self
                 .pattern
                 .left_bound
-                .respects(left_segment_on_border, left_syllable_on_border);
+                .respects(left_side_syl_border, left_side_word_border);
             if !left_bound_respected {
                 println!(
-                    "left bound not respected: {seg_offset}, {syl_offset}, {right_segment_on_border}{right_syllable_on_border}"
+                    "left bound not respected: {seg_offset}, {syl_offset}, {right_side_syl_border}{right_side_word_border}"
                 );
                 continue;
             }
@@ -229,11 +233,11 @@ impl PhonoRule {
             let right_bound_respected = self
                 .pattern
                 .right_bound
-                .respects(right_segment_on_border, right_syllable_on_border);
+                .respects(right_side_syl_border, right_side_word_border);
 
             if !right_bound_respected {
                 println!(
-                    "right bound not respected: {seg_offset}, {syl_offset}, {right_segment_on_border}{right_syllable_on_border}"
+                    "right bound not respected: {seg_offset}, {syl_offset}, {right_side_syl_border}{right_side_word_border}"
                 );
                 continue;
             }

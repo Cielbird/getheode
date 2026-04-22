@@ -59,12 +59,13 @@ fn main() {
                     std::process::exit(1);
                 });
 
-            let rule_set = PhonoRuleSet::parse(rule_str.trim()).unwrap_or_else(|_| {
-                eprintln!("Failed to parse rule: {rule_str}");
+            let opts = Default::default();
+            let rule_set = PhonoRuleSet::parse(rule_str.trim(), opts).unwrap_or_else(|e| {
+                eprintln!("Error parsing rule \"{rule_str}\"\n{e}");
                 std::process::exit(1);
             });
             let (_, string) = PhonoString::parse(input_str.trim()).unwrap_or_else(|e| {
-                eprintln!("Failed to parse input: {e}");
+                eprintln!("Error parsing input \"{input_str}\"\n{e}");
                 std::process::exit(1);
             });
 

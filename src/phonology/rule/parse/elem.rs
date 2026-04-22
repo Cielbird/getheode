@@ -38,7 +38,7 @@ impl RuleElements {
         output: ElementSequence,
         pre_context: ElementSequence,
         post_context: ElementSequence,
-    ) -> Result<Self, ()> {
+    ) -> Result<Self, String> {
         let mut rule = Self {
             input,
             output,
@@ -47,13 +47,13 @@ impl RuleElements {
         };
 
         if !rule.check_invariants() {
-            return Err(());
+            return Err("RuleElements invariants not respected".to_string());
         }
 
         // Tag inputs and outputs
         if !rule.tag_all() {
             // tagging failed
-            return Err(());
+            return Err("RuleElements : couldn't tag all !".to_string());
         }
 
         Ok(rule)
@@ -139,15 +139,15 @@ impl RuleElements {
     }
 
     /// Apply the element parsing algo to each possible input, output and context.
-    pub fn from_strings(strings: RuleStrings) -> Result<Vec<Self>, ()> {
+    pub fn from_strings(strings: RuleStrings) -> Result<Vec<Self>, String> {
         // manage the parsing error and remainder
-        fn parse(input: String) -> Result<ElementSequence, ()> {
+        fn parse(input: String) -> Result<ElementSequence, String> {
             if input.is_empty() {
                 return Ok(ElementSequence::new(vec![]));
             }
-            let (rem, elems) = parse_rule_elems(&input).map_err(|_x| ())?;
+            let (rem, elems) = parse_rule_elems(&input).map_err(|x| x.to_string())?;
             if !rem.is_empty() {
-                return Err(());
+                return Err(format!("Cound't completely parse element sequence, remainder=\"{rem}\""));
             }
             Ok(elems)
         }
