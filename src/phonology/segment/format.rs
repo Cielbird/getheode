@@ -7,6 +7,62 @@ use crate::phonology::{
 // ɤ+ʲ has the same features as i; exact base matches are tried first to avoid ɤʲ for i.
 const MAX_DIACRITICS: usize = 1;
 
+pub fn format_segment(segment: &SegmentFeatures) -> String {
+    format_ipa_exact(segment)
+        .or_else(|| format_ipa_diacritics(segment))
+        .or_else(|| format_natural_class_exact(segment))
+        .or_else(|| format_ipa_feature_list(segment))
+        .or_else(|| format_natural_class_feature_list(segment))
+        .unwrap_or_else(|| format_bare_feature_list(segment))
+}
+
+fn format_ipa_exact(segment: &SegmentFeatures) -> Option<String> {
+    IPA_BASES
+        .iter()
+        .find(|(_, seg)| seg == segment)
+        .map(|(sym, _)| sym.to_string())
+}
+
+fn format_ipa_diacritics(segment: &SegmentFeatures) -> Option<String> {
+    IPA_BASES.iter().find_map(|(sym, seg)| {
+        match_diacritics(seg.clone(), segment, MAX_DIACRITICS)
+            .map(|diacritics| format!("{}{}", sym, diacritics))
+    })
+}
+
+fn format_natural_class_exact(segment: &SegmentFeatures) -> Option<String> {
+    NATURAL_CLASSES
+        .iter()
+        .find(|(_, seg)| seg == segment)
+        .map(|(sym, _)| sym.to_string())
+}
+
+fn format_ipa_feature_list(segment: &SegmentFeatures) -> Option<String> {
+    IPA_BASES
+        .iter()
+        .min_by_key(|(_, seg)| SegmentFeatures::diff_count(seg, segment))
+        .map(|(sym, base)| format!("{}[{}]", sym, diff_feature_list(base, segment)))
+}
+
+fn format_natural_class_feature_list(segment: &SegmentFeatures) -> Option<String> {
+    NATURAL_CLASSES
+        .iter()
+        .min_by_key(|(_, seg)| SegmentFeatures::diff_count(seg, segment))
+        .map(|(sym, base)| format!("{}[{}]", sym, diff_feature_list(base, segment)))
+}
+
+fn format_bare_feature_list(segment: &SegmentFeatures) -> String {
+    let mut result = "[".to_string();
+    for (i, feature) in SEG_FEATURE_NAMES.iter().enumerate() {
+        match segment.features[i] {
+            FeatureState::POS => result = result + "+" + feature,
+            FeatureState::NEG => result = result + "-" + feature,
+            _ => {}
+        }
+    }
+    result + "]"
+}
+
 // Returns the diacritic string to append to a base to reach `target`, or None.
 fn match_diacritics(
     seg: SegmentFeatures,
@@ -26,55 +82,6 @@ fn match_diacritics(
         }
     }
     None
-}
-
-pub fn format_segment(segment: &SegmentFeatures) -> String {
-    // exact base match — prioritised to avoid e.g. ɤʲ when i is correct
-    for (sym, seg) in IPA_BASES {
-        if seg == segment {
-            return sym.to_string();
-        }
-    }
-    // base + diacritics (recursive, up to MAX_DIACRITICS deep)
-    for (sym, seg) in IPA_BASES {
-        if let Some(diacritics) = match_diacritics(seg.clone(), segment, MAX_DIACRITICS) {
-            return format!("{}{}", sym, diacritics);
-        }
-    }
-    // natural class exact match
-    for (sym, seg) in NATURAL_CLASSES {
-        if seg == segment {
-            return sym.to_string();
-        }
-    }
-    // ipa base + minimal feature list: pick the base that minimises appended features
-    if let Some((sym, base)) = IPA_BASES
-        .iter()
-        .min_by_key(|(_, seg)| SegmentFeatures::diff_count(seg, segment))
-    {
-        return format!("{}[{}]", sym, diff_feature_list(base, segment));
-    }
-
-    // natural class + minimal feature list: pick the base that minimises appended features
-    if let Some((sym, base)) = NATURAL_CLASSES
-        .iter()
-        .min_by_key(|(_, seg)| SegmentFeatures::diff_count(seg, segment))
-    {
-        return format!("{}[{}]", sym, diff_feature_list(base, segment));
-    }
-
-    // bare feature list (unreachable while IPA_BASES and NATURAL_CLASSES is non-empty)
-    let mut result = "[".to_string();
-    for (i, feature) in SEG_FEATURE_NAMES.iter().enumerate() {
-        if segment.features[i] == FeatureState::NA {
-            continue;
-        } else if segment.features[i] == FeatureState::POS {
-            result = result + "+" + feature;
-        } else if segment.features[i] == FeatureState::NEG {
-            result = result + "-" + feature;
-        }
-    }
-    result + "]"
 }
 
 // Feature list string for features where `target` is POS/NEG and differs from `base`.
