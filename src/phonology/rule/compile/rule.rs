@@ -33,13 +33,7 @@ pub fn compile_rule(rule_elements: RuleElements) -> PhonoRule {
     })
     .unwrap();
 
-    let replace_tree = if output_elems.is_empty() {
-        // output is deletion edge case :
-        let first_syl = SyllableInfo::new(None, SyllableFeatures::new_undef());
-        TaggedPhonoString::new(d3tree![() => [first_syl => []]])
-    } else {
-        compile_tree(&output_elems, |_, _| {}).unwrap().tree
-    };
+    let replace_tree = compile_tree(&output_elems, |_, _| {}).unwrap().tree;
 
     PhonoRule {
         pattern,

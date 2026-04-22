@@ -589,7 +589,7 @@ fn test_apply_many_options() {
 }
 
 #[test]
-fn test_apply_rule_right_border() {
+fn test_apply_right_border() {
     let opts = PhonoRuleParseOpts::default();
     let rule_set = PhonoRuleSet::parse("j -> ∅ / Ck_$", opts).unwrap();
 
@@ -599,7 +599,7 @@ fn test_apply_rule_right_border() {
 }
 
 #[test]
-fn test_apply_rule_right_optional() {
+fn test_apply_right_optional() {
     let opts = PhonoRuleParseOpts::default();
     let rule_set = PhonoRuleSet::parse("{n,q,h} -> Ø / _(s)", opts).unwrap();
 
@@ -609,12 +609,23 @@ fn test_apply_rule_right_optional() {
 }
 
 #[test]
-fn test_apply_rule_multiple_and_arrow() {
+fn test_apply_multiple_and_arrow() {
     let opts = PhonoRuleParseOpts::default();
     // the arrow here is a single character
     let rule_set = PhonoRuleSet::parse("θ ð → t d", opts).unwrap();
 
     let (_, string) = PhonoString::parse("ði.θo").unwrap();
     let (_, expected) = PhonoString::parse("di.to").unwrap();
+    assert_eq!(rule_set.apply(string), expected);
+}
+
+#[test]
+fn test_apply_shwa_removal() {
+    let opts = PhonoRuleParseOpts::default();
+    // the arrow here is a single character
+    let rule_set = PhonoRuleSet::parse("ə → ∅ / _#", opts).unwrap();
+
+    let (_, string) = PhonoString::parse("taɪmə").unwrap();
+    let (_, expected) = PhonoString::parse("taɪm").unwrap();
     assert_eq!(rule_set.apply(string), expected);
 }

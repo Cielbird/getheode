@@ -6,6 +6,8 @@ use crate::phonology::{
     string::PhonoString,
 };
 
+use super::compile::compile_rule;
+
 pub struct PhonoRuleSet {
     pub rule_text: String,
     pub rules: Vec<PhonoRule>,
@@ -27,6 +29,7 @@ impl PhonoRuleSet {
     pub fn parse(input: &str, opts: PhonoRuleParseOpts) -> Result<Self, String> {
         let (rem, patterns) = parse_rule_patterns(input, opts).map_err(|e| e.to_string())?;
         let elements = RuleElements::from_strings(patterns.enumerate())?;
+
         if !rem.is_empty() {
             return Err(format!(
                 "Couldn't parse rule set \"{input}\", remainder was {rem}"
@@ -36,7 +39,7 @@ impl PhonoRuleSet {
             rule_text: input.to_string(),
             rules: elements
                 .into_iter()
-                .map(super::compile::compile_rule)
+                .map(compile_rule)
                 .collect(),
         })
     }

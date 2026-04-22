@@ -1,40 +1,67 @@
 use crate::{
     d3tree,
-    phonology::rule::{PatternBorder, PhonoStringPattern, parse::Element},
+    phonology::{rule::{PatternBorder, PhonoStringPattern, SyllableInfo, parse::Element}, syllable::SyllableFeatures},
 };
 
 /// Compiles a sequence of `elements` into a tagged phonological string.
 /// `syl_tag_squash_callback` is called when two syllable nodes are merged and a tag is lost.
 pub(super) fn compile_tree<F>(
-    elements: &[Element],
+    mut elements: &[Element],
     mut syl_tag_squash_callback: F,
 ) -> Result<PhonoStringPattern, String>
 where
     F: FnMut(u32, u32),
 {
-    if elements.is_empty() {
-        return Err("Can't construct tree from 0 elements".to_string());
-    }
+    // parse possible initial boundary
+    let left_bound = match elements.first() {
+        Some(Element::Features(_, _)) => PatternBorder::Any,
+        Some(bound) => {
+            // remove initial boundary
+            elements = &elements[1..];
+            match bound {
+                Element::WordBoundary => PatternBorder::Word,
+                Element::SyllableBoundary => PatternBorder::StrictSyllable,
+                _ => unreachable!()
+            }
+        },
+        None => PatternBorder::Any, // edge case: output deletion with no context
+    };
 
-    let mut tree = d3tree![];
+    // parse possible final boundary
+    let right_bound = match elements.last() {
+        Some(Element::Features(_, _)) => PatternBorder::Any,
+        Some(bound) => {
+            // remove final boundary
+            elements = &elements[..(elements.len()-1)];
+            match bound {
+                Element::WordBoundary => PatternBorder::Word,
+                Element::SyllableBoundary => PatternBorder::StrictSyllable,
+                _ => unreachable!()
+            }
+        },
+        None => PatternBorder::Any, // edge case: output deletion with no context
+    };
+
+    // parse elements that make up the tree
+    let first_syllable = SyllableInfo::new(None, SyllableFeatures::new_undef());
+    // in case there are no elements in the tree, populate it with a placeholder word and syllable
+    let mut tree = d3tree![() => [first_syllable => []]];
     let mut is_new_syllable = false;
     let mut is_new_word = false;
     for element in elements {
         match element {
             Element::Features(syllable, segment) => {
-                let num_words = tree.len_0();
-                if is_new_word || num_words == 0 {
+                if is_new_word {
                     tree.push_depth_0(());
                     is_new_word = false;
                 }
 
-                let num_syllables = tree.len_1();
-                if is_new_syllable || num_syllables == 0 {
+                if is_new_syllable {
                     tree.push_depth_1(syllable.clone());
                     is_new_syllable = false;
                 } else {
                     // merge syllable with last existing syllable
-                    let last_syl = tree.get_depth_1_mut(num_syllables - 1);
+                    let last_syl = tree.get_depth_1_mut(tree.len_1() - 1);
                     // existing last syllable takes precedence, goes on rhs of addition
                     last_syl.features = syllable.features.clone() + last_syl.features.clone();
 
@@ -53,18 +80,6 @@ where
             Element::SyllableBoundary => is_new_syllable = true,
         }
     }
-
-    let left_bound = match elements.first().unwrap() {
-        Element::WordBoundary => PatternBorder::Word,
-        Element::SyllableBoundary => PatternBorder::StrictSyllable,
-        Element::Features(_, _) => PatternBorder::Any,
-    };
-
-    let right_bound = match elements.last().unwrap() {
-        Element::WordBoundary => PatternBorder::Word,
-        Element::SyllableBoundary => PatternBorder::StrictSyllable,
-        Element::Features(_, _) => PatternBorder::Any,
-    };
 
     Ok(PhonoStringPattern::new(tree, left_bound, right_bound))
 }

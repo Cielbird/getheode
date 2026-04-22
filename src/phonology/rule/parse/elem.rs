@@ -25,6 +25,7 @@ impl ElementSequence {
 
 /// Represents a rule with a sequence of elements : either segments or boundaries
 /// no branching: input, output and context.
+#[derive(Debug)]
 pub struct RuleElements {
     input: ElementSequence,
     output: ElementSequence,
