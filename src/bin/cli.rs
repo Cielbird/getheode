@@ -66,10 +66,13 @@ fn main() {
                 eprintln!("Error parsing rule \"{rule_str}\"\n{e}");
                 std::process::exit(1);
             });
-            let (_, string) = PhonoString::parse(input_str.trim()).unwrap_or_else(|e| {
+            let (rem, string) = PhonoString::parse(input_str.trim()).unwrap_or_else(|e| {
                 eprintln!("Error parsing input \"{input_str}\"\n{e}");
                 std::process::exit(1);
             });
+            if !rem.is_empty() {
+                eprintln!("Error parsing input. Remainder=\"{rem}\"");
+            }
 
             println!("{}", rule_set.apply(string));
         }

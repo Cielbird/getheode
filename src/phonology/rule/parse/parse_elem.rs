@@ -37,9 +37,9 @@ fn parse_segment_elem(input: &str) -> IResult<&str, Element> {
 }
 
 pub fn parse_bound_elem(input: &str) -> IResult<&str, Element> {
-    const SYL_BOUNDARIES: &[char] = &['$', '.'];
+    const SYL_BOUNDARIES: &[char] = &['$', '.', '\''];
     const _WORD_BOUNDARIES: &[char] = &['#'];
-    let parser = one_of("#$.");
+    let parser = one_of("#$.\'");
 
     let mut parser = map(parser, |x| {
         if SYL_BOUNDARIES.contains(&x) {
@@ -61,6 +61,7 @@ pub fn parse_rule_elem(input: &str) -> IResult<&str, Element> {
 
 /// parse a sequence of segments or boundaries ex: "es#ma.tan"
 pub fn parse_rule_elems(input: &str) -> IResult<&str, ElementSequence> {
+    // TODO support syllable features
     let sequence = map(many1(parse_rule_elem), ElementSequence::new);
     // an empty sequence is just a ∅ character
     let empty = map(one_of("∅Ø"), |_| ElementSequence::new(vec![]));

@@ -172,8 +172,8 @@ impl PhonoRule {
             // iterate on words
             let words_match = true;
             for word_idx in 0..match_word_n {
-                let _match_word = &pattern_syllables[word_idx];
-                let _hay_word = &hay_syllables[word_offset + word_idx];
+                let _match_word = &pattern_words[word_idx];
+                let _hay_word = &hay_words[word_offset + word_idx];
 
                 // This will be implemented if words have features
                 // if !match_word.features.matches(hay_word) {
