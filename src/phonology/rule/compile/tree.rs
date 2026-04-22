@@ -1,6 +1,9 @@
 use crate::{
     d3tree,
-    phonology::{rule::{PatternBorder, PhonoStringPattern, SyllableInfo, parse::Element}, syllable::SyllableFeatures},
+    phonology::{
+        rule::{PatternBorder, PhonoStringPattern, SyllableInfo, parse::Element},
+        syllable::SyllableFeatures,
+    },
 };
 
 /// Compiles a sequence of `elements` into a tagged phonological string.
@@ -21,9 +24,9 @@ where
             match bound {
                 Element::WordBoundary => PatternBorder::Word,
                 Element::SyllableBoundary => PatternBorder::StrictSyllable,
-                _ => unreachable!()
+                _ => unreachable!(),
             }
-        },
+        }
         None => PatternBorder::Any, // edge case: output deletion with no context
     };
 
@@ -32,13 +35,13 @@ where
         Some(Element::Features(_, _)) => PatternBorder::Any,
         Some(bound) => {
             // remove final boundary
-            elements = &elements[..(elements.len()-1)];
+            elements = &elements[..(elements.len() - 1)];
             match bound {
                 Element::WordBoundary => PatternBorder::Word,
                 Element::SyllableBoundary => PatternBorder::StrictSyllable,
-                _ => unreachable!()
+                _ => unreachable!(),
             }
-        },
+        }
         None => PatternBorder::Any, // edge case: output deletion with no context
     };
 

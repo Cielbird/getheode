@@ -37,10 +37,7 @@ impl PhonoRuleSet {
         }
         Ok(Self {
             rule_text: input.to_string(),
-            rules: elements
-                .into_iter()
-                .map(compile_rule)
-                .collect(),
+            rules: elements.into_iter().map(compile_rule).collect(),
         })
     }
 }

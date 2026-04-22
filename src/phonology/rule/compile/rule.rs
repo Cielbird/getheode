@@ -2,11 +2,10 @@ use crate::{
     d3tree,
     phonology::{
         rule::{
-            ElementSequence, PhonoRule, SyllableInfo, TaggedPhonoString,
+            ElementSequence, PhonoRule,
             parse::{Element, RuleElements},
         },
         string::PhonoString,
-        syllable::SyllableFeatures,
     },
 };
 
