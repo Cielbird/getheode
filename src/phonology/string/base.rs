@@ -23,7 +23,6 @@ impl PhonoString {
 
     pub fn replace_range(mut self, range: Range<usize>, replace_with: PhonoString) -> Result<Self> {
         self.tree = self.tree.replace_range(range, replace_with.tree)?;
-
         Ok(self)
     }
 

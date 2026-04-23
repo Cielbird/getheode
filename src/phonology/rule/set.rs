@@ -21,7 +21,6 @@ impl PhonoRuleSet {
             matches.sort_by(|a, b| b.range.start.cmp(&a.range.start));
             for m in matches {
                 string = string.replace_range(m.range, m.replace_with).unwrap();
-                // TODO remove any empty syllables or words here.
             }
         }
         string

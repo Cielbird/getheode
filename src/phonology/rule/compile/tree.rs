@@ -80,7 +80,10 @@ where
 
                 tree.push_depth_2(segment.clone());
             }
-            Element::WordBoundary => is_new_word = true,
+            Element::WordBoundary => {
+                is_new_word = true;
+                is_new_syllable = true;
+            }
             Element::SyllableBoundary => is_new_syllable = true,
         }
     }
