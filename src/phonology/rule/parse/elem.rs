@@ -1,4 +1,4 @@
-use std::{collections::HashSet, iter::zip};
+use std::iter::zip;
 
 use crate::error::*;
 use crate::phonology::rule::{
@@ -106,7 +106,7 @@ impl RuleElements {
                 }
             }
         }
-        
+
         true
     }
 

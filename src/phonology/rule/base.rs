@@ -135,16 +135,24 @@ impl PhonoRule {
         let syl_offset = hay_segs[seg_offset].1;
         for (idx, (pat_seg, pat_syl_idx)) in pat_segs.iter().enumerate() {
             let (hay_seg, hay_syl_idx) = &hay_segs[seg_offset + idx];
-            if *pat_syl_idx != hay_syl_idx - syl_offset { return None; }
-            if !hay_seg.matches(&pat_seg.features) { return None; }
+            if *pat_syl_idx != hay_syl_idx - syl_offset {
+                return None;
+            }
+            if !hay_seg.matches(&pat_seg.features) {
+                return None;
+            }
         }
 
         // same normalization for word indices relative to word_offset
         let word_offset = hay_syls[syl_offset].1;
         for (idx, (pat_syl, pat_word_idx)) in pat_syls.iter().enumerate() {
             let (hay_syl, hay_word_idx) = &hay_syls[syl_offset + idx];
-            if *pat_word_idx != hay_word_idx - word_offset { return None; }
-            if !hay_syl.matches(&pat_syl.features) { return None; }
+            if *pat_word_idx != hay_word_idx - word_offset {
+                return None;
+            }
+            if !hay_syl.matches(&pat_syl.features) {
+                return None;
+            }
         }
 
         let hay_seg_n = hay_segs.len();
@@ -156,15 +164,27 @@ impl PhonoRule {
         // the match starts/ends at the edge of the entire string.
         let left_syl_border = seg_offset == 0 || hay_segs[seg_offset - 1].1 != syl_offset;
         let left_word_border = syl_offset == 0 || hay_syls[syl_offset - 1].1 != word_offset;
-        if !self.pattern.left_bound.respects(left_syl_border, left_word_border) { return None; }
+        if !self
+            .pattern
+            .left_bound
+            .respects(left_syl_border, left_word_border)
+        {
+            return None;
+        }
 
         let last_seg = seg_offset + match_seg_n - 1;
-        let right_syl_border = last_seg + 1 == hay_seg_n
-            || hay_segs[last_seg].1 != hay_segs[last_seg + 1].1;
+        let right_syl_border =
+            last_seg + 1 == hay_seg_n || hay_segs[last_seg].1 != hay_segs[last_seg + 1].1;
         let last_syl = syl_offset + match_syl_n - 1;
-        let right_word_border = last_syl + 1 == hay_syl_n
-            || hay_syls[last_syl].1 != hay_syls[last_syl + 1].1;
-        if !self.pattern.right_bound.respects(right_syl_border, right_word_border) { return None; }
+        let right_word_border =
+            last_syl + 1 == hay_syl_n || hay_syls[last_syl].1 != hay_syls[last_syl + 1].1;
+        if !self
+            .pattern
+            .right_bound
+            .respects(right_syl_border, right_word_border)
+        {
+            return None;
+        }
 
         let (syl_captures, seg_captures) =
             self.build_captures(hay_segs, hay_syls, seg_offset, syl_offset)?;
@@ -184,13 +204,18 @@ impl PhonoRule {
         hay_syls: &[(SyllableFeatures, usize)],
         seg_offset: usize,
         syl_offset: usize,
-    ) -> Option<(HashMap<u32, SyllableFeatures>, HashMap<u32, SegmentFeatures>)> {
+    ) -> Option<(
+        HashMap<u32, SyllableFeatures>,
+        HashMap<u32, SegmentFeatures>,
+    )> {
         let mut syl_captures: HashMap<u32, SyllableFeatures> = HashMap::new();
         for (idx, (syl_info, _)) in self.pattern.tree.syls().iter().enumerate() {
             if let Some(id) = syl_info.tag {
                 let (hay_syl, _) = &hay_syls[syl_offset + idx];
                 if let Some(prev) = syl_captures.get(&id) {
-                    if prev != hay_syl { return None; }
+                    if prev != hay_syl {
+                        return None;
+                    }
                 } else {
                     syl_captures.insert(id, hay_syl.clone());
                 }
@@ -202,7 +227,9 @@ impl PhonoRule {
             if let Some(id) = seg_info.tag {
                 let (hay_seg, _) = &hay_segs[seg_offset + idx];
                 if let Some(prev) = seg_captures.get(&id) {
-                    if prev != hay_seg { return None; }
+                    if prev != hay_seg {
+                        return None;
+                    }
                 } else {
                     seg_captures.insert(id, hay_seg.clone());
                 }
