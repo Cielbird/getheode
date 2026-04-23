@@ -106,38 +106,8 @@ impl RuleElements {
                 }
             }
         }
-
-        let input_syl_tags: Vec<u32> = self
-            .input
-            .elems
-            .iter()
-            .filter_map(|e| {
-                if let Element::Features(syl, _) = e {
-                    syl.tag
-                } else {
-                    None
-                }
-            })
-            .collect();
-        let input_seg_tags: Vec<u32> = self
-            .input
-            .elems
-            .iter()
-            .filter_map(|e| {
-                if let Element::Features(_, seg) = e {
-                    seg.tag
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        let syl_unique =
-            input_syl_tags.iter().collect::<HashSet<_>>().len() == input_syl_tags.len();
-        let seg_unique =
-            input_seg_tags.iter().collect::<HashSet<_>>().len() == input_seg_tags.len();
-
-        syl_unique && seg_unique
+        
+        true
     }
 
     /// Apply the element parsing algo to each possible input, output and context.

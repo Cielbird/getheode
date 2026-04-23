@@ -544,7 +544,10 @@ macro_rules! gen_test_rule_apply {
 
                 let (_, string) = PhonoString::parse($input).unwrap();
                 let (_, expected) = PhonoString::parse($expected).unwrap();
-                assert_eq!(rule_set.apply(string), expected);
+                let actual = rule_set.apply(string);
+                if actual != expected {
+                    panic!("expected=[{expected}] != actual=[{actual}]");
+                }
             }
         }
     };
@@ -593,3 +596,4 @@ gen_test_rule_apply!(
 gen_test_rule_apply!(across_word, "t -> d / V#_V", "a#ta", "a#da");
 gen_test_rule_apply!(shwa_removal_and_arrow, "ə → ∅ / _#", "taɪmə", "taɪm");
 gen_test_rule_apply!(multiple, "θ ð → t d", "ði.θo", "di.to");
+gen_test_rule_apply!(twin_tags, "V_0ʔV_0 -> Vː_0", "aʔaʔi", "aːʔi");

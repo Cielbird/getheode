@@ -4,10 +4,7 @@ use nom::{
     IResult, Parser as _,
     branch::alt,
     bytes::complete::tag,
-    character::{
-        complete::one_of,
-        complete::{space0, space1},
-    },
+    character::complete::{digit1, one_of, space0, space1},
     combinator::{map, opt, recognize, verify},
     multi::{many1, separated_list1},
     sequence::{delimited, preceded, separated_pair},
@@ -95,6 +92,7 @@ fn parse_rule_elem_part(input: &str) -> IResult<&str, Pattern<'_>> {
         recognize(parse_ipa_diacritic),
         recognize(parse_natural_class),
         recognize(parse_bound_elem),
+        preceded(tag("_"), digit1),
         delimited(tag("["), recognize(parse_segment_feature_set), tag("]")),
     ));
     let mut parser = map(recognize(many1(part)), Pattern::leaf);

@@ -19,17 +19,14 @@ impl TaggedPhonoString {
         Self(tree)
     }
 
-    // get slice of words
     pub fn words(&self) -> &[()] {
         self.0.layer_0()
     }
 
-    // iterate on words
     pub fn syls(&self) -> &[(SyllableInfo, usize)] {
         self.0.layer_1()
     }
 
-    // iterate on words
     pub fn segs(&self) -> &[(SegmentInfo, usize)] {
         self.0.layer_2()
     }
@@ -110,237 +107,184 @@ impl PhonoRule {
     }
 
     pub fn find(&self, hay: PhonoString) -> Vec<PatternMatch> {
-        let mut matches_vec = vec![];
+        let hay_seg_n = hay.tree.len_2();
+        let hay_syl_n = hay.tree.len_1();
+        let hay_word_n = hay.tree.len_0();
+        let match_seg_n = self.pattern.tree.segs().len();
+        let match_syl_n = self.pattern.tree.syls().len();
+        let match_word_n = self.pattern.tree.words().len();
 
-        let hay_words = hay.tree.layer_0();
-        let hay_syllables = hay.tree.layer_1();
-        let hay_segments = hay.tree.layer_2();
-        let pattern_words = self.pattern.tree.words();
-        let pattern_syllables = self.pattern.tree.syls();
-        let pattern_segments = self.pattern.tree.segs();
-
-        let hay_seg_n = hay_segments.len();
-        let hay_syl_n = hay_syllables.len();
-        let hay_word_n = hay_words.len();
-        let match_seg_n = pattern_segments.len();
-        let match_syl_n = pattern_syllables.len();
-        let match_word_n = pattern_words.len();
         if hay_seg_n < match_seg_n || hay_syl_n < match_syl_n || hay_word_n < match_word_n {
             return vec![];
         }
-        for seg_offset in 0..(hay_seg_n - match_seg_n + 1) {
-            // iterate on segments
-            let mut segments_match = true;
-            let syl_offset = hay_segments[seg_offset].1;
-            for (seg_idx, (pattern_seg, syl_idx)) in pattern_segments.iter().enumerate() {
-                let (hay_seg, hay_syl_idx) = &hay_segments[seg_offset + seg_idx];
 
-                if *syl_idx != hay_syl_idx - syl_offset {
-                    segments_match = false; // segment's parent isn't the same
-                    break;
-                }
-
-                if !hay_seg.matches(&pattern_seg.features) {
-                    segments_match = false;
-                    break;
-                }
-            }
-            if !segments_match {
-                continue;
-            }
-
-            // iterate on syllables
-            let mut syllables_match = true;
-            let word_offset = hay_syllables[syl_offset].1;
-            for syl_idx in 0..match_syl_n {
-                let (match_syl, word_idx) = &pattern_syllables[syl_idx];
-                let (hay_syl, hay_word_idx) = &hay_syllables[syl_offset + syl_idx];
-
-                if *word_idx != hay_word_idx - word_offset {
-                    syllables_match = false; // segment's parent isn't the same
-                    break;
-                }
-
-                if !hay_syl.matches(&match_syl.features) {
-                    syllables_match = false;
-                }
-            }
-            if !syllables_match {
-                continue;
-            }
-
-            // iterate on words
-            let words_match = true;
-            for word_idx in 0..match_word_n {
-                let _match_word = &pattern_words[word_idx];
-                let _hay_word = &hay_words[word_offset + word_idx];
-
-                // This will be implemented if words have features
-                // if !match_word.features.matches(hay_word) {
-                //     words_match = false;
-                // }
-            }
-            if !words_match {
-                continue;
-            }
-
-            // check borders
-            let left_side_syl_border = if seg_offset == 0 {
-                // syllable border if it's the first segment
-                true
-            } else {
-                // syllable border if segments have different parents
-                hay_segments[seg_offset - 1].1 != hay_segments[seg_offset].1
-            };
-            let left_side_word_border = if syl_offset == 0 {
-                // word border if it's the first segment
-                true
-            } else {
-                // word border if segments have different parents
-                hay_syllables[syl_offset - 1].1 != hay_syllables[syl_offset].1
-            };
-
-            let last_seg_idx = seg_offset + match_seg_n - 1;
-            let right_side_syl_border = if last_seg_idx + 1 == hay_seg_n {
-                // syllable border if it's the last syllable
-                true
-            } else {
-                // syllable border if syllables have different parents
-                hay_segments[last_seg_idx].1 != hay_segments[last_seg_idx + 1].1
-            };
-
-            let last_syl_idx = syl_offset + match_syl_n - 1;
-            let right_side_word_border = if last_syl_idx + 1 == hay_syl_n {
-                // word border if it's the last syllable
-                true
-            } else {
-                // word border if syllables have different parents
-                hay_syllables[last_syl_idx].1 != hay_syllables[last_syl_idx + 1].1
-            };
-
-            let left_bound_respected = self
-                .pattern
-                .left_bound
-                .respects(left_side_syl_border, left_side_word_border);
-            if !left_bound_respected {
-                continue;
-            }
-
-            let right_bound_respected = self
-                .pattern
-                .right_bound
-                .respects(right_side_syl_border, right_side_word_border);
-
-            if !right_bound_respected {
-                continue;
-            }
-
-            // Pattern matches from here !
-
-            // Record captured features in hash maps :
-            // let word_captures = HashMap::<u32, ()>::new()
-            let mut syl_captures = HashMap::<u32, SyllableFeatures>::new();
-            let mut seg_captures = HashMap::<u32, SegmentFeatures>::new();
-            // for x in self.match_tree.layer_0 {}
-            for (idx, (syl_info, _)) in pattern_syllables.iter().enumerate() {
-                if let Some(id) = syl_info.tag {
-                    let (syl, _) = &hay_syllables[syl_offset + idx];
-                    syl_captures.insert(id, syl.clone());
-                }
-            }
-            for (idx, (seg_info, _)) in pattern_segments.iter().enumerate() {
-                if let Some(id) = seg_info.tag {
-                    let (seg, _) = &hay_segments[seg_offset + idx];
-                    seg_captures.insert(id, seg.clone());
-                }
-            }
-
-            // build replacement
-            let mut replace_with = d3tree![];
-            for (_, syl_iter) in self.replace_tree.0.iter() {
-                replace_with.push_depth_0(());
-
-                for (syl, seg_iter) in syl_iter {
-                    let mut new_syllable = SyllableFeatures::new_undef();
-                    if let Some(id) = syl.tag {
-                        let syllable = syl_captures
-                            .get(&id)
-                            .expect("Invalid rule : syllable capture id not found");
-                        new_syllable = new_syllable + syllable.clone();
-                    }
-                    new_syllable = new_syllable + syl.features.clone();
-
-                    replace_with.push_depth_1(new_syllable);
-
-                    for seg in seg_iter {
-                        let mut new_segment = SegmentFeatures::new_undef();
-                        if let Some(id) = seg.tag {
-                            let segment = seg_captures
-                                .get(&id)
-                                .expect("Invalid rule : segment capture id not found");
-                            new_segment = new_segment.clone() + segment.clone();
-                        }
-                        new_segment = new_segment.clone() + seg.features.clone();
-
-                        replace_with.push_depth_2(new_segment);
-                    }
-                }
-            }
-
-            let replace_with = PhonoString { tree: replace_with };
-
-            matches_vec.push(PatternMatch {
-                range: seg_offset..(seg_offset + match_seg_n),
-                replace_with,
-            });
-        }
-
-        matches_vec
+        (0..=(hay_seg_n - match_seg_n))
+            .filter_map(|seg_offset| self.match_at(&hay, seg_offset))
+            .collect()
     }
 
-    /// Check if invariants are respected.
-    /// Returns false if the capture ids are not unique (on the same hierarchical level)
-    /// or if the ids in the replacement tree aren't found in the match tree
+    fn match_at(&self, hay: &PhonoString, seg_offset: usize) -> Option<PatternMatch> {
+        let hay_segs = hay.tree.layer_2();
+        let hay_syls = hay.tree.layer_1();
+        let pat_segs = self.pattern.tree.segs();
+        let pat_syls = self.pattern.tree.syls();
+
+        // syl_offset is the absolute index of the first matched syllable in the hay.
+        // the pattern stores relative parent indices (0, 1, 2...), so we subtract
+        // syl_offset when comparing to normalize hay indices to the same origin.
+        let syl_offset = hay_segs[seg_offset].1;
+        for (idx, (pat_seg, pat_syl_idx)) in pat_segs.iter().enumerate() {
+            let (hay_seg, hay_syl_idx) = &hay_segs[seg_offset + idx];
+            if *pat_syl_idx != hay_syl_idx - syl_offset { return None; }
+            if !hay_seg.matches(&pat_seg.features) { return None; }
+        }
+
+        // same normalization for word indices relative to word_offset
+        let word_offset = hay_syls[syl_offset].1;
+        for (idx, (pat_syl, pat_word_idx)) in pat_syls.iter().enumerate() {
+            let (hay_syl, hay_word_idx) = &hay_syls[syl_offset + idx];
+            if *pat_word_idx != hay_word_idx - word_offset { return None; }
+            if !hay_syl.matches(&pat_syl.features) { return None; }
+        }
+
+        let hay_seg_n = hay_segs.len();
+        let hay_syl_n = hay_syls.len();
+        let match_seg_n = pat_segs.len();
+        let match_syl_n = pat_syls.len();
+
+        // a boundary exists when adjacent elements have different parents, or
+        // the match starts/ends at the edge of the entire string.
+        let left_syl_border = seg_offset == 0 || hay_segs[seg_offset - 1].1 != syl_offset;
+        let left_word_border = syl_offset == 0 || hay_syls[syl_offset - 1].1 != word_offset;
+        if !self.pattern.left_bound.respects(left_syl_border, left_word_border) { return None; }
+
+        let last_seg = seg_offset + match_seg_n - 1;
+        let right_syl_border = last_seg + 1 == hay_seg_n
+            || hay_segs[last_seg].1 != hay_segs[last_seg + 1].1;
+        let last_syl = syl_offset + match_syl_n - 1;
+        let right_word_border = last_syl + 1 == hay_syl_n
+            || hay_syls[last_syl].1 != hay_syls[last_syl + 1].1;
+        if !self.pattern.right_bound.respects(right_syl_border, right_word_border) { return None; }
+
+        let (syl_captures, seg_captures) =
+            self.build_captures(hay_segs, hay_syls, seg_offset, syl_offset)?;
+
+        Some(PatternMatch {
+            range: seg_offset..(seg_offset + match_seg_n),
+            replace_with: self.build_replacement(&syl_captures, &seg_captures),
+        })
+    }
+
+    /// collect the hay features referenced by each tag in the pattern.
+    /// returns None if two pattern nodes share a tag but map to different hay features
+    /// (the twin-tag constraint: V_0...V_0 requires both vowels to be identical).
+    fn build_captures(
+        &self,
+        hay_segs: &[(SegmentFeatures, usize)],
+        hay_syls: &[(SyllableFeatures, usize)],
+        seg_offset: usize,
+        syl_offset: usize,
+    ) -> Option<(HashMap<u32, SyllableFeatures>, HashMap<u32, SegmentFeatures>)> {
+        let mut syl_captures: HashMap<u32, SyllableFeatures> = HashMap::new();
+        for (idx, (syl_info, _)) in self.pattern.tree.syls().iter().enumerate() {
+            if let Some(id) = syl_info.tag {
+                let (hay_syl, _) = &hay_syls[syl_offset + idx];
+                if let Some(prev) = syl_captures.get(&id) {
+                    if prev != hay_syl { return None; }
+                } else {
+                    syl_captures.insert(id, hay_syl.clone());
+                }
+            }
+        }
+
+        let mut seg_captures: HashMap<u32, SegmentFeatures> = HashMap::new();
+        for (idx, (seg_info, _)) in self.pattern.tree.segs().iter().enumerate() {
+            if let Some(id) = seg_info.tag {
+                let (hay_seg, _) = &hay_segs[seg_offset + idx];
+                if let Some(prev) = seg_captures.get(&id) {
+                    if prev != hay_seg { return None; }
+                } else {
+                    seg_captures.insert(id, hay_seg.clone());
+                }
+            }
+        }
+
+        Some((syl_captures, seg_captures))
+    }
+
+    fn build_replacement(
+        &self,
+        syl_captures: &HashMap<u32, SyllableFeatures>,
+        seg_captures: &HashMap<u32, SegmentFeatures>,
+    ) -> PhonoString {
+        let mut tree = d3tree![];
+        for (_, syl_iter) in self.replace_tree.0.iter() {
+            tree.push_depth_0(());
+            for (syl, seg_iter) in syl_iter {
+                let mut new_syl = SyllableFeatures::new_undef();
+                if let Some(id) = syl.tag {
+                    new_syl = new_syl
+                        + syl_captures
+                            .get(&id)
+                            .expect("Invalid rule: syllable capture id not found")
+                            .clone();
+                }
+                // captured features go left, explicit rule features go right so the
+                // rule's literal values take precedence over what was captured.
+                tree.push_depth_1(new_syl + syl.features.clone());
+                for seg in seg_iter {
+                    let mut new_seg = SegmentFeatures::new_undef();
+                    if let Some(id) = seg.tag {
+                        new_seg = new_seg
+                            + seg_captures
+                                .get(&id)
+                                .expect("Invalid rule: segment capture id not found")
+                                .clone();
+                    }
+                    tree.push_depth_2(new_seg + seg.features.clone());
+                }
+            }
+        }
+        PhonoString { tree }
+    }
+
+    /// returns false if tags in the pattern are not unique per level, or if the
+    /// replacement tree references a tag not present in the pattern.
     pub fn test_invariants(&self) -> bool {
-        let mut syl_captures = HashSet::new();
-        let mut seg_captures = HashSet::new();
-        // gather tags of match tree
+        let mut syl_tags = HashSet::new();
+        let mut seg_tags = HashSet::new();
+
         for (_, syllables) in self.pattern.tree.0.iter() {
             for (SyllableInfo { tag, features: _ }, segments) in syllables {
                 if let Some(tag) = tag
-                    && !syl_captures.insert(tag)
+                    && !syl_tags.insert(tag)
                 {
-                    // syllable capture id already exists !
-                    return false;
+                    return false; // duplicate syl tag in pattern
                 }
-
                 for SegmentInfo { tag, features: _ } in segments {
                     if let Some(tag) = tag
-                        && !seg_captures.insert(tag)
+                        && !seg_tags.insert(tag)
                     {
-                        // segment capture id already exists !
-                        return false;
+                        return false; // duplicate seg tag in pattern
                     }
                 }
             }
         }
 
-        // verify tags of replacement tree
+        // remove each tag referenced by the replacement; if the tag was absent
+        // (not in the pattern) remove returns false.
         for (_, syllables) in self.replace_tree.0.iter() {
             for (SyllableInfo { tag, features: _ }, segments) in syllables {
                 if let Some(tag) = tag
-                    && !syl_captures.remove(tag)
+                    && !syl_tags.remove(tag)
                 {
-                    // syllable capture id not defined in match tree !
-                    return false;
+                    return false; // replacement references unknown syl tag
                 }
-
                 for SegmentInfo { tag, features: _ } in segments {
                     if let Some(tag) = tag
-                        && !seg_captures.remove(tag)
+                        && !seg_tags.remove(tag)
                     {
-                        // syllable capture id not defined in match tree !
-                        return false;
+                        return false; // replacement references unknown seg tag
                     }
                 }
             }
