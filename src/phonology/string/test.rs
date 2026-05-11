@@ -107,3 +107,18 @@ fn string_replace_with_syl_bound() {
     let string = string.clone().replace_range(1..2, replacement).unwrap();
     assert_eq!(string, expected,);
 }
+
+#[test]
+fn test_parse_stress() {
+    // 'ka.ta : stressed first syllable, unstressed second
+    let (rem, string) = PhonoString::parse("'ka.ta").unwrap();
+    assert_eq!(rem, "");
+
+    let syls: Vec<&SyllableFeatures> = string.tree.iter()
+        .flat_map(|(_, syls)| syls.map(|(syl, _)| syl))
+        .collect();
+
+    assert_eq!(syls.len(), 2);
+    assert_eq!(*syls[0], STRESSED);
+    assert_ne!(syls[1].features[0], POS);
+}

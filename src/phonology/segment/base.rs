@@ -66,6 +66,10 @@ impl SegmentFeatures {
         true
     }
 
+    pub fn features(&self) -> &[FeatureState; SEG_FEATURE_COUNT as usize] {
+        &self.features
+    }
+
     // Number of POS/NEG features in `target` that differ from `base`: the cost of choosing `base`.
     pub fn diff_count(base: &Self, target: &Self) -> usize {
         base.features
